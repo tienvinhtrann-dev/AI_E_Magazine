@@ -1,29 +1,43 @@
-name: Build iOS IPA
+name: Build IPA
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-ios:
+  build:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.44.0"
-          channel: "stable"
+      - name: Setup Flutter
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install --cask flutter
+          flutter doctor
 
-      - name: Pub get
-        working-directory: flutter_app
-        run: flutter pub get
+      - name: Install dependencies
+        working-directory: ./app_web_view
+        run: |
+          flutter pub get
+          cd ios
+          pod install
 
-      - name: Build iOS (no codesign)
-        working-directory: flutter_app
-        run: flutter build ipa --release --no-codesign
+      - name: Build iOS no-codesign
+        working-directory: ./app_web_view
+        run: flutter build ios --release --no-codesign
 
-      - name: Upload IPA artifact
+      - name: Package IPA
+        working-directory: ./app_web_view
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r app_web_view.ipa Payload
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: iOS-IPA
-          path: flutter_app/build/ios/ipa/*.ipa
+          name: app_web_view.ipa
+          path: app_web_view/app_web_view.ipa
