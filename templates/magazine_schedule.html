@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Đặt lịch tự động - {{ magazine.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sched-hero {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: #1a2a1a;
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2rem;
+    }
+    .sched-hero h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: .3rem; }
+    .sched-hero .sub { opacity: .75; font-size: .95rem; }
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 2px 16px rgba(0,0,0,.08);
+        padding: 1.8rem 2rem;
+        margin-bottom: 1.8rem;
+    }
+    .card h2 { font-size: 1.15rem; font-weight: 700; color: #333; margin-bottom: 1.2rem; }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: .8rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; flex: 1; min-width: 160px; }
+    .form-group label { font-size: .85rem; font-weight: 600; color: #555; }
+    .form-group select,
+    .form-group input[type="number"] {
+        padding: .5rem .8rem;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        font-size: .95rem;
+        outline: none;
+        transition: border-color .2s;
+    }
+    .form-group select:focus,
+    .form-group input[type="number"]:focus { border-color: #43e97b; }
+
+    .extra-section { display: none; margin-top: .6rem; }
+    .extra-section.show { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+
+    .days-group { display: flex; flex-direction: column; gap: .35rem; }
+    .days-group label.head { font-size: .85rem; font-weight: 600; color: #555; }
+    .days-checkboxes { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .day-chip input[type=checkbox] { display: none; }
+    .day-chip label {
+        display: inline-block;
+        padding: .35rem .75rem;
+        border: 2px solid #e8e8e8;
+        border-radius: 20px;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .2s;
+        user-select: none;
+    }
+    .day-chip input:checked + label {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+        border-color: #43e97b;
+        color: #1a2a1a;
+    }
+
+    .hint-box {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: .6rem 1rem;
+        font-size: .85rem;
+        color: #166534;
+        margin-top: .8rem;
+    }
+
+    .btn-add {
+        padding: .6rem 1.4rem;
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: #1a2a1a;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: .95rem;
+        cursor: pointer;
+        transition: opacity .2s;
+        margin-top: .8rem;
+    }
+    .btn-add:hover { opacity: .85; }
+
+    .sched-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .sched-table th {
+        background: #f7f7fb;
+        padding: .7rem 1rem;
+        text-align: left;
+        font-weight: 700;
+        color: #555;
+        border-bottom: 2px solid #eee;
+    }
+    .sched-table td {
+        padding: .7rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+        color: #333;
+    }
+    .sched-table tr:hover td { background: #fafff8; }
+
+    .badge { display: inline-block; padding: .25rem .7rem; border-radius: 20px; font-size: .78rem; font-weight: 700; }
+    .badge-active   { background: #d4facb; color: #1e7d10; }
+    .badge-inactive { background: #f0f0f0; color: #888; }
+
+    .freq-badge { display: inline-block; padding: .2rem .6rem; border-radius: 6px; font-size: .78rem; font-weight: 600; background: #ece8ff; color: #6741d9; }
+    .freq-badge.interval { background: #fff7ed; color: #c2410c; }
+
+    .btn-sm { padding: .35rem .75rem; border-radius: 7px; font-size: .82rem; font-weight: 600; cursor: pointer; border: none; transition: opacity .2s; }
+    .btn-toggle-on  { background: #fee2e2; color: #b91c1c; }
+    .btn-toggle-off { background: #d1fae5; color: #065f46; }
+    .btn-del        { background: #fee2e2; color: #b91c1c; margin-left: .3rem; }
+    .btn-sm:hover   { opacity: .8; }
+
+    .empty-txt { text-align: center; color: #aaa; padding: 2rem 1rem; }
+    .back-link {
+        display: inline-flex; align-items: center; gap: .4rem;
+        color: #667eea; font-weight: 600; text-decoration: none; font-size: .9rem;
+        margin-bottom: 1.2rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/magazine/{{ magazine.slug or magazine.id }}" class="back-link">← Quay lại tạp chí</a>
+
+<div class="sched-hero">
+    <h1>⏰ Đặt lịch tự động</h1>
+    <div class="sub">Tạp chí: <strong>{{ magazine.title }}</strong></div>
+</div>
+
+{% set _cats = (categories_menu if (categories_menu is defined and categories_menu) else (magazine.categories_config | fromjson if magazine.categories_config else [])) %}
+
+<!-- Form thêm lịch mới -->
+<div class="card">
+    <h2>➕ Thêm lịch tự động mới</h2>
+    <form method="POST" id="schedForm">
+
+        <!-- Hàng 1: Loại lịch + Số bài -->
+        <div class="form-row">
+            <div class="form-group" style="max-width:320px;">
+                <label>Danh mục</label>
+                <input type="text" name="category_name" id="categoryNameInput"
+                       list="category_suggestions"
+                       placeholder="Nhập tên danh mục..."
+                       autocomplete="off" required
+                       style="padding:.5rem .8rem; border:2px solid #e8e8e8; border-radius:8px; font-size:.95rem; outline:none; transition:border-color .2s;"
+                       onfocus="this.style.borderColor='#43e97b'" onblur="this.style.borderColor='#e8e8e8'">
+                <datalist id="category_suggestions">
+                    {% for cat in _cats %}
+                    <option value="{{ cat.name }}">
+                    {% endfor %}
+                </datalist>
+                <input type="text" name="keywords" placeholder="Từ khóa cho danh mục này (tùy chọn)" style="margin-top:.4rem; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.9rem;">
+            </div>
+            <div class="form-group">
+                <label>Loại lịch</label>
+                <select name="frequency" id="freqSelect" onchange="onFreqChange(this.value)">
+                    <optgroup label="⏱ Lặp theo khoảng thời gian">
+                        <option value="interval_min">Mỗi X phút</option>
+                        <option value="interval_hour">Mỗi X giờ</option>
+                    </optgroup>
+                    <optgroup label="📅 Lịch cố định">
+                        <option value="daily">Hàng ngày (đúng giờ)</option>
+                        <option value="weekly">Hàng tuần (đúng giờ)</option>
+                        <option value="custom">Tuỳ chọn ngày trong tuần</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group" style="max-width:180px;">
+                <label>Số bài mỗi lần</label>
+                <input type="number" name="num_articles" id="numArticles" value="1" min="1" max="20" oninput="updateHint()">
+            </div>
+        </div>
+
+        <!-- Khoảng lặp: Mỗi X phút / X giờ -->
+        <div class="extra-section show" id="intervalSection">
+            <div class="form-group" style="max-width:220px;">
+                <label id="intervalLabel">Mỗi bao nhiêu phút?</label>
+                <input type="number" name="interval_val" id="intervalVal"
+                       value="5" min="1" max="1440" oninput="updateHint()">
+            </div>
+        </div>
+
+        <!-- Giờ cụ thể: daily / weekly / custom -->
+        <div class="extra-section" id="timeSection">
+            <div class="form-group" style="max-width:140px;">
+                <label>Giờ (0–23)</label>
+                <input type="number" name="hour" value="8" min="0" max="23">
+            </div>
+            <div class="form-group" style="max-width:140px;">
+                <label>Phút (0–59)</label>
+                <input type="number" name="minute" value="0" min="0" max="59">
+            </div>
+        </div>
+
+        <!-- Chọn ngày: weekly / custom -->
+        <div class="extra-section" id="daysSection">
+            <div class="days-group">
+                <label class="head">Chọn ngày trong tuần</label>
+                <div class="days-checkboxes">
+                    {% for d, lbl in [('mon','T2'),('tue','T3'),('wed','T4'),('thu','T5'),('fri','T6'),('sat','T7'),('sun','CN')] %}
+                    <div class="day-chip">
+                        <input type="checkbox" name="days_of_week" value="{{ d }}" id="day_{{ d }}">
+                        <label for="day_{{ d }}">{{ lbl }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Gợi ý realtime -->
+        <div class="hint-box">
+            💡 <span id="hintBox">Mỗi <strong id="hintTime">5 phút</strong>, AI sẽ tự sinh <strong id="hintArt">2</strong> bài viết mới.</span>
+        </div>
+
+        <button type="submit" class="btn-add">⏰ Tạo lịch</button>
+    </form>
+</div>
+
+<!-- Danh sách lịch hiện có -->
+<div class="card">
+    <h2>📋 Danh sách lịch đã đặt</h2>
+    {% if schedules %}
+    <div style="overflow-x:auto;">
+    <table class="sched-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Danh mục</th>
+                <th>Loại lịch</th>
+                <th>Chi tiết</th>
+                <th>Số bài</th>
+                <th>Trạng thái</th>
+                <th>Chạy lần cuối</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for s in schedules %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ s.category_name or magazine.topic }}</td>
+            <td>
+                {% if s.frequency in ('interval_min', 'interval_hour') %}
+                    <span class="freq-badge interval">
+                        {% if s.frequency == 'interval_min' %}⏱ Theo phút{% else %}🕐 Theo giờ{% endif %}
+                    </span>
+                {% elif s.frequency == 'daily' %}
+                    <span class="freq-badge">📅 Hàng ngày</span>
+                {% elif s.frequency == 'weekly' %}
+                    <span class="freq-badge">📅 Hàng tuần</span>
+                {% else %}
+                    <span class="freq-badge">📅 Tuỳ chọn</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if s.frequency == 'interval_min' %}
+                    Mỗi {{ s.interval_minutes }} phút
+                {% elif s.frequency == 'interval_hour' %}
+                    Mỗi {{ (s.interval_minutes // 60) }} giờ
+                {% elif s.frequency == 'daily' %}
+                    {{ '%02d:%02d' % (s.hour, s.minute) }} mỗi ngày
+                {% else %}
+                    {{ s.days_of_week | replace('mon','T2') | replace('tue','T3') | replace('wed','T4')
+                       | replace('thu','T5') | replace('fri','T6') | replace('sat','T7') | replace('sun','CN') }}
+                    lúc {{ '%02d:%02d' % (s.hour, s.minute) }}
+                {% endif %}
+            </td>
+            <td>{{ s.num_articles }} bài</td>
+            <td>
+                {% if s.is_active %}
+                    <span class="badge badge-active">● Đang bật</span>
+                {% else %}
+                    <span class="badge badge-inactive">○ Tắt</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if s.last_run %}
+                    {% if s.last_run.strftime is defined %}{{ s.last_run.strftime('%d/%m/%Y %H:%M') }}{% else %}{{ s.last_run }}{% endif %}
+                {% else %}Chưa chạy{% endif %}
+            </td>
+            <td>
+                <form method="POST" action="/schedule/{{ s.id }}/toggle" style="display:inline;">
+                    <button type="submit" class="btn-sm {{ 'btn-toggle-on' if s.is_active else 'btn-toggle-off' }}">
+                        {{ 'Tắt' if s.is_active else 'Bật' }}
+                    </button>
+                </form>
+                <form method="POST" action="/schedule/{{ s.id }}/delete" style="display:inline;"
+                      onsubmit="return confirm('Xóa lịch này?')">
+                    <button type="submit" class="btn-sm btn-del">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty-txt">
+        <p style="font-size:2.5rem; margin-bottom:.5rem;">📭</p>
+        <p>Chưa có lịch nào. Hãy thêm lịch tự động ở trên!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function onFreqChange(val) {
+    document.getElementById('intervalSection').classList.remove('show');
+    document.getElementById('timeSection').classList.remove('show');
+    document.getElementById('daysSection').classList.remove('show');
+
+    if (val === 'interval_min') {
+        document.getElementById('intervalSection').classList.add('show');
+        document.getElementById('intervalLabel').textContent = 'Mỗi bao nhiêu phút?';
+        var iv = document.getElementById('intervalVal');
+        iv.min = 1; iv.max = 1440; iv.value = iv.value || 5;
+    } else if (val === 'interval_hour') {
+        document.getElementById('intervalSection').classList.add('show');
+        document.getElementById('intervalLabel').textContent = 'Mỗi bao nhiêu giờ?';
+        var iv = document.getElementById('intervalVal');
+        iv.min = 1; iv.max = 24; iv.value = 1;
+    } else if (val === 'daily') {
+        document.getElementById('timeSection').classList.add('show');
+    } else {
+        document.getElementById('timeSection').classList.add('show');
+        document.getElementById('daysSection').classList.add('show');
+    }
+    updateHint();
+}
+
+function updateHint() {
+    var val = document.getElementById('freqSelect').value;
+    var art = document.getElementById('numArticles').value;
+    var iv  = parseInt(document.getElementById('intervalVal').value) || 1;
+    var txt = '';
+    if (val === 'interval_min') {
+        txt = 'Mỗi <strong>' + iv + ' phút</strong>';
+    } else if (val === 'interval_hour') {
+        txt = 'Mỗi <strong>' + iv + ' giờ</strong>';
+    } else if (val === 'daily') {
+        txt = '<strong>Hàng ngày</strong> (đúng giờ đã chọn)';
+    } else if (val === 'weekly') {
+        txt = '<strong>Hàng tuần</strong> (các ngày đã chọn)';
+    } else {
+        txt = '<strong>Các ngày đã chọn trong tuần</strong>';
+    }
+    document.getElementById('hintBox').innerHTML =
+        '💡 ' + txt + ', AI sẽ tự sinh <strong>' + art + ' bài</strong> viết mới cho tạp chí.';
+}
+
+// Khởi tạo
+onFreqChange(document.getElementById('freqSelect').value);
+</script>
+{% endblock %}

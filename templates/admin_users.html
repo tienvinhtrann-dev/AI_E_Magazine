@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Người dùng – Admin</title>
+  
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-w: 240px;
+      --primary: #667eea;
+      --danger:  #e53e3e;
+      --success: #38a169;
+      --warning: #d69e2e;
+      --bg:      #f7f8fc;
+      --card:    #ffffff;
+      --border:  #e2e8f0;
+      --text:    #2d3748;
+      --muted:   #718096;
+    }
+
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w); background: #1a202c; color: #e2e8f0;
+      display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid #2d3748; }
+    .sidebar-logo h2 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .5px; }
+    .sidebar-logo span { font-size: 11px; color: #a0aec0; }
+    .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+    .nav-section { font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; padding: 12px 20px 4px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13.5px; color: #a0aec0; text-decoration: none; border-left: 3px solid transparent; transition: all .15s; }
+    .nav-item:hover { background: #2d3748; color: #fff; }
+    .nav-item.active { background: #2d3748; color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid #2d3748; }
+    .sidebar-footer a { font-size: 13px; color: #a0aec0; text-decoration: none; }
+    .sidebar-footer a:hover { color: #fff; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar h1 { font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--muted); }
+    .content { padding: 28px; flex: 1; }
+
+    /* ── Card ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .card-title { font-size: 15px; font-weight: 700; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { background: #f8fafc; font-weight: 600; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* ── Avatar ── */
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; }
+
+    /* ── Badge ── */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .badge-user    { background: #ebf4ff; color: #3182ce; }
+    .badge-premium { background: #faf089; color: #744210; }
+    .badge-admin   { background: #fed7d7; color: #c53030; }
+    .badge-active  { background: #c6f6d5; color: #276749; }
+    .badge-locked  { background: #fed7d7; color: #c53030; }
+
+    /* ── Toggle switch ── */
+    .toggle { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
+    .toggle-track::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
+    .toggle input:checked + .toggle-track { background: var(--success); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(18px); }
+
+    /* ── Select ── */
+    .role-select { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 13px; font-family: 'Times New Roman', Times, serif; background: #fff; cursor: pointer; outline: none; }
+    .role-select:focus { border-color: var(--primary); }
+
+    /* ── Limit input ── */
+    .limit-wrap { display: flex; gap: 5px; align-items: center; }
+    .limit-input { width: 58px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; font-size: 13px; font-family: 'Times New Roman', Times, serif; text-align: center; }
+    .limit-input:focus { border-color: var(--primary); outline: none; }
+    .btn-mini { padding: 5px 10px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; font-family: 'Times New Roman', Times, serif; font-weight: 600; }
+    .btn-save  { background: var(--primary); color: #fff; }
+    .btn-save:hover { opacity: .85; }
+    .btn-detail { padding: 5px 12px; font-size: 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-family: 'Times New Roman', Times, serif; text-decoration: none; color: var(--text); }
+    .btn-detail:hover { background: #f8fafc; }
+    .btn-del { padding: 5px 10px; font-size: 12px; border-radius: 6px; border: none; background: #fed7d7; color: #c53030; cursor: pointer; font-family: 'Times New Roman', Times, serif; font-weight: 600; }
+    .btn-del:hover { background: #feb2b2; }
+
+    /* ── Search ── */
+    .search-input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: 'Times New Roman', Times, serif; width: 220px; }
+    .search-input:focus { border-color: var(--primary); outline: none; }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; }
+    #toast.show { display: block; }
+
+    /* ── Activity panel ── */
+    .activity-panel { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+    .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .activity-icon.article  { background: #ebf4ff; color: #3182ce; }
+    .activity-icon.magazine { background: #fef3c7; color: #d97706; }
+
+    /* ── Stat bar ── */
+    .stat-row { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-mini { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
+    .stat-mini-num  { font-size: 22px; font-weight: 800; }
+    .stat-mini-label { font-size: 11.5px; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚙️ Admin Panel</h2>
+    <span>AI E-Magazine</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Tổng quan</div>
+    <a href="/admin/dashboard" class="nav-item">📊 Dashboard</a>
+    <div class="nav-section">Quản lý</div>
+    <a href="/admin/users"   class="nav-item active">👥 Người dùng</a>
+    <a href="/admin/content" class="nav-item">📰 Nội dung</a>
+    <div class="nav-section">Hệ thống</div>
+    <a href="/admin/system"  class="nav-item">🖥 Hệ thống</a>
+    <a href="/admin/plans"   class="nav-item">💎 Gói dịch vụ</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/">← Về trang chủ</a>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <h1>👥 Quản lý Người dùng</h1>
+    <div class="topbar-right">
+      <span>{{ session.get('user_email','') }}</span>
+      <a href="/logout" style="color:var(--danger);text-decoration:none;font-weight:600;">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div style="padding:10px 16px;margin-bottom:16px;border-radius:8px;font-size:13.5px;
+            background:{% if cat=='success' %}#c6f6d5{% else %}#fed7d7{% endif %};
+            color:{% if cat=='success' %}#276749{% else %}#c53030{% endif %};">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- ── STAT SUMMARY ── -->
+    {% set total = users|length %}
+    {% set active_count = users|selectattr('is_active','equalto',1)|list|length %}
+    {% set admin_count = users|selectattr('role','equalto','admin')|list|length %}
+    {% set premium_count = users|selectattr('role','equalto','premium')|list|length %}
+    <div class="stat-row">
+      <div class="stat-mini"><span class="stat-mini-num">{{ total }}</span><span class="stat-mini-label">Tổng người dùng</span></div>
+      <div class="stat-mini"><span class="stat-mini-num" style="color:var(--success);">{{ active_count }}</span><span class="stat-mini-label">Đang hoạt động</span></div>
+      <div class="stat-mini"><span class="stat-mini-num" style="color:var(--danger);">{{ total - active_count }}</span><span class="stat-mini-label">Bị khóa</span></div>
+      <div class="stat-mini"><span class="stat-mini-num" style="color:#d97706;">{{ premium_count }}</span><span class="stat-mini-label">Premium</span></div>
+      <div class="stat-mini"><span class="stat-mini-num" style="color:#c53030;">{{ admin_count }}</span><span class="stat-mini-label">Admin</span></div>
+    </div>
+
+    <!-- ── USER TABLE ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Danh sách người dùng</span>
+        <input class="search-input" type="text" id="search" placeholder="🔍 Tìm theo email, tên..." oninput="filterTable(this.value)" />
+      </div>
+      <div class="table-wrap">
+        <table id="user-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Người dùng</th>
+              <th>Vai trò</th>
+              <th>Kích hoạt</th>
+              <th>Tạp chí</th>
+              <th>Bài viết</th>
+              <th>Giới hạn TJ</th>
+              <th>Tham gia</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            {% set colors = ['#667eea','#48bb78','#ed8936','#e53e3e','#9f7aea','#0bc5ea'] %}
+            {% set col = colors[loop.index0 % 6] %}
+            <tr data-id="{{ u.id }}" data-search="{{ (u.email ~ ' ' ~ (u.full_name or ''))|lower }}">
+              <td style="color:var(--muted);font-size:12px;">{{ loop.index }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar" style="background:{{ col }};">
+                    {{ (u.full_name or u.email)[0]|upper }}
+                  </div>
+                  <div>
+                    <div style="font-weight:600;font-size:13.5px;">{{ u.full_name or '—' }}</div>
+                    <div style="font-size:12px;color:var(--muted);">{{ u.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <select class="role-select" data-uid="{{ u.id }}" onchange="setRole(this)">
+                  <option value="user"    {% if u.role=='user'    %}selected{% endif %}>👤 User</option>
+                  <option value="premium" {% if u.role=='premium' %}selected{% endif %}>💎 Premium</option>
+                  <option value="admin"   {% if u.role=='admin'   %}selected{% endif %}>🛡 Admin</option>
+                </select>
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" {% if u.is_active %}checked{% endif %}
+                         onchange="toggleUser(this, {{ u.id }})"
+                         {% if u.id == session.get('user_id') %}disabled{% endif %}>
+                  <span class="toggle-track"></span>
+                </label>
+              </td>
+              <td style="text-align:center;font-weight:600;">{{ u.magazine_count }}</td>
+              <td style="text-align:center;font-weight:600;">{{ u.article_count }}</td>
+              <td>
+                <div class="limit-wrap">
+                  <input class="limit-input" type="number" min="1" max="999"
+                         value="{{ u.magazine_limit }}" id="limit-{{ u.id }}" />
+                  <button class="btn-mini btn-save" onclick="setLimit({{ u.id }})">✓</button>
+                </div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);white-space:nowrap;">
+                {{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '—' }}
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <a class="btn-detail" href="/admin/users/{{ u.id }}">📋 Lịch sử</a>
+                  {% if u.id != session.get('user_id') %}
+                  <form method="POST" action="/admin/delete_user/{{ u.id }}" style="margin:0;"
+                        onsubmit="return confirm('Xóa tài khoản {{ u.email }}?')">
+                    <button class="btn-del" type="submit">🗑</button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ACTIVITY PANEL (nếu có selected_user) ── -->
+    {% if selected_user %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Lịch sử hoạt động — {{ selected_user.full_name or selected_user.email }}</span>
+        <a href="/admin/users" class="btn-detail">✕ Đóng</a>
+      </div>
+      {% if activity %}
+      <div class="activity-panel">
+        {% for item in activity %}
+        <div class="activity-item">
+          <div class="activity-icon {{ item.type }}">
+            {% if item.type == 'article' %}📝{% else %}📚{% endif %}
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:500;">{{ item.title }}</div>
+            {% if item.magazine_title %}
+            <div style="font-size:12px;color:var(--muted);">Tạp chí: {{ item.magazine_title }}</div>
+            {% endif %}
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">
+              {{ item.type|capitalize }} •
+              {{ item.created_at.strftime('%d/%m/%Y %H:%M') if item.created_at else '—' }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color:var(--muted);font-size:13.5px;">Chưa có hoạt động nào.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#276749' : '#c53030';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Toggle lock/unlock
+function toggleUser(el, uid) {
+  fetch(`/admin/users/${uid}/toggle`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showToast(data.error, false); el.checked = !el.checked; return; }
+      showToast(data.is_active ? '✅ Đã mở khóa tài khoản' : '🔒 Đã khóa tài khoản', true);
+    })
+    .catch(() => { showToast('Lỗi kết nối', false); el.checked = !el.checked; });
+}
+
+// Set role
+function setRole(sel) {
+  const uid = sel.dataset.uid;
+  const fd = new FormData();
+  fd.append('role', sel.value);
+  fetch(`/admin/users/${uid}/role`, { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showToast(data.error, false); return; }
+      showToast(`✅ Đã đặt role: ${sel.value}`, true);
+    });
+}
+
+// Set magazine limit
+function setLimit(uid) {
+  const val = document.getElementById(`limit-${uid}`).value;
+  const fd = new FormData();
+  fd.append('limit', val);
+  fetch(`/admin/users/${uid}/limit`, { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showToast(data.error, false); return; }
+      showToast(`✅ Giới hạn tạp chí: ${data.limit}`, true);
+    });
+}
+
+// Search filter
+function filterTable(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#user-table tbody tr').forEach(tr => {
+    tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

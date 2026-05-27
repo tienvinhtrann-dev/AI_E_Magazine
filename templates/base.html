@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI E-Magazine{% endblock %}</title>
+    <!-- Fonts: preconnect + non-blocking load để không chặn render -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"></noscript>
+    <!-- Preload logo (LCP element) -->
+    <link rel="preload" as="image" href="/static/images/logo.png" fetchpriority="high">
+    
+    
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #0b0b18 0%, #0f1628 55%, #0b1020 100%);
+            color: white;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(0, 179, 117, 0.35);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(0, 179, 117, 0.12);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+        .logo:hover { opacity: 0.85; }
+
+        .nav-links {
+            display: flex;
+            gap: 1.8rem;
+            list-style: none;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #c8d6e5;
+            text-decoration: none;
+            font-weight: 500;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 0.88rem;
+            letter-spacing: 0.3px;
+            position: relative;
+            padding-bottom: 4px;
+            white-space: nowrap;
+            transition: color 0.25s ease;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00b375, #00d4c8);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00d4a0;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* CTA button in nav for Đăng ký */
+        .nav-links a[href="/register"] {
+            background: linear-gradient(135deg, #00b375 0%, #00c98a 100%);
+            color: #fff !important;
+            padding: 0.42rem 1.1rem;
+            border-radius: 999px;
+            font-weight: 600;
+            box-shadow: 0 2px 14px rgba(0, 179, 117, 0.4);
+            transition: all 0.25s ease;
+        }
+        .nav-links a[href="/register"]::after { display: none; }
+        .nav-links a[href="/register"]:hover {
+            background: linear-gradient(135deg, #00935f 0%, #00b375 100%);
+            box-shadow: 0 4px 20px rgba(0, 179, 117, 0.6);
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        main {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 20px;
+        }
+
+        .flash {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .flash.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Footer */
+        footer {
+            background: #1C1C1E;
+            color: #999;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            border-top: 1px solid #333;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* ── Hamburger button ── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 6px;
+            background: transparent;
+            border: none;
+            flex-shrink: 0;
+        }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+            transition: all 0.25s ease;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        /* ── Nav overlay (mobile) ── */
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1050;
+        }
+        .nav-overlay.active { display: block; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+
+            nav { gap: 0; }
+
+            /* Nav panel slides in from right */
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: min(80vw, 320px);
+                height: 100dvh;
+                background: #fff;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 4.5rem 0 2rem;
+                transition: right 0.3s cubic-bezier(.22,1,.36,1);
+                box-shadow: -4px 0 30px rgba(0,0,0,0.13);
+                z-index: 1100;
+                overflow-y: auto;
+                border-left: 3px solid #00d3b4;
+            }
+            .nav-links.mobile-open { right: 0; }
+
+            .nav-links li { border-bottom: 1px solid rgba(255,255,255,0.13); }
+            .nav-links li:last-child { border-bottom: none; }
+
+            .nav-links a {
+                display: block;
+                padding: 1rem 1.6rem;
+                font-size: 1.08rem !important;
+                font-weight: 800 !important;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                color: #1e3050 !important;
+                letter-spacing: 0.4px;
+                text-shadow: 0 1px 8px #fff8, 0 0 2px #00d3b455;
+                white-space: normal !important;
+                -webkit-font-smoothing: antialiased;
+                transition: background 0.15s, color 0.15s;
+            }
+            .nav-links a:hover {
+                background: rgba(0,211,180,0.10);
+                color: #00b375 !important;
+            }
+            .nav-links a[href="/register"] {
+                margin: 1rem 1.4rem 0;
+                width: calc(100% - 2.8rem);
+                text-align: center;
+                border-radius: 8px;
+                padding: 0.85rem 1rem;
+            }
+
+            .logo span { font-size: 1.3rem; }
+            .logo img { height: 48px; width: 48px; }
+            main { padding: 1rem 0; }
+            .flash-messages { padding: 0 12px; }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .nav-links { gap: 1.2rem; }
+            .nav-links a { font-size: 0.85rem !important; }
+        }
+    </style>
+
+    <!-- View Transitions API: mọi điều hướng đều có hiệu ứng mượt -->
+    <style>
+        @view-transition { navigation: auto; }
+        @keyframes _vt-in  { from { opacity: 0; transform: translateY(7px); } to   { opacity: 1; transform: none; } }
+        @keyframes _vt-out { from { opacity: 1; } to { opacity: 0; } }
+        ::view-transition-new(root)  { animation: 0.2s ease both _vt-in; }
+        ::view-transition-old(root)  { animation: 0.15s ease both _vt-out; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block site_header %}
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="/static/images/logo.png" alt="Logo" style="height: 64px; width: 64px; object-fit: contain; vertical-align: middle; background: transparent; border-radius: 8px; box-shadow: none;"> 
+                    <span>AI E-Magazine</span>
+                </a>
+                <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+                    <span></span><span></span><span></span>
+                </button>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="/">Trang chủ</a></li>
+                    <li><a href="/#gioi-thieu">Giới thiệu</a></li>
+                    <li><a href="/#dich-vu">Dịch vụ</a></li>
+                    <li><a href="/#bang-gia">Bảng giá</a></li>
+                    <li><a href="/#lien-he">Liên hệ</a></li>
+                    {% if user_email %}
+                        {# <li><a href="/dashboard">Dashboard</a></li> #}
+                        {% if user_role == 'admin' %}
+                            <li><a href="/admin/dashboard">Admin</a></li>
+                        {% endif %}
+                        <li><a href="/logout">Đăng xuất</a></li>
+                    {% else %}
+                        <li><a href="/login">Đăng nhập</a></li>
+                        <li><a href="/register">Đăng ký</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+    {% endblock %}
+
+    <div class="nav-overlay" id="navOverlay"></div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {# Đã gộp chân trang vào trang chủ, không render ở đây nữa #}
+
+    {% block extra_js %}{% endblock %}
+
+    <script>
+    (function(){
+        var btn = document.getElementById('hamburger');
+        var nav = document.getElementById('navLinks');
+        var overlay = document.getElementById('navOverlay');
+        if (!btn || !nav || !overlay) return;
+        function close(){
+            nav.classList.remove('mobile-open');
+            btn.classList.remove('active');
+            overlay.classList.remove('active');
+            btn.setAttribute('aria-expanded','false');
+            document.body.style.overflow = '';
+        }
+        btn.addEventListener('click', function(){
+            var open = !nav.classList.contains('mobile-open');
+            open ? nav.classList.add('mobile-open') : nav.classList.remove('mobile-open');
+            btn.classList.toggle('active', open);
+            overlay.classList.toggle('active', open);
+            btn.setAttribute('aria-expanded', String(open));
+            document.body.style.overflow = open ? 'hidden' : '';
+        });
+        overlay.addEventListener('click', close);
+        nav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+    })();
+    </script>
+
+    <!-- Speculation Rules: Chrome tự prerender trang khi hover, click = tức thì -->
+    <script type="speculationrules">
+    {
+      "prerender": [{
+        "where": { "href_matches": ["/dashboard", "/plans", "/login", "/register"] },
+        "eagerness": "moderate"
+      }],
+      "prefetch": [{
+        "where": { "and": [
+          { "href_matches": "/*" },
+          { "not": { "href_matches": ["/logout", "/admin/*"] } }
+        ]},
+        "eagerness": "conservative"
+      }]
+    }
+    </script>
+</body>
+</html>

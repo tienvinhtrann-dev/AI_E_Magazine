@@ -1,0 +1,2985 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Bảng Quản Trị – AI E-Magazine</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Segoe UI',sans-serif;background:#eef2f7;color:#1a202c;min-height:100vh;overflow:hidden;}
+
+.ap-shell{height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOP HEADER ── */
+.ap-header{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
+.ap-header-brand{display:flex;align-items:center;gap:12px;}
+.ap-header-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;}
+.ap-header-icon.is-action{cursor:pointer;border:none;outline:none;transition:transform .15s ease, box-shadow .15s ease;}
+.ap-header-icon.is-action:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(79,70,229,.35);}
+@keyframes ap-spin{to{transform:rotate(360deg)}}
+.ap-header-icon.loading{pointer-events:none;animation:ap-spin .7s linear infinite;}
+.ap-header-title{font-size:1.1rem;font-weight:800;letter-spacing:.04em;color:#111827;}
+.ap-header-sub{font-size:.75rem;color:#6b7280;margin-top:1px;}
+.ap-header-actions{display:flex;align-items:center;gap:10px;}
+.ap-nav-toggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#374151;cursor:pointer;transition:.15s;}
+.ap-nav-toggle:hover{background:#f8fafc;border-color:#cbd5e1;}
+.ap-nav-toggle svg{width:19px;height:19px;stroke-width:2.2;}
+.ap-header-back{display:flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid #e5e7eb;border-radius:8px;font-size:.85rem;font-weight:600;color:#374151;text-decoration:none;transition:.15s;}
+.ap-header-back:hover{background:#f9fafb;}
+
+/* ── LAYOUT ── */
+.ap-layout{display:grid;grid-template-columns:260px minmax(0,1fr);height:calc(100vh - 64px);overflow:hidden;}
+
+/* ── TAB NAV ── */
+.ap-nav{background:#0f172a;border-right:1px solid #1e293b;padding:16px 10px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;}
+.ap-nav::-webkit-scrollbar{width:6px;}
+.ap-nav::-webkit-scrollbar-thumb{background:#334155;border-radius:20px;}
+.ap-nav-item{position:relative;padding:0 12px;height:44px;display:flex;align-items:center;gap:9px;font-size:.82rem;font-weight:700;color:#94a3b8;cursor:pointer;white-space:nowrap;transition:all .18s;text-decoration:none;letter-spacing:.01em;border:none;background:transparent;border-radius:10px;}
+.ap-nav-item .nav-icon{width:17px;height:17px;flex-shrink:0;opacity:.95;display:block;stroke-width:2;}
+.ap-nav-item .nav-label{display:block;}
+.ap-nav-item:hover{background:#1e293b;color:#e2e8f0;}
+.ap-nav-item.active{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;box-shadow:0 8px 18px rgba(79,70,229,.35);}
+.ap-nav-item.active .nav-icon{opacity:1;}
+
+/* ── MAIN CONTENT ── */
+.ap-body{padding:24px 28px 30px;overflow:auto;min-height:0;}
+.ap-pane{display:none;}
+.ap-pane.active{display:block;}
+
+@media(max-width:1100px){
+  .ap-layout{grid-template-columns:1fr;}
+  .ap-header{padding:0 14px;}
+  .ap-header-title{font-size:1rem;letter-spacing:.02em;}
+  .ap-header-sub{font-size:.72rem;}
+  .ap-nav-toggle{display:inline-flex;}
+  .ap-nav{display:none;background:#fff;border-right:none;border-bottom:1px solid #e5e7eb;padding:10px;flex-direction:column;gap:6px;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;max-height:min(68vh,560px);}
+  .ap-layout.nav-open .ap-nav{display:flex;}
+  .ap-nav::-webkit-scrollbar{display:none;}
+  .ap-nav-item{height:46px;border-radius:10px;color:#64748b;padding:0 11px;}
+  .ap-nav-item .nav-icon{opacity:.7;}
+  .ap-nav-item.active{background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(124,58,237,.12));color:#4f46e5;box-shadow:none;}
+  .ap-body{padding:20px;overflow:auto;}
+}
+@media(max-width:640px){
+  .ap-header-actions{gap:8px;}
+  .ap-header-back{padding:7px 11px;font-size:.82rem;}
+  .ap-nav-item{height:44px;font-size:.8rem;}
+}
+
+/* ── PLANS TAB ── */
+.pl-section-title{font-size:1rem;font-weight:800;color:#111827;display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+.pl-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-bottom:24px;}
+.pl-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:18px;overflow:hidden;transition:box-shadow .2s,transform .2s;position:relative;}
+.pl-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.10);transform:translateY(-3px);}
+.pl-card-top{height:6px;}
+.pl-card-body{padding:20px 22px 16px;}
+.pl-card-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:700;color:#fff;margin-bottom:14px;}
+.pl-card-name{font-size:1.15rem;font-weight:800;color:#111827;margin-bottom:4px;}
+.pl-card-desc{font-size:.78rem;color:#9ca3af;margin-bottom:16px;min-height:36px;line-height:1.5;}
+.pl-card-price{font-size:1.6rem;font-weight:900;color:#4f46e5;line-height:1;}
+.pl-card-price-sub{font-size:.74rem;color:#9ca3af;margin-top:2px;margin-bottom:14px;}
+.pl-card-features{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
+.pl-card-feat{display:flex;align-items:center;gap:8px;font-size:.8rem;color:#374151;}
+.pl-card-feat svg{flex-shrink:0;}
+.pl-card-footer{display:flex;align-items:center;gap:8px;padding:12px 22px;border-top:1px solid #f1f5f9;background:#fafbff;}
+.pl-card-status{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+.pl-card-status.active{background:#f0fdf4;color:#16a34a;}
+.pl-card-status.hidden{background:#f1f5f9;color:#6b7280;}
+.pl-card-inactive{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.06);border-radius:8px;padding:2px 8px;font-size:.69rem;font-weight:700;color:#9ca3af;}
+/* Modal overlay */
+.pl-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.pl-modal-overlay.open{opacity:1;pointer-events:all;}
+.pl-modal{background:#fff;border-radius:20px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);transform:scale(.96) translateY(12px);transition:transform .2s;}
+.pl-modal-overlay.open .pl-modal{transform:scale(1) translateY(0);}
+.pl-modal-head{padding:22px 28px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;}
+.pl-modal-title{font-size:1.05rem;font-weight:800;color:#111827;display:flex;align-items:center;gap:8px;}
+.pl-modal-close{width:32px;height:32px;border-radius:8px;border:none;background:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#6b7280;transition:.15s;}
+.pl-modal-close:hover{background:#e5e7eb;}
+.pl-modal-body{padding:22px 28px 28px;}
+.pl-form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.pl-form-group{margin-bottom:14px;}
+.pl-form-group label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:6px;}
+.pl-form-input{width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.87rem;outline:none;transition:.15s;background:#fff;}
+.pl-form-input:focus{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.09);}
+.pl-form-textarea{resize:vertical;min-height:64px;}
+.pl-check-label{display:flex;align-items:center;gap:10px;font-size:.84rem;color:#374151;cursor:pointer;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;transition:.15s;}
+.pl-check-label:hover{border-color:#c7d2fe;background:#fafbff;}
+.pl-check-label input:checked~span{color:#4f46e5;font-weight:600;}
+.pl-check-label input[type=checkbox]{width:16px;height:16px;accent-color:#4f46e5;cursor:pointer;}
+.pl-modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+/* Toast */
+.pl-toast{position:fixed;bottom:28px;right:28px;background:#111827;color:#fff;padding:12px 20px;border-radius:12px;font-size:.85rem;font-weight:600;z-index:3000;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;}
+.pl-toast.show{opacity:1;transform:translateY(0);}
+.pl-toast.success{background:#059669;}
+.pl-toast.error{background:#dc2626;}
+/* Add button */
+.pl-add-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:12px;font-size:.87rem;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 2px 8px rgba(79,70,229,.3);}
+.pl-add-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,.4);}
+@media(max-width:768px){.pl-cards-grid{grid-template-columns:1fr;}.pl-form-row{grid-template-columns:1fr;}}
+
+/* ── MAGAZINE HISTORY TAB ── */
+.mh-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.mh-kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px 14px;position:relative;overflow:hidden;transition:box-shadow .18s,transform .18s;}
+.mh-kpi-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.09);transform:translateY(-2px);}
+.mh-kpi-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.mh-kpi-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.mh-kpi-val{font-size:1.8rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.mh-kpi-lbl{font-size:.71rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;}
+/* Toolbar */
+.mh-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.mh-search-wrap{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:9px 14px;flex:1;min-width:220px;max-width:360px;transition:.15s;}
+.mh-search-wrap:focus-within{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.08);}
+.mh-search-wrap input{border:none;outline:none;font-size:.84rem;color:#374151;background:transparent;width:100%;}
+.mh-select{padding:9px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:.82rem;color:#374151;background:#fff;outline:none;cursor:pointer;transition:.15s;}
+.mh-select:focus{border-color:#4f46e5;}
+/* Table */
+.mh-table .mh-mag-title{font-weight:700;color:#111827;font-size:.87rem;}
+.mh-table .mh-mag-desc{font-size:.73rem;color:#9ca3af;margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mh-owner-name{font-size:.83rem;font-weight:600;color:#374151;}
+.mh-owner-email{font-size:.73rem;color:#9ca3af;margin-top:1px;}
+.mh-topic-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;background:#f1f5f9;color:#475569;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mh-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;border-radius:12px;font-size:.78rem;font-weight:700;padding:0 8px;}
+.mh-count-zero{background:#f1f5f9;color:#9ca3af;}
+.mh-count-low{background:#dbeafe;color:#1d4ed8;}
+.mh-count-mid{background:#d1fae5;color:#065f46;}
+.mh-count-high{background:#ede9fe;color:#5b21b6;}
+.mh-sched-yes{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.73rem;font-weight:600;background:#f0fdf4;color:#16a34a;}
+.mh-sched-no{display:inline-flex;align-items:center;justify-content:center;font-size:.82rem;color:#d1d5db;}
+.mh-date{font-size:.78rem;color:#6b7280;}
+.mh-date-sub{font-size:.69rem;color:#d1d5db;margin-top:1px;}
+.mh-id-cell{font-size:.76rem;color:#9ca3af;font-family:monospace;font-weight:600;}
+/* Empty/loading */
+.mh-empty-cell{text-align:center;padding:3rem;color:#9ca3af;font-size:.88rem;}
+.mh-empty-cell{display:flex;align-items:center;justify-content:center;gap:10px;}
+td.mh-empty-cell{display:table-cell;}
+.mh-spinner{width:18px;height:18px;border:2px solid #e5e7eb;border-top-color:#4f46e5;border-radius:50%;animation:mhSpin .7s linear infinite;}
+@keyframes mhSpin{to{transform:rotate(360deg);}}
+/* Pagination */
+.mh-pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px 20px;border-top:1px solid #f1f5f9;flex-wrap:wrap;}
+.mh-page-btn{min-width:34px;height:34px;padding:0 8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s;}
+.mh-page-btn:hover{background:#f9fafb;border-color:#c7d2fe;}
+.mh-page-btn.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.mh-page-btn:disabled{opacity:.4;cursor:default;}
+.mh-page-dots{color:#9ca3af;font-size:.82rem;padding:0 2px;}
+@media(max-width:1100px){.mh-kpi-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.mh-kpi-row{grid-template-columns:1fr 1fr;}.mh-toolbar{flex-direction:column;align-items:stretch;}}
+
+
+/* ── STAT CARDS ── */
+.ap-stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:28px;align-items:stretch;}
+.ap-stat{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px 20px 16px;position:relative;overflow:hidden;min-height:140px;display:flex;flex-direction:column;justify-content:flex-start;transition:box-shadow .2s,transform .2s;}
+.ap-stat:hover{box-shadow:0 4px 18px rgba(0,0,0,.08);transform:translateY(-2px);}
+.ap-stat-accent{height:3px;border-radius:16px 16px 0 0;position:absolute;top:0;left:0;right:0;}
+.ap-stat-top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.ap-stat-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ap-stat-icon svg{width:20px;height:20px;stroke-width:2;}
+.ap-stat-label{font-size:.7rem;font-weight:700;color:#9ca3af;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;}
+.ap-stat-value{font-size:2rem;font-weight:800;line-height:1;color:#111827;}
+.ap-stat-sub{font-size:.74rem;color:#6b7280;margin-top:6px;}
+.bg-indigo .ap-stat-accent{background:linear-gradient(90deg,#4f46e5,#818cf8);}
+.bg-indigo .ap-stat-icon{background:#ede9fe;color:#4f46e5;}
+.bg-purple .ap-stat-accent{background:linear-gradient(90deg,#7c3aed,#c084fc);}
+.bg-purple .ap-stat-icon{background:#f3e8ff;color:#7c3aed;}
+.bg-green .ap-stat-accent{background:linear-gradient(90deg,#059669,#34d399);}
+.bg-green .ap-stat-icon{background:#d1fae5;color:#059669;}
+.bg-orange .ap-stat-accent{background:linear-gradient(90deg,#d97706,#fbbf24);}
+.bg-orange .ap-stat-icon{background:#fef3c7;color:#d97706;}
+.bg-blue .ap-stat-accent{background:linear-gradient(90deg,#0284c7,#38bdf8);}
+.bg-blue .ap-stat-icon{background:#dbeafe;color:#0284c7;}
+.bg-rose .ap-stat-accent{background:linear-gradient(90deg,#e11d48,#fb7185);}
+.bg-rose .ap-stat-icon{background:#ffe4e6;color:#e11d48;}
+@media(max-width:1200px){.ap-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:680px){.ap-stats-grid{grid-template-columns:1fr;}.ap-stat{min-height:120px;}}
+
+/* ── CARDS ── */
+.ap-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;margin-bottom:24px;}
+.ap-card-head{padding:16px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ap-card-title{font-weight:700;font-size:.95rem;color:#111827;}
+.ap-card-body{padding:0;}
+
+/* ── TABLE ── */
+.ap-table-wrap{overflow-x:auto;}
+.ap-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+.ap-table th{padding:10px 16px;background:#f8fafc;font-weight:700;color:#6b7280;font-size:.73rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #e5e7eb;white-space:nowrap;text-align:left;}
+.ap-table td{padding:12px 16px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.ap-table tr:last-child td{border-bottom:none;}
+.ap-table tr:hover td{background:#fafbff;}
+
+/* ── AVATAR ── */
+.ap-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0;}
+
+/* ── BADGE ── */
+.ap-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;}
+.badge-user{background:#eff6ff;color:#1d4ed8;}
+.badge-admin{background:#fef2f2;color:#dc2626;}
+.badge-premium{background:#fefce8;color:#92400e;}
+.badge-active{background:#f0fdf4;color:#16a34a;}
+.badge-locked{background:#fef2f2;color:#dc2626;}
+.badge-pub{background:#ecfdf5;color:#059669;}
+.badge-draft{background:#f8fafc;color:#6b7280;}
+
+/* ── TOGGLE ── */
+.ap-toggle{position:relative;display:inline-block;width:40px;height:22px;}
+.ap-toggle input{opacity:0;width:0;height:0;}
+.ap-toggle-track{position:absolute;cursor:pointer;inset:0;background:#e2e8f0;border-radius:22px;transition:.3s;}
+.ap-toggle-track::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+.ap-toggle input:checked+.ap-toggle-track{background:#16a34a;}
+.ap-toggle input:checked+.ap-toggle-track::before{transform:translateX(18px);}
+
+/* ── BTN ── */
+.ap-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;transition:.15s;text-decoration:none;}
+.ap-btn-primary{background:#4f46e5;color:#fff;}
+.ap-btn-primary:hover{background:#4338ca;}
+.ap-btn-danger{background:#fee2e2;color:#dc2626;}
+.ap-btn-danger:hover{background:#fecaca;}
+.ap-btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb;}
+.ap-btn-outline:hover{background:#f9fafb;}
+.ap-btn-success{background:#d1fae5;color:#065f46;}
+.ap-btn-sm{padding:5px 10px;font-size:.76rem;}
+
+/* ── SEARCH ── */
+.ap-search{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;width:280px;}
+.ap-search input{border:none;background:transparent;outline:none;font-size:.84rem;width:100%;color:#374151;}
+
+/* ── FORM ── */
+.ap-form-group{margin-bottom:16px;}
+.ap-form-group label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:6px;}
+.ap-form-control{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:.87rem;outline:none;transition:.15s;background:#fff;}
+.ap-form-control:focus{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.1);}
+.ap-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* ── SEO / SETTINGS SECTION ── */
+.ap-section-title{font-size:.9rem;font-weight:700;color:#111827;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #f1f5f9;}
+.ap-settings-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px;margin-bottom:20px;}
+
+/* ── CHART placeholder ── */
+.ap-chart-wrap{padding:20px;min-height:180px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4ff,#faf5ff);border-radius:10px;color:#4f46e5;font-weight:600;font-size:.9rem;margin-bottom:4px;}
+
+/* ── 2-col grid ── */
+.ap-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:768px){.ap-grid-2{grid-template-columns:1fr;}.ap-search{width:200px;}.ap-body{padding:16px;}}
+
+/* ── MAGAZINE CARD (Lịch sử) ── */
+.ap-mag-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+
+/* ── ACTIVITY LIST ── */
+.ap-activity{list-style:none;}
+.ap-activity li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f9;}
+.ap-activity li:last-child{border-bottom:none;}
+.ap-activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── OVERVIEW PAGINATION ── */
+.ap-mini-pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;border-top:1px solid #f1f5f9;flex-wrap:wrap;background:#fff;}
+.ap-mini-page-btn{min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#64748b;font-size:.78rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s;}
+.ap-mini-page-btn:hover{background:#eef2ff;border-color:#c7d2fe;color:#4f46e5;}
+.ap-mini-page-btn.active{background:#4f46e5;border-color:#4f46e5;color:#fff;}
+.ap-mini-page-btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* ── OVERVIEW INSIGHTS ── */
+.ov-trend-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px;}
+.ov-trend-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px 14px 10px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.ov-trend-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.ov-trend-label{font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;}
+.ov-trend-badge{padding:3px 8px;border-radius:999px;font-size:.69rem;font-weight:700;white-space:nowrap;}
+.ov-trend-badge.up{background:#ecfdf5;color:#059669;}
+.ov-trend-badge.down{background:#fef2f2;color:#dc2626;}
+.ov-trend-badge.flat{background:#f1f5f9;color:#64748b;}
+.ov-trend-value{font-size:1.5rem;font-weight:800;line-height:1.1;color:#111827;}
+.ov-trend-sub{font-size:.73rem;color:#94a3b8;margin-top:3px;margin-bottom:8px;}
+.ov-mini-canvas-wrap{height:52px;}
+
+.ov-heatmap-wrap{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start;}
+.ov-heatmap-days{display:flex;flex-direction:column;gap:4px;padding-top:20px;}
+.ov-heatmap-day{height:14px;font-size:.72rem;color:#64748b;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;}
+.ov-heatmap-main{overflow:auto;}
+.ov-heatmap-hours{display:grid;grid-template-columns:repeat(24,minmax(14px,1fr));gap:4px;margin-bottom:6px;min-width:460px;}
+.ov-heatmap-hour{font-size:.64rem;color:#94a3b8;text-align:center;line-height:1;}
+.ov-heatmap-grid{display:grid;grid-template-columns:repeat(24,minmax(14px,1fr));grid-auto-rows:14px;gap:4px;min-width:460px;}
+.ov-heat-cell{border-radius:3px;background:#e2e8f0;transition:transform .12s ease, box-shadow .12s ease;}
+.ov-heat-cell:hover{transform:scale(1.25);box-shadow:0 2px 10px rgba(15,23,42,.2);}
+.ov-heat-legend{margin-top:12px;display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:.72rem;color:#64748b;}
+.ov-heat-legend-scale{display:flex;gap:4px;}
+.ov-heat-legend-scale span{width:14px;height:10px;border-radius:3px;display:block;}
+
+@media(max-width:1200px){.ov-trend-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:768px){
+  .ov-trend-grid{grid-template-columns:1fr;}
+  .ov-heatmap-wrap{grid-template-columns:1fr;}
+  .ov-heatmap-days{display:none;}
+}
+
+/* ── PLAN FORM ── */
+.ap-plan-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px;}
+.ap-plan-card{background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:20px;position:relative;}
+.ap-plan-card.featured{border-color:#4f46e5;}
+.ap-plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#4f46e5;color:#fff;font-size:.72rem;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap;}
+
+/* ── REVENUE TAB ── */
+.rv-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.rv-kpi{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px 18px 16px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.rv-kpi::after{content:'';position:absolute;right:-14px;bottom:-14px;width:64px;height:64px;border-radius:50%;opacity:.10;}
+.rv-kpi.rv-green::after{background:#059669;} .rv-kpi.rv-blue::after{background:#0284c7;}
+.rv-kpi.rv-purple::after{background:#7c3aed;} .rv-kpi.rv-orange::after{background:#d97706;}
+.rv-kpi-accent{height:3px;border-radius:16px 16px 0 0;position:absolute;top:0;left:0;right:0;}
+.rv-kpi-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:10px;}
+.rv-kpi-label{font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;}
+.rv-kpi-value{font-size:1.75rem;font-weight:800;line-height:1.15;margin:3px 0 2px;}
+.rv-kpi-sub{font-size:.74rem;color:#9ca3af;}
+/* Filter bar */
+.rv-filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px 18px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.rv-filter-bar label{font-size:.78rem;font-weight:600;color:#374151;white-space:nowrap;}
+.rv-mode-btn{padding:7px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;font-size:.8rem;font-weight:600;color:#6b7280;cursor:pointer;transition:.15s;}
+.rv-mode-btn.active,.rv-mode-btn:hover{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.rv-date-input{padding:7px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:.8rem;color:#374151;background:#f9fafb;outline:none;cursor:pointer;}
+.rv-date-input:focus{border-color:#4f46e5;}
+.rv-apply-btn{padding:7px 20px;border-radius:8px;background:#4f46e5;color:#fff;border:none;font-size:.82rem;font-weight:700;cursor:pointer;transition:.15s;}
+.rv-apply-btn:hover{background:#4338ca;}
+.rv-result-info{font-size:.78rem;color:#6b7280;margin-left:auto;}
+/* Chart + summary row */
+.rv-main-row{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:18px;}
+.rv-chart-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px 24px 18px;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.rv-chart-title{font-size:.88rem;font-weight:700;color:#374151;margin-bottom:16px;display:flex;align-items:center;gap:7px;letter-spacing:.01em;}
+.rv-chart-wrap{position:relative;width:100%;height:260px;}
+.rv-summary-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:22px 22px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:0;justify-content:space-between;}
+.rv-sum-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #f1f5f9;}
+.rv-sum-row:last-child{border-bottom:none;}
+.rv-sum-label{font-size:.78rem;color:#6b7280;font-weight:500;}
+.rv-sum-value{font-size:1.08rem;font-weight:800;color:#111827;}
+/* Orders table */
+.rv-orders-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.rv-orders-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:10px;}
+.rv-orders-title{font-size:.9rem;font-weight:700;color:#374151;display:flex;align-items:center;gap:6px;}
+.rv-search-box{display:flex;align-items:center;gap:6px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:7px 12px;}
+.rv-search-box input{border:none;outline:none;background:transparent;font-size:.82rem;color:#374151;width:200px;}
+.rv-pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px;border-top:1px solid #f1f5f9;flex-wrap:wrap;}
+.rv-page-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;font-size:.82rem;font-weight:600;color:#6b7280;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.rv-page-btn:hover{background:#f0f2ff;border-color:#c7d2fe;color:#4f46e5;}
+.rv-page-btn.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.rv-page-btn:disabled{opacity:.4;cursor:not-allowed;}
+@media(max-width:900px){.rv-kpi-grid{grid-template-columns:repeat(2,1fr);}.rv-main-row{grid-template-columns:1fr;}}
+
+/* ── FEEDBACK TAB ── */
+.fb-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px;}
+.fb-kpi{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.fb-kpi-label{font-size:.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;}
+.fb-kpi-value{margin-top:5px;font-size:1.65rem;font-weight:800;line-height:1.1;color:#111827;}
+.fb-kpi-sub{margin-top:4px;font-size:.74rem;color:#64748b;}
+.fb-search-wrap{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;max-width:360px;}
+.fb-search-wrap input{border:none;background:transparent;outline:none;width:100%;font-size:.83rem;color:#374151;}
+.fb-message{max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#475569;font-size:.81rem;}
+@media(max-width:900px){.fb-kpi-grid{grid-template-columns:1fr;}}
+
+/* ══════════════════════════════
+   USER MANAGEMENT — NEW DESIGN
+   ══════════════════════════════ */
+
+/* Stats strip */
+.um-kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.um-kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px 18px 14px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:.2s;}
+.um-kpi-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px);}
+.um-kpi-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;}
+.um-kpi-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:12px;}
+.um-kpi-value{font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px;}
+.um-kpi-label{font-size:.72rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;}
+.um-kpi-bar{margin-top:10px;height:4px;background:#f1f5f9;border-radius:4px;overflow:hidden;}
+.um-kpi-bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+/* Charts row */
+.um-charts-row{display:grid;grid-template-columns:1fr 1fr 2fr;gap:14px;margin-bottom:20px;}
+.um-chart-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.um-chart-title{font-size:.82rem;font-weight:700;color:#374151;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.um-chart-canvas-wrap{position:relative;}
+@media(max-width:1100px){.um-kpi-grid{grid-template-columns:repeat(3,1fr);}.um-charts-row{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.um-kpi-grid{grid-template-columns:1fr 1fr;}.um-charts-row{grid-template-columns:1fr;}}
+
+/* Skeleton loader */
+@keyframes um-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.um-skel{height:14px;border-radius:6px;background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:800px 100%;animation:um-shimmer 1.4s infinite linear;}
+
+/* Toolbar */
+.um-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.um-search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:9px 14px;min-width:240px;flex:1;max-width:340px;transition:.15s;}
+.um-search-box:focus-within{border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.08);}
+.um-search-box input{border:none;outline:none;font-size:.85rem;color:#374151;background:transparent;width:100%;}
+.um-filter-group{display:flex;gap:8px;}
+.um-select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:.83rem;color:#374151;background:#fff;cursor:pointer;outline:none;transition:.15s;}
+.um-select:focus{border-color:#4f46e5;}
+
+/* Table tweaks */
+.um-table .um-user-cell{display:flex;align-items:center;gap:10px;}
+.um-table .um-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+.um-token-chip{display:inline-flex;align-items:center;gap:4px;background:#f5f3ff;color:#6d28d9;font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:20px;}
+.um-role-badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:700;}
+.um-role-user{background:#eff6ff;color:#1d4ed8;}
+.um-role-premium{background:#fefce8;color:#92400e;}
+.um-role-admin{background:#fef2f2;color:#dc2626;}
+
+/* Action buttons in table */
+.um-act-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:.85rem;transition:.15s;text-decoration:none;}
+.um-act-btn:hover{background:#f0f2ff;border-color:#c7d2fe;}
+.um-act-btn.danger:hover{background:#fef2f2;border-color:#fecaca;}
+
+/* Drawer */
+.um-drawer-section{margin-bottom:24px;}
+.um-drawer-section-title{font-size:.73rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9;}
+.um-drawer-profile{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.um-drawer-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;color:#fff;flex-shrink:0;}
+.um-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.um-info-item{background:#f8fafc;border-radius:10px;padding:12px 14px;}
+.um-info-item .label{font-size:.71rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em;}
+.um-info-item .value{font-size:.9rem;font-weight:700;color:#111827;margin-top:3px;}
+.um-token-grant{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1px solid #ddd6fe;border-radius:12px;padding:16px;}
+.um-token-grant-title{font-weight:700;color:#6d28d9;font-size:.88rem;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.um-token-input-row{display:flex;gap:8px;align-items:center;}
+.um-token-input{width:100px;padding:8px 12px;border:1px solid #ddd6fe;border-radius:8px;font-size:.9rem;font-weight:700;text-align:center;outline:none;background:#fff;}
+.um-token-input:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.1);}
+.um-token-presets{display:flex;gap:6px;margin-top:8px;}
+.um-token-preset{padding:4px 10px;border-radius:6px;border:1px solid #ddd6fe;background:#fff;font-size:.78rem;font-weight:700;color:#6d28d9;cursor:pointer;transition:.15s;}
+.um-token-preset:hover{background:#ede9fe;}
+.um-grant-btn{flex:1;padding:8px 16px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.um-grant-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(109,40,217,.3);}
+.um-grant-btn:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.um-balance-display{text-align:center;margin-top:10px;font-size:.82rem;color:#6b7280;}
+.um-balance-display strong{color:#6d28d9;font-size:1.1rem;}
+
+@media(max-width:768px){
+  .um-stats-strip{gap:8px;}
+  .um-stat-chip{min-width:140px;padding:12px 14px;}
+  #umDrawer{width:100vw;}
+}
+</style>
+</head>
+<body>
+
+<div class="ap-shell">
+
+<!-- HEADER -->
+<header class="ap-header">
+  <div class="ap-header-brand">
+    <button type="button" class="ap-header-icon is-action" onclick="reloadAdminPanelData()" title="Tải lại dữ liệu quản trị">🛡</button>
+    <div>
+      <div class="ap-header-title">QUẢN TRỊ</div>
+      <div class="ap-header-sub">Quản lý hệ thống AI E-Magazine</div>
+    </div>
+  </div>
+  <div class="ap-header-actions">
+    <button type="button" class="ap-nav-toggle" id="apNavToggle" aria-expanded="false" aria-controls="apNav" onclick="toggleAdminMobileNav()" title="Mở menu quản trị">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <a href="#" class="ap-header-back" onclick="if(window.parent!==window){window.parent.postMessage('closeAdminPanel','*');}else{window.location='/dashboard';}return false;">← Thoát</a>
+  </div>
+</header>
+
+<div class="ap-layout" id="apLayout">
+
+<!-- TAB NAV -->
+<nav class="ap-nav" id="apNav">
+  <a class="ap-nav-item active" data-tab="overview" onclick="switchTab('overview');return false;" href="#">
+    <i data-lucide="layout-dashboard" class="nav-icon"></i>
+    <span class="nav-label">TỔNG QUAN</span>
+  </a>
+  <a class="ap-nav-item" data-tab="users" onclick="switchTab('users');return false;" href="#">
+    <i data-lucide="users" class="nav-icon"></i>
+    <span class="nav-label">NGƯỜI DÙNG</span>
+  </a>
+  <a class="ap-nav-item" data-tab="history" onclick="switchTab('history');return false;" href="#">
+    <i data-lucide="book-open" class="nav-icon"></i>
+    <span class="nav-label">LỊCH SỬ TẠP CHÍ</span>
+  </a>
+  <a class="ap-nav-item" data-tab="plans" onclick="switchTab('plans');return false;" href="#">
+    <i data-lucide="credit-card" class="nav-icon"></i>
+    <span class="nav-label">GÓI DỊCH VỤ</span>
+  </a>
+  <a class="ap-nav-item" data-tab="revenue" onclick="switchTab('revenue');return false;" href="#">
+    <i data-lucide="bar-chart-2" class="nav-icon"></i>
+    <span class="nav-label">DOANH THU</span>
+  </a>
+  <a class="ap-nav-item" data-tab="feedback" onclick="switchTab('feedback');return false;" href="#">
+    <i data-lucide="messages-square" class="nav-icon"></i>
+    <span class="nav-label">PHẢN HỒI</span>
+  </a>
+  <a class="ap-nav-item" data-tab="seo" onclick="switchTab('seo');return false;" href="#">
+    <i data-lucide="globe" class="nav-icon"></i>
+    <span class="nav-label">SEO</span>
+  </a>
+  <a class="ap-nav-item" data-tab="system" onclick="switchTab('system');return false;" href="#">
+    <i data-lucide="settings-2" class="nav-icon"></i>
+    <span class="nav-label">CẤU HÌNH HỆ THỐNG</span>
+  </a>
+</nav>
+
+<div class="ap-body">
+
+<!-- ════════════════ TAB: TỔNG QUAN ════════════════ -->
+<div class="ap-pane active" id="pane-overview">
+  <div class="ap-stats-grid">
+    <div class="ap-stat bg-indigo">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">TỔNG NGƯỜI DÙNG</div>
+          <div class="ap-stat-value" id="overviewTotalUsers">{{ stats.total_users or 0 }}</div>
+          <div class="ap-stat-sub" id="ovSubAdmins">{{ stats.total_admins or 0 }} quản trị viên</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="users"></i></div>
+      </div>
+    </div>
+    <div class="ap-stat bg-purple">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">TỔNG TẠP CHÍ</div>
+          <div class="ap-stat-value" id="ovTotalMags">{{ stats.total_magazines or 0 }}</div>
+          <div class="ap-stat-sub">Tất cả người dùng</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="book-open"></i></div>
+      </div>
+    </div>
+    <div class="ap-stat bg-green">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">TỔNG BÀI VIẾT</div>
+          <div class="ap-stat-value" id="ovTotalArticles">{{ stats.total_articles or 0 }}</div>
+          <div class="ap-stat-sub" id="ovSubPublished">{{ stats.published_articles or 0 }} đã xuất bản</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="file-text"></i></div>
+      </div>
+    </div>
+    <div class="ap-stat bg-orange">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">LƯỢT XEM</div>
+          <div class="ap-stat-value" id="ovTotalViews">{{ stats.total_views or 0 }}</div>
+          <div class="ap-stat-sub">Trên tất cả bài viết</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="eye"></i></div>
+      </div>
+    </div>
+    <div class="ap-stat bg-blue">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">LỊCH TỰ ĐỘNG</div>
+          <div class="ap-stat-value" id="ovActiveSchedules">{{ stats.active_schedules or 0 }}</div>
+          <div class="ap-stat-sub" id="ovSubSchedules">{{ stats.total_schedules or 0 }} tổng lịch</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="calendar-clock"></i></div>
+      </div>
+    </div>
+    <div class="ap-stat bg-rose">
+      <div class="ap-stat-accent"></div>
+      <div class="ap-stat-top-row">
+        <div>
+          <div class="ap-stat-label">NGƯỜI DÙNG MỚI (7 NGÀY)</div>
+          <div class="ap-stat-value" id="ovNewUsers">{{ new_users_week or 0 }}</div>
+          <div class="ap-stat-sub">Đăng ký gần đây</div>
+        </div>
+        <div class="ap-stat-icon"><i data-lucide="user-plus"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ov-trend-grid" id="ovTrendGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:#9ca3af;font-size:.9rem;">⏳ Đang tải dữ liệu...</div>
+  </div>
+
+  <div class="ap-grid-2">
+    <!-- Top tạp chí -->
+    <div class="ap-card">
+      <div class="ap-card-head"><span class="ap-card-title">🏆 Top Tạp Chí Nhiều Bài Nhất</span></div>
+      <div class="ap-card-body">
+        <div class="ap-table-wrap">
+        <table class="ap-table">
+          <thead><tr><th>#</th><th>Tên tạp chí</th><th>Chủ sở hữu</th><th>Bài viết</th></tr></thead>
+          <tbody id="ovTopMagsBody">
+          <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:2rem;">⏳ Đang tải...</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div id="overviewTopPager" class="ap-mini-pagination" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Bài viết mới nhất -->
+    <div class="ap-card">
+      <div class="ap-card-head"><span class="ap-card-title">🕐 Hoạt Động Mới Nhất</span></div>
+      <div class="ap-card-body" style="padding:8px 20px 12px;">
+        <ul class="ap-activity" id="ovRecentArts">
+          <li><div style="color:#9ca3af;text-align:center;width:100%;padding:1rem;">⏳ Đang tải...</div></li>
+        </ul>
+        <div id="overviewActivityPager" class="ap-mini-pagination" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Biểu đồ bài viết theo ngày -->
+  <div class="ap-card">
+    <div class="ap-card-head"><span class="ap-card-title">📈 Bài Viết Tạo Theo Ngày (14 ngày)</span></div>
+    <div class="ap-card-body" style="padding:20px;">
+      <canvas id="articleChart" height="80"></canvas>
+    </div>
+  </div>
+
+  <div class="ap-card">
+    <div class="ap-card-head"><span class="ap-card-title">🔥 Heatmap Hoạt Động Theo Ngày/Giờ (30 ngày)</span></div>
+    <div class="ap-card-body" style="padding:16px 20px 14px;">
+      <div class="ov-heatmap-wrap">
+        <div class="ov-heatmap-days" id="ovHeatmapDays"></div>
+        <div class="ov-heatmap-main">
+          <div class="ov-heatmap-hours" id="ovHeatmapHours"></div>
+          <div class="ov-heatmap-grid" id="ovHeatmapGrid"></div>
+          <div class="ov-heat-legend">
+            <span>Ít</span>
+            <div class="ov-heat-legend-scale" id="ovHeatLegendScale"></div>
+            <span>Nhiều</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════ TAB: NGƯỜI DÙNG ════════════════ -->
+<div class="ap-pane" id="pane-users">
+
+  <!-- ── KPI Cards ── -->
+  <div class="um-kpi-grid">
+    <div class="um-kpi-card">
+      <div class="um-kpi-accent" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+      <div class="um-kpi-icon-wrap" style="background:#eef2ff;">
+        <i data-lucide="users" style="width:22px;height:22px;color:#4f46e5;"></i>
+      </div>
+      <div class="um-kpi-value" id="umTotal" style="color:#4f46e5;">—</div>
+      <div class="um-kpi-label">Tổng người dùng</div>
+      <div class="um-kpi-bar"><div class="um-kpi-bar-fill" id="umTotalBar" style="width:100%;background:linear-gradient(90deg,#4f46e5,#818cf8);"></div></div>
+    </div>
+    <div class="um-kpi-card">
+      <div class="um-kpi-accent" style="background:linear-gradient(90deg,#059669,#34d399);"></div>
+      <div class="um-kpi-icon-wrap" style="background:#f0fdf4;">
+        <i data-lucide="check-circle-2" style="width:22px;height:22px;color:#059669;"></i>
+      </div>
+      <div class="um-kpi-value" id="umActive" style="color:#059669;">—</div>
+      <div class="um-kpi-label">Đang hoạt động</div>
+      <div class="um-kpi-bar"><div class="um-kpi-bar-fill" id="umActiveBar" style="width:0%;background:linear-gradient(90deg,#059669,#34d399);"></div></div>
+    </div>
+    <div class="um-kpi-card">
+      <div class="um-kpi-accent" style="background:linear-gradient(90deg,#dc2626,#f87171);"></div>
+      <div class="um-kpi-icon-wrap" style="background:#fef2f2;">
+        <i data-lucide="lock" style="width:22px;height:22px;color:#dc2626;"></i>
+      </div>
+      <div class="um-kpi-value" id="umLocked" style="color:#dc2626;">—</div>
+      <div class="um-kpi-label">Bị khóa</div>
+      <div class="um-kpi-bar"><div class="um-kpi-bar-fill" id="umLockedBar" style="width:0%;background:linear-gradient(90deg,#dc2626,#f87171);"></div></div>
+    </div>
+    <div class="um-kpi-card">
+      <div class="um-kpi-accent" style="background:linear-gradient(90deg,#d97706,#fbbf24);"></div>
+      <div class="um-kpi-icon-wrap" style="background:#fffbeb;">
+        <i data-lucide="shield-check" style="width:22px;height:22px;color:#d97706;"></i>
+      </div>
+      <div class="um-kpi-value" id="umAdmins" style="color:#d97706;">—</div>
+      <div class="um-kpi-label">Quản trị viên</div>
+      <div class="um-kpi-bar"><div class="um-kpi-bar-fill" id="umAdminsBar" style="width:0%;background:linear-gradient(90deg,#d97706,#fbbf24);"></div></div>
+    </div>
+    <div class="um-kpi-card">
+      <div class="um-kpi-accent" style="background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div>
+      <div class="um-kpi-icon-wrap" style="background:#f5f3ff;">
+        <i data-lucide="zap" style="width:22px;height:22px;color:#7c3aed;"></i>
+      </div>
+      <div class="um-kpi-value" id="umTokensTotal" style="color:#7c3aed;">—</div>
+      <div class="um-kpi-label">Tổng token đang giữ</div>
+      <div class="um-kpi-bar"><div class="um-kpi-bar-fill" id="umTokensBar" style="width:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div></div>
+    </div>
+  </div>
+
+  <!-- ── Charts row ── -->
+  <div class="um-charts-row">
+    <div class="um-chart-card">
+      <div class="um-chart-title">🎯 Phân bổ vai trò</div>
+      <div class="um-chart-canvas-wrap" style="max-width:180px;margin:0 auto;">
+        <canvas id="umRoleChart" height="180"></canvas>
+      </div>
+      <div id="umRoleLegend" style="display:flex;flex-direction:column;gap:6px;margin-top:14px;"></div>
+    </div>
+    <div class="um-chart-card">
+      <div class="um-chart-title">⚡ Phân bổ Token</div>
+      <div class="um-chart-canvas-wrap" style="max-width:180px;margin:0 auto;">
+        <canvas id="umTokenChart" height="180"></canvas>
+      </div>
+      <div id="umTokenLegend" style="display:flex;flex-direction:column;gap:6px;margin-top:14px;"></div>
+    </div>
+    <div class="um-chart-card">
+      <div class="um-chart-title">📅 Đăng ký người dùng theo ngày (30 ngày gần nhất)</div>
+      <div class="um-chart-canvas-wrap">
+        <canvas id="umRegChart" height="130"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toolbar ── -->
+  <div class="um-toolbar">
+    <div class="um-search-box">
+      <svg width="16" height="16" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="umSearchInput" placeholder="Tìm tên, email…" oninput="umFilter()"/>
+    </div>
+    <div class="um-filter-group">
+      <select id="umRoleFilter" onchange="umFilter()" class="um-select">
+        <option value="">Tất cả vai trò</option>
+        <option value="user">User</option>
+        <option value="premium">Premium</option>
+        <option value="admin">Admin</option>
+      </select>
+      <select id="umStatusFilter" onchange="umFilter()" class="um-select">
+        <option value="">Tất cả trạng thái</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="locked">Bị khóa</option>
+      </select>
+    </div>
+    <div style="color:#6b7280;font-size:.82rem;margin-left:auto;white-space:nowrap;">
+      Hiển thị <span id="umVisibleCount">—</span> / <span id="usersCount">—</span>
+    </div>
+  </div>
+
+  <!-- ── Table ── -->
+  <div class="ap-card">
+    <div class="ap-card-body">
+      <div class="ap-table-wrap">
+      <table class="ap-table um-table" id="usersTable">
+        <thead>
+          <tr>
+            <th style="width:50px;">ID</th>
+            <th>Người dùng</th>
+            <th style="width:110px;">Vai trò</th>
+            <th style="width:90px;text-align:center;">Token</th>
+            <th style="width:80px;text-align:center;">Kích hoạt</th>
+            <th style="width:70px;text-align:center;">Tạp chí</th>
+            <th style="width:70px;text-align:center;">Bài viết</th>
+            <th style="width:100px;">Tham gia</th>
+            <th style="width:130px;text-align:center;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="9" style="text-align:center;padding:3rem;color:#9ca3af;">
+            <div style="font-size:2rem;margin-bottom:8px;">⏳</div>Đang tải dữ liệu...
+          </td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ USER DETAIL DRAWER ════════════ -->
+<div id="umDrawerOverlay" onclick="umCloseDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1000;backdrop-filter:blur(2px);transition:.25s;"></div>
+<div id="umDrawer" style="display:none;position:fixed;top:0;right:0;width:420px;max-width:100vw;height:100vh;background:#fff;z-index:1001;box-shadow:-8px 0 40px rgba(0,0,0,.15);overflow-y:auto;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);">
+  <!-- Drawer Header -->
+  <div style="padding:20px 24px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:2;">
+    <div style="font-weight:700;font-size:1rem;color:#111827;">Chi tiết người dùng</div>
+    <button onclick="umCloseDrawer()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:#6b7280;">✕</button>
+  </div>
+  <div id="umDrawerContent" style="padding:24px;">
+    <div style="text-align:center;color:#9ca3af;padding:3rem;">Đang tải...</div>
+  </div>
+</div>
+
+
+<!-- ════════════ TAB: LỊCH SỬ TẠP CHÍ ════════════ -->
+<div class="ap-pane" id="pane-history">
+
+  <!-- KPI row -->
+  <div class="mh-kpi-row" id="mhKpiRow">
+    <div class="mh-kpi-card">
+      <div class="mh-kpi-accent" style="background:linear-gradient(90deg,#4f46e5,#818cf8);"></div>
+      <div class="mh-kpi-icon" style="background:#eef2ff;"><i data-lucide="book-open" style="width:20px;height:20px;color:#4f46e5;"></i></div>
+      <div class="mh-kpi-val" id="mhTotal" style="color:#4f46e5;">—</div>
+      <div class="mh-kpi-lbl">Tổng tạp chí</div>
+    </div>
+    <div class="mh-kpi-card">
+      <div class="mh-kpi-accent" style="background:linear-gradient(90deg,#059669,#34d399);"></div>
+      <div class="mh-kpi-icon" style="background:#f0fdf4;"><i data-lucide="file-text" style="width:20px;height:20px;color:#059669;"></i></div>
+      <div class="mh-kpi-val" id="mhArticles" style="color:#059669;">—</div>
+      <div class="mh-kpi-lbl">Tổng bài viết</div>
+    </div>
+    <div class="mh-kpi-card">
+      <div class="mh-kpi-accent" style="background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div>
+      <div class="mh-kpi-icon" style="background:#f5f3ff;"><i data-lucide="calendar-check" style="width:20px;height:20px;color:#7c3aed;"></i></div>
+      <div class="mh-kpi-val" id="mhScheduled" style="color:#7c3aed;">—</div>
+      <div class="mh-kpi-lbl">Có lịch tự động</div>
+    </div>
+    <div class="mh-kpi-card">
+      <div class="mh-kpi-accent" style="background:linear-gradient(90deg,#d97706,#fbbf24);"></div>
+      <div class="mh-kpi-icon" style="background:#fffbeb;"><i data-lucide="users" style="width:20px;height:20px;color:#d97706;"></i></div>
+      <div class="mh-kpi-val" id="mhOwners" style="color:#d97706;">—</div>
+      <div class="mh-kpi-lbl">Chủ sở hữu khác nhau</div>
+    </div>
+    <div class="mh-kpi-card">
+      <div class="mh-kpi-accent" style="background:linear-gradient(90deg,#0891b2,#38bdf8);"></div>
+      <div class="mh-kpi-icon" style="background:#f0f9ff;"><i data-lucide="trending-up" style="width:20px;height:20px;color:#0891b2;"></i></div>
+      <div class="mh-kpi-val" id="mhAvgArticles" style="color:#0891b2;">—</div>
+      <div class="mh-kpi-lbl">TB bài viết/tạp chí</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="mh-toolbar">
+    <div class="mh-search-wrap">
+      <i data-lucide="search" style="width:15px;height:15px;color:#9ca3af;flex-shrink:0;"></i>
+      <input type="text" id="mhSearch" placeholder="Tìm tạp chí, chủ sở hữu, chủ đề..." oninput="mhFilter()"/>
+    </div>
+    <select class="mh-select" id="mhSchedFilter" onchange="mhFilter()">
+      <option value="">Tất cả lịch</option>
+      <option value="1">Có lịch tự động</option>
+      <option value="0">Không có lịch</option>
+    </select>
+    <select class="mh-select" id="mhSortBy" onchange="mhFilter()">
+      <option value="newest">Mới nhất</option>
+      <option value="oldest">Cũ nhất</option>
+      <option value="articles_desc">Nhiều bài nhất</option>
+      <option value="articles_asc">Ít bài nhất</option>
+    </select>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:.82rem;color:#6b7280;">Hiển thị <span id="mhVisible">0</span> / <span id="mhTotalCount">0</span></span>
+    </div>
+  </div>
+
+  <!-- Table card -->
+  <div class="ap-card">
+    <div class="ap-table-wrap">
+      <table class="ap-table mh-table">
+        <thead>
+          <tr>
+            <th style="width:60px;">ID</th>
+            <th>Tạp chí</th>
+            <th>Chủ sở hữu</th>
+            <th>Chủ đề</th>
+            <th style="text-align:center;">Bài viết</th>
+            <th style="text-align:center;">Lịch</th>
+            <th>Ngày tạo</th>
+            <th style="text-align:center;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="mhBody">
+          <tr><td colspan="8" class="mh-empty-cell"><div class="mh-spinner"></div><span>Đang tải...</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mh-pagination" id="mhPagination"></div>
+  </div>
+</div>
+
+
+
+<!-- ════════════════ TAB: GÓI DỊCH VỤ ════════════════ -->
+<div class="ap-pane" id="pane-plans">
+  <!-- Header row -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div class="pl-section-title">
+        <i data-lucide="credit-card" style="width:20px;height:20px;color:#4f46e5;"></i>
+        Gói Dịch Vụ
+        <span style="font-size:.78rem;font-weight:600;color:#9ca3af;background:#f1f5f9;padding:3px 10px;border-radius:20px;" id="plTotalBadge">{{ plans|length }} gói</span>
+      </div>
+      <p style="font-size:.8rem;color:#9ca3af;margin-top:-6px;">Quản lý các gói đăng ký hiển thị cho người dùng</p>
+    </div>
+    <button class="pl-add-btn" onclick="plOpenCreate()">
+      <i data-lucide="plus" style="width:16px;height:16px;"></i>
+      Thêm gói mới
+    </button>
+  </div>
+
+  <!-- Plan cards -->
+  <div class="pl-cards-grid" id="plCardsGrid">
+    {% for p in plans %}
+    <div class="pl-card" id="plCard{{ p.id }}" data-id="{{ p.id }}" data-name="{{ p.name|e }}" data-price="{{ p.price_monthly }}" data-tokens="{{ p.articles_per_day }}" data-mags="{{ p.magazines_limit }}" data-sched="{{ p.auto_schedule }}" data-desc="{{ (p.description or '')|e }}" data-color="{{ p.badge_color or '#6b7280' }}" data-active="{{ p.is_active }}">
+      <div class="pl-card-top" style="background:linear-gradient(90deg,{{ p.badge_color or '#6b7280' }},{{ p.badge_color or '#6b7280' }}88);"></div>
+      {% if not p.is_active %}<div class="pl-card-inactive">Đã ẩn</div>{% endif %}
+      <div class="pl-card-body">
+        <div class="pl-card-badge" style="background:{{ p.badge_color or '#6b7280' }};">{{ p.name }}</div>
+        <div class="pl-card-name">{{ p.name }}</div>
+        <div class="pl-card-desc">{{ p.description or 'Chưa có mô tả' }}</div>
+        <div class="pl-card-price">
+          {% if p.price_monthly == 0 %}Miễn phí
+          {% else %}{{ '{:,.0f}'.format(p.price_monthly) }}<span style="font-size:.9rem;font-weight:600;">đ</span>{% endif %}
+        </div>
+        <div class="pl-card-price-sub">{% if p.price_monthly == 0 %}Không tốn phí{% else %}mỗi tháng{% endif %}</div>
+        <div class="pl-card-features">
+          <div class="pl-card-feat">
+            <i data-lucide="zap" style="width:14px;height:14px;color:#7c3aed;"></i>
+            <span><strong>{{ p.articles_per_day }}</strong> token nạp mỗi lần</span>
+          </div>
+          <div class="pl-card-feat">
+            <i data-lucide="book-open" style="width:14px;height:14px;color:#0891b2;"></i>
+            <span><strong>{{ p.magazines_limit }}</strong> tạp chí tối đa</span>
+          </div>
+          <div class="pl-card-feat">
+            {% if p.auto_schedule %}
+            <i data-lucide="check-circle-2" style="width:14px;height:14px;color:#059669;"></i>
+            <span style="color:#059669;">Hỗ trợ lịch tự động</span>
+            {% else %}
+            <i data-lucide="x-circle" style="width:14px;height:14px;color:#d1d5db;"></i>
+            <span style="color:#d1d5db;">Không có lịch tự động</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="pl-card-footer">
+        <span class="pl-card-status {% if p.is_active %}active{% else %}hidden{% endif %}">
+          {% if p.is_active %}
+          <i data-lucide="check" style="width:11px;height:11px;"></i>Hiển thị
+          {% else %}
+          <i data-lucide="eye-off" style="width:11px;height:11px;"></i>Đã ẩn
+          {% endif %}
+        </span>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="ap-btn ap-btn-outline ap-btn-sm" onclick="plOpenEdit({{ p.id }})" title="Chỉnh sửa">
+            <i data-lucide="pencil" style="width:13px;height:13px;"></i>
+          </button>
+          <button class="ap-btn ap-btn-sm {% if p.is_active %}ap-btn-outline{% else %}ap-btn-success{% endif %}" onclick="plToggle({{ p.id }}, this)" title="{% if p.is_active %}Ẩn{% else %}Hiện{% endif %}">
+            <i data-lucide="{% if p.is_active %}eye-off{% else %}eye{% endif %}" style="width:13px;height:13px;"></i>
+          </button>
+          <button class="ap-btn ap-btn-danger ap-btn-sm" onclick="plDelete({{ p.id }}, this)" title="Xóa gói">
+            <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#9ca3af;">
+      <i data-lucide="credit-card" style="width:40px;height:40px;opacity:.2;display:block;margin:0 auto 12px;"></i>
+      Chưa có gói dịch vụ nào. Nhấn <strong>Thêm gói mới</strong> để bắt đầu.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ══ MODAL: Tạo / Sửa gói ══ -->
+<div class="pl-modal-overlay" id="plModal" onclick="plModalBgClick(event)">
+  <div class="pl-modal">
+    <div class="pl-modal-head">
+      <div class="pl-modal-title" id="plModalTitle">
+        <i data-lucide="plus-circle" style="width:18px;height:18px;color:#4f46e5;"></i>
+        Thêm gói mới
+      </div>
+      <button class="pl-modal-close" onclick="plCloseModal()">✕</button>
+    </div>
+    <div class="pl-modal-body">
+      <form id="plForm">
+        <input type="hidden" id="plEditId" value=""/>
+
+        <div class="pl-form-row">
+          <div class="pl-form-group" style="grid-column:1/-1;">
+            <label>Tên gói <span style="color:#dc2626;">*</span></label>
+            <input type="text" id="plName" class="pl-form-input" placeholder="VD: Basic, Pro, Business..." required/>
+          </div>
+        </div>
+
+        <div class="pl-form-group">
+          <label>Mô tả ngắn</label>
+          <textarea id="plDesc" class="pl-form-input pl-form-textarea" placeholder="Mô tả ưu đãi, tính năng nổi bật của gói..."></textarea>
+        </div>
+
+        <div class="pl-form-row">
+          <div class="pl-form-group">
+            <label>Giá (VNĐ/tháng)</label>
+            <input type="number" id="plPrice" class="pl-form-input" value="0" min="0" placeholder="0 = Miễn phí"/>
+          </div>
+          <div class="pl-form-group">
+            <label>Số Token nạp</label>
+            <input type="number" id="plTokens" class="pl-form-input" value="10" min="1"/>
+          </div>
+        </div>
+
+        <div class="pl-form-row">
+          <div class="pl-form-group">
+            <label>Số tạp chí tối đa</label>
+            <input type="number" id="plMags" class="pl-form-input" value="3" min="1"/>
+          </div>
+          <div class="pl-form-group">
+            <label>Màu nhận diện</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="plColor" value="#4f46e5" style="width:48px;height:40px;padding:3px 4px;border:1.5px solid #e5e7eb;border-radius:8px;cursor:pointer;"/>
+              <div id="plColorPreview" style="flex:1;height:40px;border-radius:8px;background:#4f46e5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.78rem;font-weight:700;transition:.2s;">Xem trước</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pl-form-row">
+          <label class="pl-check-label">
+            <input type="checkbox" id="plSched"/>
+            <i data-lucide="calendar-check" style="width:16px;height:16px;color:#7c3aed;"></i>
+            <span>Hỗ trợ lịch tự động</span>
+          </label>
+          <label class="pl-check-label">
+            <input type="checkbox" id="plActive" checked/>
+            <i data-lucide="eye" style="width:16px;height:16px;color:#059669;"></i>
+            <span>Hiển thị cho người dùng</span>
+          </label>
+        </div>
+
+        <div id="plFormMsg" style="margin-top:12px;font-size:.83rem;"></div>
+        <div class="pl-modal-footer" style="margin-top:18px;">
+          <button type="button" class="ap-btn ap-btn-outline" onclick="plCloseModal()">Hủy</button>
+          <button type="submit" class="ap-btn ap-btn-primary" id="plSubmitBtn" style="min-width:120px;">
+            <i data-lucide="save" style="width:15px;height:15px;"></i>
+            Lưu gói
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="pl-toast" id="plToast"></div>
+
+
+<!-- ════════════════ TAB: DOANH THU ════════════════ -->
+<div class="ap-pane" id="pane-revenue">
+
+  <!-- 4 KPI Cards (all-time) -->
+  <div class="rv-kpi-grid">
+    <div class="rv-kpi rv-green">
+      <div class="rv-kpi-accent" style="background:#059669;"></div>
+      <div class="rv-kpi-icon" style="background:#ecfdf5;"><i data-lucide="circle-dollar-sign" style="width:20px;height:20px;color:#059669;"></i></div>
+      <div class="rv-kpi-label">Doanh thu hôm nay</div>
+      <div class="rv-kpi-value" style="color:#059669;" id="rvKpiToday">...</div>
+      <div class="rv-kpi-sub">Tổng cộng từ SePay hôm nay</div>
+    </div>
+    <div class="rv-kpi rv-blue">
+      <div class="rv-kpi-accent" style="background:#0284c7;"></div>
+      <div class="rv-kpi-icon" style="background:#eff6ff;"><i data-lucide="calendar" style="width:20px;height:20px;color:#0284c7;"></i></div>
+      <div class="rv-kpi-label">Doanh thu tháng này</div>
+      <div class="rv-kpi-value" style="color:#0284c7;" id="rvKpiMonth">...</div>
+      <div class="rv-kpi-sub" id="rvKpiMonthSub">Tháng này từ SePay</div>
+    </div>
+    <div class="rv-kpi rv-purple">
+      <div class="rv-kpi-accent" style="background:#7c3aed;"></div>
+      <div class="rv-kpi-icon" style="background:#f5f3ff;"><i data-lucide="zap" style="width:20px;height:20px;color:#7c3aed;"></i></div>
+      <div class="rv-kpi-label">Token đã bán</div>
+      <div class="rv-kpi-value" style="color:#7c3aed;" id="rvTotalTokens">{{ '{:,}'.format((sepay_summary.paid_tokens or 0)|int) }}</div>
+      <div class="rv-kpi-sub">Tổng cộng từ SePay</div>
+    </div>
+    <div class="rv-kpi rv-orange">
+      <div class="rv-kpi-accent" style="background:#d97706;"></div>
+      <div class="rv-kpi-icon" style="background:#fffbeb;"><i data-lucide="shopping-cart" style="width:20px;height:20px;color:#d97706;"></i></div>
+      <div class="rv-kpi-label">Đơn đang chờ</div>
+      <div class="rv-kpi-value" style="color:#d97706;">{{ sepay_summary.pending_orders or 0 }}</div>
+      <div class="rv-kpi-sub">Chờ xác nhận thanh toán</div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="rv-filter-bar">
+    <label>Lọc theo:</label>
+    <div style="display:flex;gap:6px;">
+      <button class="rv-mode-btn active" id="rvBtnWeek"   onclick="rvSetMode('week')">Tuần này</button>
+      <button class="rv-mode-btn"        id="rvBtnMonth"  onclick="rvSetMode('month')">Tháng này</button>
+      <button class="rv-mode-btn"        id="rvBtnCustom" onclick="rvSetMode('custom')">Tự chọn</button>
+    </div>
+    <div id="rvCustomRange" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;">
+      <input type="date" id="rvDateFrom" class="rv-date-input" max="{{ now_date }}" />
+      <span style="color:#9ca3af;font-size:.8rem;">—</span>
+      <input type="date" id="rvDateTo"   class="rv-date-input" max="{{ now_date }}" />
+    </div>
+    <button class="rv-apply-btn" onclick="rvLoad()">Xem</button>
+    <span class="rv-result-info" id="rvRangeInfo"></span>
+  </div>
+
+  <!-- Chart + Summary -->
+  <div class="rv-main-row">
+    <div class="rv-chart-card">
+      <div class="rv-chart-title"><i data-lucide="bar-chart-3"></i> Doanh Thu Theo Ngày</div>
+      <div id="rvChartEmpty" style="display:none;"></div>
+      <div class="rv-chart-wrap">
+        <canvas id="rvChart"></canvas>
+      </div>
+    </div>
+    <div class="rv-summary-card">
+      <div style="font-size:.85rem;font-weight:700;color:#374151;margin-bottom:12px;">
+        Tổng Kết Kỳ Lọc
+      </div>
+      <div class="rv-sum-row">
+        <span class="rv-sum-label">Doanh thu</span>
+        <span class="rv-sum-value" style="color:#059669;" id="rvSumRevenue">—</span>
+      </div>
+      <div class="rv-sum-row">
+        <span class="rv-sum-label">Token đã bán</span>
+        <span class="rv-sum-value" style="color:#7c3aed;" id="rvSumTokens">—</span>
+      </div>
+      <div class="rv-sum-row">
+        <span class="rv-sum-label">Số đơn thành công</span>
+        <span class="rv-sum-value" id="rvSumOrders">—</span>
+      </div>
+      <div class="rv-sum-row" style="border-bottom:none;">
+        <span class="rv-sum-label">TB / đơn</span>
+        <span class="rv-sum-value" id="rvSumAvg">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SePay Orders table with pagination -->
+  <div class="rv-orders-card">
+    <div class="rv-orders-head">
+      <span class="rv-orders-title">Lịch Sử Đơn Hàng Token (SePay) – 100 Gần Nhất</span>
+      <div class="rv-search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Tìm email, mã đơn, gói..." oninput="rvFilterOrders(this.value)" id="rvOrderSearch"/>
+      </div>
+    </div>
+    <div class="ap-table-wrap">
+      <table class="ap-table" id="rvOrdersTable">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Email</th>
+            <th>Gói</th>
+            <th>Số tiền</th>
+            <th style="text-align:center;">Token</th>
+            <th>Trạng thái</th>
+            <th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="rvOrdersBody">
+          <tr><td colspan="7" style="text-align:center;padding:2.5rem;color:#9ca3af;">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="rv-pagination" id="rvPagination"></div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════ TAB: PHẢN HỒI ════════════════ -->
+<div class="ap-pane" id="pane-feedback">
+  <div class="fb-kpi-grid">
+    <div class="fb-kpi">
+      <div class="fb-kpi-label">Tổng phản hồi</div>
+      <div class="fb-kpi-value" id="fbTotal">0</div>
+      <div class="fb-kpi-sub">Từ form Liên hệ trang chủ</div>
+    </div>
+    <div class="fb-kpi">
+      <div class="fb-kpi-label">Phản hồi mới</div>
+      <div class="fb-kpi-value" id="fbNew" style="color:#d97706;">0</div>
+      <div class="fb-kpi-sub">Chưa xử lý</div>
+    </div>
+    <div class="fb-kpi">
+      <div class="fb-kpi-label">Hôm nay</div>
+      <div class="fb-kpi-value" id="fbToday" style="color:#059669;">0</div>
+      <div class="fb-kpi-sub">Số phản hồi mới trong ngày</div>
+    </div>
+  </div>
+
+  <div class="ap-card">
+    <div class="ap-card-head">
+      <span class="ap-card-title"><i data-lucide="mail" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"></i> Phản Hồi Từ Trang Chủ</span>
+      <div class="fb-search-wrap">
+        <i data-lucide="search" style="width:14px;height:14px;color:#94a3b8;"></i>
+        <input type="text" id="fbSearch" placeholder="Tìm theo tên, email, tiêu đề..." oninput="fbFilter(this.value)"/>
+      </div>
+    </div>
+    <div class="ap-table-wrap">
+      <table class="ap-table" id="fbTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Người gửi</th>
+            <th>Tiêu đề</th>
+            <th>Nội dung</th>
+            <th>Nguồn</th>
+            <th>Trạng thái</th>
+            <th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="fbRows">
+          <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:2rem;">Chưa tải dữ liệu...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════ TAB: SEO ════════════════ -->
+<div class="ap-pane" id="pane-seo">
+  <div class="ap-settings-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#111827;">🌐 Cấu Hình SEO</div>
+        <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Cài đặt meta title, description và thông tin trang web</div>
+      </div>
+    </div>
+    <form method="POST" action="/admin/system/settings" id="seoForm">
+      <div class="ap-form-group">
+        <label>Tên trang web (Site Name)</label>
+        <input type="text" name="site_name" class="ap-form-control"
+          value="{{ (settings.site_name.value if settings.site_name else '') }}"
+          placeholder="AI E-Magazine"/>
+      </div>
+      <div class="ap-form-group">
+        <label>Email liên hệ</label>
+        <input type="email" name="contact_email" class="ap-form-control"
+          value="{{ (settings.contact_email.value if settings.contact_email else '') }}"
+          placeholder="admin@example.com"/>
+      </div>
+      <div class="ap-form-group">
+        <label>Giới hạn bài viết/ngày/user</label>
+        <input type="number" name="daily_article_limit" class="ap-form-control"
+          value="{{ (settings.daily_article_limit.value if settings.daily_article_limit else '20') }}"
+          min="1" max="999"/>
+      </div>
+      <div class="ap-form-group">
+        <label>Số bài tối đa/lần sinh AI</label>
+        <input type="number" name="max_articles_per_gen" class="ap-form-control"
+          value="{{ (settings.max_articles_per_gen.value if settings.max_articles_per_gen else '5') }}"
+          min="1" max="50"/>
+      </div>
+      <div class="ap-form-group" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" name="maintenance_mode" value="1" id="maintMode"
+          {% if settings.maintenance_mode and settings.maintenance_mode.value == '1' %}checked{% endif %}/>
+        <label for="maintMode" style="margin-bottom:0;cursor:pointer;color:#dc2626;font-weight:600;">Chế độ bảo trì (tạm ngưng đăng ký mới)</label>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+        <button type="submit" class="ap-btn ap-btn-primary">💾 Lưu Cấu Hình</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ════════════════ TAB: CẤU HÌNH HỆ THỐNG ════════════════ -->
+<div class="ap-pane" id="pane-system">
+  <div class="ap-grid-2">
+    <!-- Groq API -->
+    <div class="ap-settings-card">
+      <div class="ap-section-title">🤖 Cấu Hình AI (Groq API)</div>
+      <form method="POST" action="/admin/system/apikey">
+        <div class="ap-form-group">
+          <label>Groq API Key hiện tại</label>
+          <input type="text" class="ap-form-control" value="{{ masked_key }}" readonly
+            style="background:#f9fafb;color:#6b7280;font-family:monospace;font-size:.82rem;"/>
+        </div>
+        <div class="ap-form-group">
+          <label>API Key mới</label>
+          <input type="password" name="api_key" class="ap-form-control" placeholder="gsk_..." autocomplete="new-password"/>
+        </div>
+        <div style="text-align:right;">
+          <button type="submit" class="ap-btn ap-btn-primary">🔑 Cập Nhật API Key</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Lịch tự động -->
+    <div class="ap-settings-card">
+      <div class="ap-section-title">🕐 Lịch Đăng Tự Động</div>
+      {% if schedules %}
+      <div class="ap-table-wrap">
+      <table class="ap-table" style="font-size:.8rem;">
+        <thead><tr><th>Tạp chí</th><th>Tần suất</th><th>Bài/lần</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+        {% for s in schedules %}
+        <tr>
+          <td style="font-weight:600;">{{ s.magazine_title or '—' }}<br><span style="font-size:.72rem;color:#6b7280;">{{ s.owner_email }}</span></td>
+          <td>{{ s.frequency or s.interval_minutes }}</td>
+          <td style="text-align:center;">{{ s.num_articles }}</td>
+          <td>{% if s.is_active %}<span class="ap-badge badge-active">Đang chạy</span>{% else %}<span class="ap-badge badge-draft">Tắt</span>{% endif %}</td>
+          <td>
+            <form method="POST" action="/admin/system/schedule/{{ s.id }}/toggle" style="display:inline;">
+              <button class="ap-btn ap-btn-outline ap-btn-sm">{% if s.is_active %}Tắt{% else %}Bật{% endif %}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <div style="text-align:center;color:#9ca3af;padding:2rem;">Chưa có lịch tự động nào</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Thống kê hệ thống -->
+  <div class="ap-settings-card">
+    <div class="ap-section-title">📊 Thông Tin Hệ Thống</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+      <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">Database</div>
+        <div style="font-weight:700;color:#111827;margin-top:4px;">MySQL / MariaDB</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">AI Model</div>
+        <div style="font-weight:700;color:#111827;margin-top:4px;">Groq – llama-3.3-70b</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">Framework</div>
+        <div style="font-weight:700;color:#111827;margin-top:4px;">Flask (Python)</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
+        <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">Tổng lịch hoạt động</div>
+        <div style="font-weight:700;color:#4f46e5;margin-top:4px;font-size:1.4rem;">{{ stats.active_schedules or 0 }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /ap-body -->
+</div><!-- /ap-layout -->
+</div><!-- /ap-shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+var _overviewPagerInited = false;
+var _overviewInsightsInited = false;
+var _trendCardsData = [];
+var _activityHeatmap = {};
+var _overviewDataLoaded = false;
+var _fbLoaded = false;
+var _fbAll = [];
+var _fbFiltered = [];
+
+function reloadAdminPanelData() {
+  var btn = document.querySelector('.ap-header-icon.is-action');
+  if (btn) btn.classList.add('loading');
+  // Refresh overview stats without full page reload
+  fetch('/admin/api/quick-stats', {cache: 'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      var set = function(id, v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+      set('overviewTotalUsers',  d.total_users   || 0);
+      set('ovSubAdmins',         (d.total_admins||0) + ' quản trị viên');
+      set('ovTotalMags',         d.total_magazines || 0);
+      set('ovTotalArticles',     d.total_articles  || 0);
+      set('ovSubPublished',      (d.published_articles||0) + ' đã xuất bản');
+      set('ovTotalViews',        (d.total_views||0).toLocaleString('vi-VN'));
+      set('ovActiveSchedules',   d.active_schedules || 0);
+      set('ovSubSchedules',      (d.total_schedules||0) + ' tổng lịch');
+      set('ovNewUsers',          d.new_users_week  || 0);
+      // Reset lazy-load flags so tabs re-fetch on next visit
+      _usersLoaded = false;
+      _usersFetchPromise = fetch('/admin/api/users').then(function(r){ return r.json(); }).catch(function(){ return []; });
+      _magsLoaded  = false;
+      _magsFetchPromise = fetch('/admin/api/magazines').then(function(r){ return r.json(); }).catch(function(){ return []; });
+      _rvLoaded    = false;
+      _rvKpiFetchPromise    = fetch('/admin/api/revenue-kpi').then(function(r){ return r.json(); }).catch(function(){ return {}; });
+      _rvChartFetchPromise  = fetch('/admin/api/revenue-filter?mode=month').then(function(r){ return r.json(); }).catch(function(){ return {}; });
+      _rvOrdersFetchPromise = fetch('/admin/api/sepay-orders').then(function(r){ return r.json(); }).catch(function(){ return []; });
+      _fbLoaded    = false;
+      _umCharsDrawn = false;
+      // Reload current active tab immediately if not overview
+      var activeTab = (document.querySelector('.ap-nav-item.active')||{}).dataset && document.querySelector('.ap-nav-item.active').dataset.tab;
+      if (activeTab && activeTab !== 'overview') switchTab(activeTab);
+      // Re-fetch overview chart data
+      _overviewPagerInited = false;
+      _overviewInsightsInited = false;
+      loadOverviewData();
+    })
+    .catch(function(){})
+    .finally(function(){
+      if (btn) btn.classList.remove('loading');
+    });
+}
+
+function _paginateOverviewBlock(opts) {
+  var items = Array.from(document.querySelectorAll(opts.itemSelector));
+  var pager = document.getElementById(opts.pagerId);
+  if (!pager || !items.length) {
+    if (pager) pager.style.display = 'none';
+    return;
+  }
+
+  var pageSize = opts.pageSize || 8;
+  var totalPages = Math.ceil(items.length / pageSize);
+  if (totalPages <= 1) {
+    pager.style.display = 'none';
+    items.forEach(function(el, idx) {
+      el.style.display = opts.itemDisplay || '';
+      if (opts.onRowVisible) opts.onRowVisible(el, idx);
+    });
+    return;
+  }
+
+  var currentPage = 1;
+
+  function buildBtn(label, targetPage, disabled, isActive) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ap-mini-page-btn' + (isActive ? ' active' : '');
+    b.textContent = label;
+    b.disabled = !!disabled;
+    if (!disabled) {
+      b.addEventListener('click', function() {
+        currentPage = targetPage;
+        renderPage();
+      });
+    }
+    return b;
+  }
+
+  function renderPager() {
+    pager.innerHTML = '';
+    pager.style.display = 'flex';
+    pager.appendChild(buildBtn('‹', Math.max(1, currentPage - 1), currentPage === 1, false));
+    for (var p = 1; p <= totalPages; p += 1) {
+      pager.appendChild(buildBtn(String(p), p, false, p === currentPage));
+    }
+    pager.appendChild(buildBtn('›', Math.min(totalPages, currentPage + 1), currentPage === totalPages, false));
+  }
+
+  function renderPage() {
+    var start = (currentPage - 1) * pageSize;
+    var end = start + pageSize;
+    items.forEach(function(el, idx) {
+      if (idx >= start && idx < end) {
+        el.style.display = opts.itemDisplay || '';
+        if (opts.onRowVisible) opts.onRowVisible(el, idx);
+      } else {
+        el.style.display = 'none';
+      }
+    });
+    renderPager();
+  }
+
+  renderPage();
+}
+
+function initOverviewPagination() {
+  _paginateOverviewBlock({
+    itemSelector: '#pane-overview .ov-top-row',
+    pagerId: 'overviewTopPager',
+    pageSize: 8,
+    itemDisplay: 'table-row',
+    onRowVisible: function(row, idx) {
+      var noCell = row.querySelector('td');
+      if (noCell) noCell.textContent = String(idx + 1);
+    }
+  });
+  _paginateOverviewBlock({
+    itemSelector: '#pane-overview .ov-activity-item',
+    pagerId: 'overviewActivityPager',
+    pageSize: 7,
+    itemDisplay: 'flex'
+  });
+  _overviewPagerInited = true;
+}
+
+function _hexToRgba(hex, alpha) {
+  if (!hex || hex[0] !== '#' || (hex.length !== 7 && hex.length !== 4)) {
+    return 'rgba(79,70,229,' + alpha + ')';
+  }
+  var h = hex.length === 4
+    ? '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3]
+    : hex;
+  var r = parseInt(h.slice(1, 3), 16);
+  var g = parseInt(h.slice(3, 5), 16);
+  var b = parseInt(h.slice(5, 7), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+function renderOverviewTrendCharts() {
+  if (!_trendCardsData || !_trendCardsData.length) return;
+  _trendCardsData.forEach(function(card, idx) {
+    var canvas = document.getElementById('ovMiniChart' + idx);
+    if (!canvas || !card || !card.series || !card.series.length) return;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    var color = card.color || '#4f46e5';
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: card.series.map(function(_, i) { return i + 1; }),
+        datasets: [{
+          data: card.series,
+          borderColor: color,
+          backgroundColor: _hexToRgba(color, 0.12),
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.35,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        scales: { x: { display: false }, y: { display: false } },
+        elements: { line: { capBezierPoints: true } },
+      }
+    });
+  });
+}
+
+function _heatColor(value, maxValue) {
+  if (!maxValue || value <= 0) return '#e2e8f0';
+  var ratio = value / maxValue;
+  if (ratio < 0.2) return '#dbeafe';
+  if (ratio < 0.4) return '#93c5fd';
+  if (ratio < 0.6) return '#60a5fa';
+  if (ratio < 0.8) return '#3b82f6';
+  return '#1d4ed8';
+}
+
+function renderOverviewHeatmap() {
+  var daysEl = document.getElementById('ovHeatmapDays');
+  var hoursEl = document.getElementById('ovHeatmapHours');
+  var gridEl = document.getElementById('ovHeatmapGrid');
+  var legendEl = document.getElementById('ovHeatLegendScale');
+  if (!daysEl || !hoursEl || !gridEl || !_activityHeatmap) return;
+
+  var days = _activityHeatmap.days || ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+  var hours = _activityHeatmap.hours || Array.from({length: 24}, function(_, i) { return i; });
+  var grid = _activityHeatmap.grid || [];
+  var maxValue = Number(_activityHeatmap.max || 0);
+
+  daysEl.innerHTML = '';
+  days.forEach(function(dayName) {
+    var d = document.createElement('div');
+    d.className = 'ov-heatmap-day';
+    d.textContent = dayName;
+    daysEl.appendChild(d);
+  });
+
+  hoursEl.innerHTML = '';
+  hours.forEach(function(h) {
+    var cell = document.createElement('div');
+    cell.className = 'ov-heatmap-hour';
+    cell.textContent = (h % 3 === 0) ? String(h) : '';
+    hoursEl.appendChild(cell);
+  });
+
+  gridEl.innerHTML = '';
+  for (var dIdx = 0; dIdx < days.length; dIdx += 1) {
+    for (var hIdx = 0; hIdx < hours.length; hIdx += 1) {
+      var value = Number((grid[dIdx] && grid[dIdx][hIdx]) || 0);
+      var c = document.createElement('div');
+      c.className = 'ov-heat-cell';
+      c.style.background = _heatColor(value, maxValue);
+      c.title = days[dIdx] + ' - ' + String(hours[hIdx]).padStart(2, '0') + ':00 | ' + value + ' hoạt động';
+      gridEl.appendChild(c);
+    }
+  }
+
+  if (legendEl) {
+    legendEl.innerHTML = '';
+    [0.1, 0.3, 0.5, 0.7, 1.0].forEach(function(step) {
+      var s = document.createElement('span');
+      s.style.background = _heatColor(Math.ceil(maxValue * step), maxValue || 1);
+      legendEl.appendChild(s);
+    });
+  }
+}
+
+function initOverviewInsights() {
+  if (_overviewInsightsInited) return;
+  renderOverviewTrendCharts();
+  renderOverviewHeatmap();
+  _overviewInsightsInited = true;
+}
+
+function _isMobileAdminNav() {
+  return window.matchMedia('(max-width: 1100px)').matches;
+}
+
+function toggleAdminMobileNav(forceOpen) {
+  var layout = document.getElementById('apLayout');
+  var btn = document.getElementById('apNavToggle');
+  if (!layout || !btn || !_isMobileAdminNav()) return;
+  var open = typeof forceOpen === 'boolean' ? forceOpen : !layout.classList.contains('nav-open');
+  layout.classList.toggle('nav-open', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function closeAdminMobileNav() {
+  toggleAdminMobileNav(false);
+}
+
+// ── Tab switching ──
+function switchTab(name) {
+  document.querySelectorAll('.ap-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ap-nav-item').forEach(n => n.classList.remove('active'));
+  var pane = document.getElementById('pane-' + name);
+  if (pane) pane.classList.add('active');
+  var nav = document.querySelector('.ap-nav-item[data-tab="' + name + '"]');
+  if (nav) nav.classList.add('active');
+  if (_isMobileAdminNav()) closeAdminMobileNav();
+  if (name === 'overview') {
+    drawChart();
+    if (!_overviewPagerInited) initOverviewPagination();
+    if (!_overviewInsightsInited) initOverviewInsights();
+  }
+  if (name === 'users') loadUsersTab();
+  if (name === 'history') loadMagsTab();
+  if (name === 'revenue') { loadRevenueTab(); if (window.lucide) lucide.createIcons(); }
+  if (name === 'feedback') { loadFeedbackTab(); if (window.lucide) lucide.createIcons(); }
+}
+
+// ── Lazy loaders ──
+var _usersLoaded = false, _magsLoaded = false;
+var _avatarColors = ['#4f46e5','#0891b2','#16a34a','#d97706','#dc2626','#7c3aed'];
+var _usersData = [];
+var _usersFetchPromise = null;
+
+var _umCharsDrawn = false;
+
+function _umSkeletonRow() {
+  return '<tr>' +
+    '<td><div class="um-skel" style="width:28px;"></div></td>' +
+    '<td><div style="display:flex;align-items:center;gap:10px;"><div class="um-skel" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div><div><div class="um-skel" style="width:90px;margin-bottom:5px;"></div><div class="um-skel" style="width:130px;"></div></div></div></td>' +
+    '<td><div class="um-skel" style="width:60px;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:36px;height:20px;margin:0 auto;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:28px;height:22px;border-radius:11px;margin:0 auto;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:20px;margin:0 auto;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:20px;margin:0 auto;"></div></td>' +
+    '<td><div class="um-skel" style="width:70px;"></div></td>' +
+    '<td><div class="um-skel" style="width:60px;margin:0 auto;"></div></td>' +
+  '</tr>';
+}
+
+function loadUsersTab() {
+  if (_usersLoaded) return;
+  _usersLoaded = true;
+  // Show skeleton immediately
+  var skels = '';
+  for (var s = 0; s < 5; s++) skels += _umSkeletonRow();
+  document.getElementById('usersBody').innerHTML = skels;
+  // Use pre-fetched promise (already in-flight since DOMContentLoaded)
+  var p = _usersFetchPromise || fetch('/admin/api/users').then(function(r){ return r.json(); }).catch(function(){ return []; });
+  p.then(function(users) {
+    _usersData = users;
+    var total = users.length;
+    var active = users.filter(function(u){ return u.is_active; }).length;
+    var locked = total - active;
+    var admins = users.filter(function(u){ return u.role === 'admin'; }).length;
+    var premiums = users.filter(function(u){ return u.role === 'premium'; }).length;
+    var normalUsers = users.filter(function(u){ return u.role === 'user'; }).length;
+    var totalTokens = users.reduce(function(s,u){ return s+(u.token_balance||0); }, 0);
+    // KPI values
+    document.getElementById('usersCount').textContent = total;
+    document.getElementById('umTotal').textContent = total;
+    document.getElementById('umActive').textContent = active;
+    document.getElementById('umLocked').textContent = locked;
+    document.getElementById('umAdmins').textContent = admins;
+    document.getElementById('umTokensTotal').textContent = totalTokens.toLocaleString('vi-VN');
+    // KPI progress bars
+    setTimeout(function(){
+      var ap = total > 0 ? Math.round(active/total*100) : 0;
+      var lp = total > 0 ? Math.round(locked/total*100) : 0;
+      var adp = total > 0 ? Math.round(admins/total*100) : 0;
+      document.getElementById('umActiveBar').style.width = ap + '%';
+      document.getElementById('umLockedBar').style.width = lp + '%';
+      document.getElementById('umAdminsBar').style.width = adp + '%';
+    }, 80);
+    renderUsersTable(users);
+    if (!_umCharsDrawn) { _umCharsDrawn = true; drawUserCharts(users, admins, premiums, normalUsers, totalTokens); }
+  }).catch(function(){ _usersLoaded = false; });
+}
+
+function drawUserCharts(users, admins, premiums, normalUsers, totalTokens) {
+  // ── Donut: Role distribution ──
+  var roleCtx = document.getElementById('umRoleChart');
+  if (roleCtx) {
+    new Chart(roleCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['User', 'Premium', 'Admin'],
+        datasets: [{ data: [normalUsers, premiums, admins],
+          backgroundColor: ['#4f46e5','#d97706','#dc2626'],
+          borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: { cutout:'72%', plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(c){ return c.label+': '+c.parsed+' người'; } } } }, animation:{duration:900} }
+    });
+    var roleItems = [{label:'User', color:'#4f46e5', val:normalUsers},{label:'Premium', color:'#d97706', val:premiums},{label:'Admin', color:'#dc2626', val:admins}];
+    var leg = '';
+    roleItems.forEach(function(it){
+      var pct = users.length > 0 ? Math.round(it.val/users.length*100) : 0;
+      leg += '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<div style="width:10px;height:10px;border-radius:50%;background:'+it.color+';"></div>'+
+          '<span style="font-size:.8rem;color:#374151;">'+it.label+'</span>'+
+        '</div>'+
+        '<span style="font-size:.8rem;font-weight:700;color:#111827;">'+it.val+' <span style="color:#9ca3af;font-weight:400;">('+pct+'%)</span></span>'+
+      '</div>';
+    });
+    document.getElementById('umRoleLegend').innerHTML = leg;
+  }
+  // ── Donut: Token distribution ──
+  var t0 = users.filter(function(u){ return (u.token_balance||0) === 0; }).length;
+  var t1 = users.filter(function(u){ return (u.token_balance||0) >= 1 && (u.token_balance||0) <= 5; }).length;
+  var t2 = users.filter(function(u){ return (u.token_balance||0) >= 6 && (u.token_balance||0) <= 20; }).length;
+  var t3 = users.filter(function(u){ return (u.token_balance||0) > 20; }).length;
+  var tokenCtx = document.getElementById('umTokenChart');
+  if (tokenCtx) {
+    new Chart(tokenCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['0 token', '1–5', '6–20', '>20'],
+        datasets: [{ data: [t0, t1, t2, t3],
+          backgroundColor: ['#fca5a5','#fcd34d','#6ee7b7','#818cf8'],
+          borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: { cutout:'72%', plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:function(c){ return c.label+': '+c.parsed+' người'; } } } }, animation:{duration:900} }
+    });
+    var tkItems = [{label:'0 token', color:'#fca5a5', val:t0},{label:'1–5 tokens', color:'#fcd34d', val:t1},{label:'6–20 tokens', color:'#6ee7b7', val:t2},{label:'>20 tokens', color:'#818cf8', val:t3}];
+    var tleg = '';
+    tkItems.forEach(function(it){
+      tleg += '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<div style="width:10px;height:10px;border-radius:50%;background:'+it.color+';"></div>'+
+          '<span style="font-size:.8rem;color:#374151;">'+it.label+'</span>'+
+        '</div>'+
+        '<span style="font-size:.8rem;font-weight:700;color:#111827;">'+it.val+'</span>'+
+      '</div>';
+    });
+    document.getElementById('umTokenLegend').innerHTML = tleg;
+  }
+  // ── Line: Registrations per day (last 30 days) ──
+  var regCtx = document.getElementById('umRegChart');
+  if (regCtx) {
+    var counts = {};
+    var today = new Date();
+    var days = [];
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date(today); d.setDate(d.getDate()-i);
+      var key = d.toISOString().slice(0,10);
+      days.push(key); counts[key] = 0;
+    }
+    users.forEach(function(u){
+      var dt = (u.created_at||'').slice(0,10);
+      if (counts[dt] !== undefined) counts[dt]++;
+    });
+    var vals = days.map(function(d){ return counts[d]; });
+    var lbls = days.map(function(d){ return d.slice(5); }); // MM-DD
+    new Chart(regCtx, {
+      type: 'bar',
+      data: {
+        labels: lbls,
+        datasets: [{
+          label: 'Đăng ký mới',
+          data: vals,
+          backgroundColor: function(ctx){
+            var g = ctx.chart.ctx.createLinearGradient(0,0,0,120);
+            g.addColorStop(0,'rgba(79,70,229,.85)');
+            g.addColorStop(1,'rgba(99,102,241,.2)');
+            return g;
+          },
+          borderColor: '#4f46e5',
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display:false },
+          tooltip: { callbacks: { label:function(c){ return c.parsed.y + ' người dùng'; } } }
+        },
+        scales: {
+          y: { beginAtZero:true, ticks:{ stepSize:1, color:'#9ca3af', font:{size:11} }, grid:{ color:'#f1f5f9' } },
+          x: { ticks:{ color:'#9ca3af', font:{size:10}, maxRotation:0,
+            callback: function(val, i){ return i % 5 === 0 ? this.getLabelForValue(val) : ''; }
+          }, grid:{ display:false } }
+        },
+        animation: { duration: 900 }
+      }
+    });
+  }
+}
+
+function renderUsersTable(users) {
+  var html = '';
+  users.forEach(function(u, i) {
+    var bg = _avatarColors[(u.id || i) % 6];
+    var letter = (u.full_name || u.email || '?')[0].toUpperCase();
+    var checked = u.is_active ? 'checked' : '';
+    var providerBadge = u.auth_provider === 'google'
+      ? '<span title="Google" style="font-size:.7rem;background:#fff3e0;color:#e65100;border-radius:4px;padding:1px 5px;margin-left:4px;">G</span>' : '';
+    var roleClass = u.role === 'admin' ? 'um-role-admin' : u.role === 'premium' ? 'um-role-premium' : 'um-role-user';
+    var roleLabel = u.role === 'admin' ? '🛡 Admin' : u.role === 'premium' ? '⭐ Premium' : '👤 User';
+    var dateStr = (u.created_at || '').toString().substring(0,10);
+    var tokens = u.token_balance || 0;
+    var tokenColor = tokens <= 2 ? '#dc2626' : tokens <= 5 ? '#d97706' : '#6d28d9';
+    html += '<tr data-uid="'+u.id+'" data-role="'+u.role+'" data-active="'+(u.is_active?'1':'0')+'" data-search="'+(u.full_name||'').toLowerCase()+' '+(u.email||'').toLowerCase()+'">'+
+      '<td style="color:#9ca3af;font-size:.78rem;font-weight:600;">#'+u.id+'</td>'+
+      '<td><div class="um-user-cell">'+
+        '<div class="um-avatar" style="background:'+bg+';">'+letter+'</div>'+
+        '<div>'+
+          '<div style="font-weight:600;color:#111827;font-size:.87rem;">'+(u.full_name||'—')+providerBadge+'</div>'+
+          '<div style="font-size:.75rem;color:#6b7280;">'+(u.email||'')+'</div>'+
+        '</div>'+
+      '</div></td>'+
+      '<td><span class="um-role-badge '+roleClass+'">'+roleLabel+'</span></td>'+
+      '<td style="text-align:center;"><span class="um-token-chip" style="color:'+tokenColor+';background:'+(tokens<=2?'#fef2f2':tokens<=5?'#fffbeb':'#f5f3ff')+'">⚡ '+tokens+'</span></td>'+
+      '<td style="text-align:center;"><label class="ap-toggle"><input type="checkbox" '+checked+' onchange="toggleUser('+u.id+', this)"><span class="ap-toggle-track"></span></label></td>'+
+      '<td style="text-align:center;color:#374151;font-weight:600;">'+(u.magazine_count||0)+'</td>'+
+      '<td style="text-align:center;color:#374151;font-weight:600;">'+(u.article_count||0)+'</td>'+
+      '<td style="font-size:.78rem;color:#6b7280;">'+dateStr+'</td>'+
+      '<td style="text-align:center;">'+
+        '<div style="display:flex;gap:6px;justify-content:center;">'+
+          '<button class="um-act-btn" title="Xem chi tiết" onclick="umOpenDrawer('+u.id+')">👁</button>'+
+          '<button class="um-act-btn danger" title="Xóa người dùng" onclick="deleteUser('+u.id+', this)">🗑</button>'+
+        '</div>'+
+      '</td>'+
+    '</tr>';
+  });
+  document.getElementById('usersBody').innerHTML = html ||
+    '<tr><td colspan="9" style="text-align:center;padding:3rem;color:#9ca3af;">Không có người dùng</td></tr>';
+  umUpdateVisibleCount();
+}
+
+function umFilter() {
+  var q = (document.getElementById('umSearchInput').value || '').toLowerCase();
+  var role = document.getElementById('umRoleFilter').value;
+  var status = document.getElementById('umStatusFilter').value;
+  document.querySelectorAll('#usersTable tbody tr').forEach(function(tr) {
+    var search = tr.getAttribute('data-search') || '';
+    var trRole = tr.getAttribute('data-role') || '';
+    var trActive = tr.getAttribute('data-active');
+    var show = true;
+    if (q && search.indexOf(q) === -1) show = false;
+    if (role && trRole !== role) show = false;
+    if (status === 'active' && trActive !== '1') show = false;
+    if (status === 'locked' && trActive !== '0') show = false;
+    tr.style.display = show ? '' : 'none';
+  });
+  umUpdateVisibleCount();
+}
+
+function umUpdateVisibleCount() {
+  var visible = document.querySelectorAll('#usersTable tbody tr:not([style*="none"])').length;
+  var el = document.getElementById('umVisibleCount');
+  if (el) el.textContent = visible;
+}
+
+// ── Drawer ──
+var _drawerUid = null;
+
+function umOpenDrawer(uid) {
+  _drawerUid = uid;
+  var u = _usersData.find(function(x){ return x.id === uid; });
+  if (!u) return;
+  var overlay = document.getElementById('umDrawerOverlay');
+  var drawer = document.getElementById('umDrawer');
+  overlay.style.display = 'block';
+  drawer.style.display = 'block';
+  setTimeout(function(){ drawer.style.transform = 'translateX(0)'; }, 10);
+  renderDrawer(u);
+}
+
+function umCloseDrawer() {
+  var drawer = document.getElementById('umDrawer');
+  var overlay = document.getElementById('umDrawerOverlay');
+  drawer.style.transform = 'translateX(100%)';
+  setTimeout(function(){
+    drawer.style.display = 'none';
+    overlay.style.display = 'none';
+    _drawerUid = null;
+  }, 300);
+}
+
+function renderDrawer(u) {
+  var bg = _avatarColors[(u.id || 0) % 6];
+  var letter = (u.full_name || u.email || '?')[0].toUpperCase();
+  var roleClass = u.role === 'admin' ? 'um-role-admin' : u.role === 'premium' ? 'um-role-premium' : 'um-role-user';
+  var roleLabel = u.role === 'admin' ? '🛡 Admin' : u.role === 'premium' ? '⭐ Premium' : '👤 User';
+  var statusBadge = u.is_active
+    ? '<span class="ap-badge badge-active">✓ Đang hoạt động</span>'
+    : '<span class="ap-badge badge-locked">🔒 Bị khóa</span>';
+  var providerLabel = u.auth_provider === 'google' ? '🔵 Google' : '🔑 Local';
+
+  var html =
+    // Profile header
+    '<div class="um-drawer-profile">'+
+      '<div class="um-drawer-avatar" style="background:'+bg+';">'+letter+'</div>'+
+      '<div>'+
+        '<div style="font-size:1.1rem;font-weight:800;color:#111827;">'+(u.full_name||'Chưa đặt tên')+'</div>'+
+        '<div style="font-size:.82rem;color:#6b7280;margin-top:2px;">'+(u.email||'')+'</div>'+
+        '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'+
+          '<span class="um-role-badge '+roleClass+'">'+roleLabel+'</span>'+
+          statusBadge+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Info grid
+    '<div class="um-drawer-section">'+
+      '<div class="um-drawer-section-title">Thông tin tài khoản</div>'+
+      '<div class="um-info-grid">'+
+        '<div class="um-info-item"><div class="label">ID người dùng</div><div class="value">#'+u.id+'</div></div>'+
+        '<div class="um-info-item"><div class="label">Đăng nhập qua</div><div class="value">'+providerLabel+'</div></div>'+
+        '<div class="um-info-item"><div class="label">Tạp chí</div><div class="value" style="color:#7c3aed;">'+(u.magazine_count||0)+' tạp chí</div></div>'+
+        '<div class="um-info-item"><div class="label">Bài viết</div><div class="value" style="color:#0891b2;">'+(u.article_count||0)+' bài</div></div>'+
+        '<div class="um-info-item"><div class="label">Ngày tham gia</div><div class="value" style="font-size:.82rem;">'+(u.created_at||'—')+'</div></div>'+
+      '</div>'+
+    '</div>'+
+
+    // Token balance + grant
+    '<div class="um-drawer-section">'+
+      '<div class="um-drawer-section-title">Quản lý Token</div>'+
+      '<div class="um-token-grant">'+
+        '<div class="um-token-grant-title">⚡ Cấp / Điều chỉnh Token</div>'+
+        '<div class="um-balance-display" style="margin-bottom:12px;">Số dư hiện tại: <strong id="drawerTokenBalance">'+u.token_balance+'</strong> token</div>'+
+        '<div class="um-token-input-row">'+
+          '<input type="number" id="grantAmount" class="um-token-input" value="10" min="-999" max="9999" placeholder="±"/>'+
+          '<button class="um-grant-btn" id="grantBtn" onclick="umGrantTokens('+u.id+')">'+
+            '⚡ Cấp token'+
+          '</button>'+
+        '</div>'+
+        '<div class="um-token-presets">'+
+          '<button class="um-token-preset" onclick="document.getElementById(\'grantAmount\').value=5">+5</button>'+
+          '<button class="um-token-preset" onclick="document.getElementById(\'grantAmount\').value=10">+10</button>'+
+          '<button class="um-token-preset" onclick="document.getElementById(\'grantAmount\').value=20">+20</button>'+
+          '<button class="um-token-preset" onclick="document.getElementById(\'grantAmount\').value=50">+50</button>'+
+          '<button class="um-token-preset" onclick="document.getElementById(\'grantAmount\').value=100">+100</button>'+
+        '</div>'+
+        '<div id="grantMsg" style="margin-top:8px;font-size:.8rem;text-align:center;min-height:18px;"></div>'+
+      '</div>'+
+    '</div>'+
+
+    // Quick actions
+    '<div class="um-drawer-section">'+
+      '<div class="um-drawer-section-title">Hành động nhanh</div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
+        '<button onclick="umDrawerToggle('+u.id+')" id="drawerToggleBtn" class="ap-btn ap-btn-outline" style="flex:1;">'+
+          (u.is_active ? '🔒 Khóa tài khoản' : '🔓 Mở khóa')+
+        '</button>'+
+        '<button onclick="umDrawerDelete('+u.id+')" class="ap-btn ap-btn-danger" style="flex:1;">🗑 Xóa người dùng</button>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('umDrawerContent').innerHTML = html;
+}
+
+function umGrantTokens(uid) {
+  var amount = parseInt(document.getElementById('grantAmount').value);
+  if (isNaN(amount) || amount === 0) {
+    document.getElementById('grantMsg').innerHTML = '<span style="color:#dc2626;">Nhập số token hợp lệ</span>';
+    return;
+  }
+  var btn = document.getElementById('grantBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang cấp…';
+  document.getElementById('grantMsg').innerHTML = '';
+  fetch('/admin/users/' + uid + '/grant-tokens', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+    body: JSON.stringify({amount: amount})
+  }).then(r => r.json()).then(function(data) {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Cấp token';
+    if (data.success) {
+      var newBal = data.new_balance;
+      document.getElementById('drawerTokenBalance').textContent = newBal;
+      document.getElementById('grantMsg').innerHTML = '<span style="color:#059669;">✓ Thành công! Số dư mới: <strong>'+newBal+'</strong> token</span>';
+      // Update in-memory data and table cell
+      var u = _usersData.find(function(x){ return x.id === uid; });
+      if (u) {
+        u.token_balance = newBal;
+        // Update total tokens stat
+        var total = _usersData.reduce(function(s,x){ return s+(x.token_balance||0); }, 0);
+        document.getElementById('umTokensTotal').textContent = total.toLocaleString('vi-VN');
+        // Update table chip
+        var row = document.querySelector('#usersTable tbody tr[data-uid="'+uid+'"]');
+        if (row) {
+          var chip = row.querySelector('.um-token-chip');
+          if (chip) {
+            var c = newBal<=2?'#dc2626':newBal<=5?'#d97706':'#6d28d9';
+            var bg = newBal<=2?'#fef2f2':newBal<=5?'#fffbeb':'#f5f3ff';
+            chip.style.color = c; chip.style.background = bg;
+            chip.textContent = '⚡ '+newBal;
+          }
+        }
+      }
+    } else {
+      document.getElementById('grantMsg').innerHTML = '<span style="color:#dc2626;">✗ '+data.message+'</span>';
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Cấp token';
+    document.getElementById('grantMsg').innerHTML = '<span style="color:#dc2626;">✗ Lỗi kết nối</span>';
+  });
+}
+
+function umDrawerToggle(uid) {
+  fetch('/admin/users/' + uid + '/toggle', {
+    method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }).then(r => r.json()).then(function(data) {
+    if (data.error) { alert(data.error); return; }
+    var u = _usersData.find(function(x){ return x.id===uid; });
+    if (u) {
+      u.is_active = !u.is_active;
+      renderDrawer(u);
+      // Update table row checkbox
+      var row = document.querySelector('#usersTable tbody tr[data-uid="'+uid+'"]');
+      if (row) {
+        row.setAttribute('data-active', u.is_active ? '1' : '0');
+        var cb = row.querySelector('input[type=checkbox]');
+        if (cb) cb.checked = u.is_active;
+      }
+      // Update stats
+      var active = _usersData.filter(function(x){ return x.is_active; }).length;
+      document.getElementById('umActive').textContent = active;
+      document.getElementById('umLocked').textContent = _usersData.length - active;
+    }
+  });
+}
+
+function umDrawerDelete(uid) {
+  fetch('/admin/delete_user/' + uid, {
+    method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }).then(r => r.json()).then(function(data) {
+    if (data.success) {
+      umCloseDrawer();
+      _usersData = _usersData.filter(function(x){ return x.id !== uid; });
+      var row = document.querySelector('#usersTable tbody tr[data-uid="'+uid+'"]');
+      if (row) row.remove();
+      var total = _usersData.length;
+      var active = _usersData.filter(function(x){ return x.is_active; }).length;
+      document.getElementById('usersCount').textContent = total;
+      document.getElementById('umTotal').textContent = total;
+      document.getElementById('umActive').textContent = active;
+      document.getElementById('umLocked').textContent = total - active;
+      document.getElementById('umAdmins').textContent = _usersData.filter(function(x){ return x.role==='admin'; }).length;
+      var totalTokens = _usersData.reduce(function(s,x){ return s+(x.token_balance||0); }, 0);
+      document.getElementById('umTokensTotal').textContent = totalTokens.toLocaleString('vi-VN');
+      var el = document.getElementById('overviewTotalUsers');
+      if (el) el.textContent = total;
+      umUpdateVisibleCount();
+    }
+  });
+}
+
+
+var _magsFetchPromise = null;
+
+function _mhSkeletonRow() {
+  return '<tr>' +
+    '<td><div class="um-skel" style="width:28px;"></div></td>' +
+    '<td><div class="um-skel" style="width:110px;margin-bottom:5px;"></div><div class="um-skel" style="width:70px;"></div></td>' +
+    '<td><div style="display:flex;align-items:center;gap:9px;"><div class="um-skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div><div><div class="um-skel" style="width:90px;margin-bottom:5px;"></div><div class="um-skel" style="width:130px;"></div></div></div></td>' +
+    '<td><div class="um-skel" style="width:80px;border-radius:20px;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:28px;height:22px;border-radius:11px;margin:0 auto;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:20px;margin:0 auto;"></div></td>' +
+    '<td><div class="um-skel" style="width:70px;"></div></td>' +
+    '<td style="text-align:center;"><div class="um-skel" style="width:80px;margin:0 auto;"></div></td>' +
+  '</tr>';
+}
+
+function loadMagsTab() {
+  if (_magsLoaded) return;
+  _magsLoaded = true;
+  // Show skeleton rows immediately
+  var skels = '';
+  for (var s = 0; s < 5; s++) skels += _mhSkeletonRow();
+  document.getElementById('mhBody').innerHTML = skels;
+  // Use pre-fetched promise (already in-flight since DOMContentLoaded)
+  var p = _magsFetchPromise || fetch('/admin/api/magazines').then(function(r){ return r.json(); }).catch(function(){ return []; });
+  p.then(function(mags) {
+    _magsData = mags;
+    // KPI stats
+    var totalArticles = mags.reduce(function(s,m){ return s+(m.article_count||0); }, 0);
+    var scheduled = mags.filter(function(m){ return m.has_schedule; }).length;
+    var owners = new Set(mags.map(function(m){ return m.owner_email||''; })).size;
+    var avg = mags.length ? (totalArticles/mags.length).toFixed(1) : 0;
+    document.getElementById('mhTotal').textContent = mags.length;
+    document.getElementById('mhArticles').textContent = totalArticles.toLocaleString('vi-VN');
+    document.getElementById('mhScheduled').textContent = scheduled;
+    document.getElementById('mhOwners').textContent = owners;
+    document.getElementById('mhAvgArticles').textContent = avg;
+    document.getElementById('mhTotalCount').textContent = mags.length;
+    if (window.lucide) lucide.createIcons();
+    mhFilter();
+  }).catch(function(){ _magsLoaded = false; document.getElementById('mhBody').innerHTML = '<tr><td colspan="8" class="mh-empty-cell">Lỗi tải dữ liệu</td></tr>'; });
+}
+
+var _magsData = [];
+var _mhPage = 1;
+var _mhPageSize = 15;
+var _mhFiltered = [];
+
+function mhFilter() {
+  var search = (document.getElementById('mhSearch')||{}).value || '';
+  var schedFilter = (document.getElementById('mhSchedFilter')||{}).value || '';
+  var sortBy = (document.getElementById('mhSortBy')||{}).value || 'newest';
+  var sv = search.toLowerCase();
+
+  var filtered = _magsData.filter(function(m) {
+    var matchSearch = !sv ||
+      (m.title||'').toLowerCase().indexOf(sv) !== -1 ||
+      (m.owner_name||'').toLowerCase().indexOf(sv) !== -1 ||
+      (m.owner_email||'').toLowerCase().indexOf(sv) !== -1 ||
+      (m.topic||'').toLowerCase().indexOf(sv) !== -1;
+    var matchSched = schedFilter === '' ||
+      (schedFilter === '1' && m.has_schedule) ||
+      (schedFilter === '0' && !m.has_schedule);
+    return matchSearch && matchSched;
+  });
+
+  // Sort
+  filtered.sort(function(a,b) {
+    if (sortBy === 'newest') return (b.created_at||'').localeCompare(a.created_at||'');
+    if (sortBy === 'oldest') return (a.created_at||'').localeCompare(b.created_at||'');
+    if (sortBy === 'articles_desc') return (b.article_count||0)-(a.article_count||0);
+    if (sortBy === 'articles_asc') return (a.article_count||0)-(b.article_count||0);
+    return 0;
+  });
+
+  _mhFiltered = filtered;
+  _mhPage = 1;
+  document.getElementById('mhVisible').textContent = filtered.length;
+  mhRenderPage();
+}
+
+function mhRenderPage() {
+  var total = _mhFiltered.length;
+  var pages = Math.max(1, Math.ceil(total / _mhPageSize));
+  if (_mhPage > pages) _mhPage = pages;
+  var start = (_mhPage-1)*_mhPageSize;
+  var slice = _mhFiltered.slice(start, start+_mhPageSize);
+
+  if (!slice.length) {
+    document.getElementById('mhBody').innerHTML = '<tr><td colspan="8" class="mh-empty-cell"><i data-lucide="inbox" style="width:20px;height:20px;opacity:.3;"></i><span>Không tìm thấy tạp chí nào</span></td></tr>';
+    document.getElementById('mhPagination').innerHTML = '';
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  var html = '';
+  slice.forEach(function(m) {
+    var cnt = m.article_count || 0;
+    var cntCls = cnt === 0 ? 'mh-count-zero' : cnt < 3 ? 'mh-count-low' : cnt < 8 ? 'mh-count-mid' : 'mh-count-high';
+    var schedHtml = m.has_schedule
+      ? '<span class="mh-sched-yes"><i data-lucide="check" style="width:11px;height:11px;"></i>Đang chạy</span>'
+      : '<span class="mh-sched-no">—</span>';
+    var href = '/magazine/'+(m.slug||m.id);
+    var topic = (m.topic || 'Chưa có chủ đề');
+    var dateStr = (m.created_at||'').toString().substring(0,10);
+    var initials = (m.owner_name||'?').substring(0,2).toUpperCase();
+    var colorIdx = (m.id||0) % _avatarColors.length;
+    var avatarBg = _avatarColors[colorIdx];
+
+    html += '<tr>' +
+      '<td class="mh-id-cell">#'+m.id+'</td>' +
+      '<td>' +
+        '<div class="mh-mag-title">'+(m.title||'Không tên')+'</div>' +
+        '<div class="mh-mag-desc">'+topic+'</div>' +
+      '</td>' +
+      '<td>' +
+        '<div style="display:flex;align-items:center;gap:9px;">' +
+          '<div class="ap-avatar" style="background:'+avatarBg+';width:32px;height:32px;font-size:.74rem;">'+initials+'</div>' +
+          '<div>' +
+            '<div class="mh-owner-name">'+(m.owner_name||'—')+'</div>' +
+            '<div class="mh-owner-email">'+(m.owner_email||'')+'</div>' +
+          '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td><span class="mh-topic-tag">'+topic+'</span></td>' +
+      '<td style="text-align:center;"><span class="mh-count-badge '+cntCls+'">'+cnt+'</span></td>' +
+      '<td style="text-align:center;">'+schedHtml+'</td>' +
+      '<td>' +
+        '<div class="mh-date">'+dateStr+'</div>' +
+      '</td>' +
+      '<td style="text-align:center;">' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:6px;">' +
+          '<a href="'+href+'" target="_blank" class="ap-btn ap-btn-outline ap-btn-sm" style="gap:5px;">' +
+            '<i data-lucide="eye" style="width:13px;height:13px;"></i>Xem' +
+          '</a>' +
+          '<button class="ap-btn ap-btn-sm mh-del-mag-btn" style="gap:5px;background:#fff1f2;color:#e11d48;border:1px solid #fecdd3;" data-id="'+m.id+'" data-title="'+(m.title||'Tạp chí #'+m.id).replace(/"/g,'&quot;')+'">' +
+            '<i data-lucide="trash-2" style="width:13px;height:13px;"></i>Xóa' +
+          '</button>' +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+  });
+
+  document.getElementById('mhBody').innerHTML = html;
+  if (window.lucide) lucide.createIcons();
+
+  // Render pagination
+  mhRenderPagination(pages);
+}
+
+function mhRenderPagination(pages) {
+  if (pages <= 1) { document.getElementById('mhPagination').innerHTML = ''; return; }
+  var p = _mhPage;
+  var html = '';
+  html += '<button class="mh-page-btn" onclick="mhGoPage('+(p-1)+')" '+(p<=1?'disabled':'')+'>‹</button>';
+
+  var show = [];
+  show.push(1);
+  if (p > 3) show.push('…');
+  for (var i = Math.max(2,p-1); i <= Math.min(pages-1,p+1); i++) show.push(i);
+  if (p < pages-2) show.push('…');
+  if (pages > 1) show.push(pages);
+
+  show.forEach(function(s) {
+    if (s === '…') {
+      html += '<span class="mh-page-dots">…</span>';
+    } else {
+      html += '<button class="mh-page-btn'+(s===p?' active':'')+'" onclick="mhGoPage('+s+')">'+s+'</button>';
+    }
+  });
+
+  html += '<button class="mh-page-btn" onclick="mhGoPage('+(p+1)+')" '+(p>=pages?'disabled':'')+'>›</button>';
+  html += '<span style="font-size:.79rem;color:#9ca3af;margin-left:6px;">Trang '+p+'/'+pages+' ('+_mhFiltered.length+' kết quả)</span>';
+  document.getElementById('mhPagination').innerHTML = html;
+}
+
+function mhGoPage(p) {
+  var pages = Math.ceil(_mhFiltered.length / _mhPageSize);
+  if (p < 1 || p > pages) return;
+  _mhPage = p;
+  mhRenderPage();
+  document.getElementById('pane-history').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Search filters (legacy alias) ──
+function filterMags(val) { mhFilter(); }
+
+// ── Delete magazine ──
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.mh-del-mag-btn');
+  if (!btn) return;
+  var id    = btn.dataset.id;
+  var title = btn.dataset.title || ('Tạp chí #' + id);
+  if (!confirm('Xóa tạp chí "' + title + '"?\nTất cả bài viết và lịch trong tạp chí này cũng sẽ bị xóa. Hành động không thể hoàn tác.')) return;
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2" style="width:13px;height:13px;animation:mhSpin .7s linear infinite;"></i>Đang xóa…';
+  if (window.lucide) lucide.createIcons();
+  fetch('/admin/api/magazine/' + id, {method: 'DELETE'})
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        plShowToast('Đã xóa tạp chí thành công', 'success');
+        // Remove from cached data and re-render
+        _magsData = _magsData.filter(function(m){ return String(m.id) !== String(id); });
+        mhFilter();
+        // Reset loaded flag so next tab switch re-fetches
+        _magsLoaded = false;
+      } else {
+        plShowToast('Lỗi: ' + (d.error || 'Không thể xóa'), 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="trash-2" style="width:13px;height:13px;"></i>Xóa';
+        if (window.lucide) lucide.createIcons();
+      }
+    })
+    .catch(function() {
+      plShowToast('Lỗi kết nối máy chủ', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="trash-2" style="width:13px;height:13px;"></i>Xóa';
+      if (window.lucide) lucide.createIcons();
+    });
+});
+
+// ══════════════════════════════════════════
+// PLANS TAB — CRUD via AJAX
+// ══════════════════════════════════════════
+var _plEditId = null;
+
+function plShowToast(msg, type) {
+  var t = document.getElementById('plToast');
+  t.textContent = msg;
+  t.className = 'pl-toast ' + (type||'success');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+function plOpenCreate() {
+  _plEditId = null;
+  document.getElementById('plEditId').value = '';
+  document.getElementById('plModalTitle').innerHTML = '<i data-lucide="plus-circle" style="width:18px;height:18px;color:#4f46e5;"></i> Thêm gói mới';
+  document.getElementById('plName').value = '';
+  document.getElementById('plDesc').value = '';
+  document.getElementById('plPrice').value = '0';
+  document.getElementById('plTokens').value = '10';
+  document.getElementById('plMags').value = '3';
+  document.getElementById('plColor').value = '#4f46e5';
+  document.getElementById('plColorPreview').style.background = '#4f46e5';
+  document.getElementById('plColorPreview').textContent = 'Xem trước';
+  document.getElementById('plSched').checked = false;
+  document.getElementById('plActive').checked = true;
+  document.getElementById('plSubmitBtn').innerHTML = '<i data-lucide="save" style="width:15px;height:15px;"></i> Lưu gói';
+  document.getElementById('plFormMsg').innerHTML = '';
+  document.getElementById('plModal').classList.add('open');
+  if (window.lucide) lucide.createIcons();
+  setTimeout(function(){ document.getElementById('plName').focus(); }, 200);
+}
+
+function plOpenEdit(id) {
+  var card = document.getElementById('plCard' + id);
+  if (!card) return;
+  _plEditId = id;
+  document.getElementById('plEditId').value = id;
+  document.getElementById('plModalTitle').innerHTML = '<i data-lucide="pencil" style="width:18px;height:18px;color:#4f46e5;"></i> Chỉnh sửa gói';
+  document.getElementById('plName').value = card.dataset.name || '';
+  document.getElementById('plDesc').value = card.dataset.desc || '';
+  document.getElementById('plPrice').value = card.dataset.price || '0';
+  document.getElementById('plTokens').value = card.dataset.tokens || '10';
+  document.getElementById('plMags').value = card.dataset.mags || '3';
+  var color = card.dataset.color || '#4f46e5';
+  document.getElementById('plColor').value = color;
+  document.getElementById('plColorPreview').style.background = color;
+  document.getElementById('plColorPreview').textContent = card.dataset.name || 'Xem trước';
+  document.getElementById('plSched').checked = card.dataset.sched === '1' || card.dataset.sched === 'True';
+  document.getElementById('plActive').checked = card.dataset.active === '1' || card.dataset.active === 'True';
+  document.getElementById('plSubmitBtn').innerHTML = '<i data-lucide="save" style="width:15px;height:15px;"></i> Cập nhật';
+  document.getElementById('plFormMsg').innerHTML = '';
+  document.getElementById('plModal').classList.add('open');
+  if (window.lucide) lucide.createIcons();
+}
+
+function plCloseModal() {
+  document.getElementById('plModal').classList.remove('open');
+}
+
+function plModalBgClick(e) {
+  if (e.target === document.getElementById('plModal')) plCloseModal();
+}
+
+// Live color preview
+document.addEventListener('DOMContentLoaded', function() {
+  var colorInput = document.getElementById('plColor');
+  if (colorInput) {
+    colorInput.addEventListener('input', function() {
+      var preview = document.getElementById('plColorPreview');
+      preview.style.background = this.value;
+      preview.textContent = document.getElementById('plName').value || 'Xem trước';
+    });
+    document.getElementById('plName').addEventListener('input', function() {
+      document.getElementById('plColorPreview').textContent = this.value || 'Xem trước';
+    });
+  }
+});
+
+document.getElementById('plForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var name = document.getElementById('plName').value.trim();
+  if (!name) { document.getElementById('plFormMsg').innerHTML = '<span style="color:#dc2626;">Tên gói không được để trống!</span>'; return; }
+  var btn = document.getElementById('plSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2" style="width:14px;height:14px;"></i> Đang lưu...';
+  if (window.lucide) lucide.createIcons();
+
+  var editId = document.getElementById('plEditId').value;
+  var url = editId ? '/admin/plans/' + editId + '/edit' : '/admin/plans/create';
+  var body = new FormData();
+  body.append('name', name);
+  body.append('description', document.getElementById('plDesc').value);
+  body.append('price_monthly', document.getElementById('plPrice').value);
+  body.append('articles_per_day', document.getElementById('plTokens').value);
+  body.append('magazines_limit', document.getElementById('plMags').value);
+  body.append('badge_color', document.getElementById('plColor').value);
+  body.append('sort_order', '0');
+  if (document.getElementById('plSched').checked) body.append('auto_schedule', '1');
+  if (document.getElementById('plActive').checked) body.append('is_active', '1');
+
+  fetch(url, { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: body })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        plCloseModal();
+        plShowToast(editId ? 'Đã cập nhật gói!' : 'Đã tạo gói mới!', 'success');
+        setTimeout(function(){ location.reload(); }, 800);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" style="width:15px;height:15px;"></i> Lưu gói';
+        document.getElementById('plFormMsg').innerHTML = '<span style="color:#dc2626;">' + (data.message || 'Lỗi! Vui lòng thử lại.') + '</span>';
+        if (window.lucide) lucide.createIcons();
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="save" style="width:15px;height:15px;"></i> Lưu gói';
+      document.getElementById('plFormMsg').innerHTML = '<span style="color:#dc2626;">Lỗi! Vui lòng thử lại.</span>';
+      if (window.lucide) lucide.createIcons();
+    });
+});
+
+function plToggle(id, btn) {
+  btn.disabled = true;
+  fetch('/admin/plans/' + id + '/toggle', { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'} })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.success !== false) {
+        plShowToast(data.is_active ? '✓ Gói đã hiển thị' : 'Gói đã ẩn', data.is_active ? 'success' : '');
+        // Update card visual
+        var card = document.getElementById('plCard' + id);
+        if (card) {
+          card.dataset.active = data.is_active ? '1' : '0';
+          var inactive = card.querySelector('.pl-card-inactive');
+          if (data.is_active && inactive) inactive.remove();
+          else if (!data.is_active && !inactive) {
+            var d = document.createElement('div');
+            d.className = 'pl-card-inactive'; d.textContent = 'Đã ẩn';
+            card.appendChild(d);
+          }
+          var statusEl = card.querySelector('.pl-card-status');
+          if (statusEl) {
+            statusEl.className = 'pl-card-status ' + (data.is_active ? 'active' : 'hidden');
+            statusEl.innerHTML = data.is_active
+              ? '<i data-lucide="check" style="width:11px;height:11px;"></i>Hiển thị'
+              : '<i data-lucide="eye-off" style="width:11px;height:11px;"></i>Đã ẩn';
+          }
+          // swap toggle btn
+          btn.className = 'ap-btn ap-btn-sm ' + (data.is_active ? 'ap-btn-outline' : 'ap-btn-success');
+          btn.innerHTML = '<i data-lucide="' + (data.is_active ? 'eye-off' : 'eye') + '" style="width:13px;height:13px;"></i>';
+          btn.title = data.is_active ? 'Ẩn' : 'Hiện';
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+      btn.disabled = false;
+    })
+    .catch(function(){ btn.disabled = false; plShowToast('Lỗi kết nối!', 'error'); });
+}
+
+function plDelete(id, btn) {
+  if (!confirm('Xóa gói này? Hành động không thể hoàn tác.')) return;
+  btn.disabled = true;
+  fetch('/admin/plans/' + id + '/delete', { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'} })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        var card = document.getElementById('plCard' + id);
+        if (card) { card.style.transition = 'opacity .3s,transform .3s'; card.style.opacity = '0'; card.style.transform = 'scale(.9)'; setTimeout(function(){ card.remove(); plUpdateCount(); }, 300); }
+        plShowToast('Đã xóa gói thành công!', 'success');
+      } else {
+        btn.disabled = false;
+        plShowToast('Không thể xóa gói này!', 'error');
+      }
+    })
+    .catch(function(){ btn.disabled = false; plShowToast('Lỗi kết nối!', 'error'); });
+}
+
+function plUpdateCount() {
+  var cards = document.querySelectorAll('#plCardsGrid .pl-card').length;
+  var b = document.getElementById('plTotalBadge');
+  if (b) b.textContent = cards + ' gói';
+}
+
+// ── Revenue tab ──
+var _rvLoaded = false;
+var _rvChart = null;
+var _rvMode = 'month';
+var _rvAllOrders = [];
+var _rvFiltered = [];
+var _rvPage = 1;
+var _rvPageSize = 15;
+// Pre-fetch promises (started on DOMContentLoaded)
+var _rvKpiFetchPromise    = null;
+var _rvChartFetchPromise  = null;
+var _rvOrdersFetchPromise = null;
+
+function _rvOrderSkelRow() {
+  return '<tr>' +
+    '<td><div class="um-skel" style="width:72px;height:.85rem;border-radius:4px;"></div></td>' +
+    '<td><div class="um-skel" style="width:110px;height:.85rem;border-radius:4px;"></div></td>' +
+    '<td><div class="um-skel" style="width:60px;height:.85rem;border-radius:4px;"></div></td>' +
+    '<td><div class="um-skel" style="width:70px;height:.85rem;border-radius:4px;"></div></td>' +
+    '<td><div class="um-skel" style="width:44px;height:.85rem;border-radius:4px;margin:auto;"></div></td>' +
+    '<td><div class="um-skel" style="width:52px;height:.85rem;border-radius:4px;"></div></td>' +
+    '<td><div class="um-skel" style="width:88px;height:.85rem;border-radius:4px;"></div></td>' +
+    '</tr>';
+}
+
+function rvSetMode(mode) {
+  _rvMode = mode;
+  document.querySelectorAll('.rv-mode-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('rvBtn' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+  document.getElementById('rvCustomRange').style.display = (mode === 'custom') ? 'flex' : 'none';
+}
+
+function rvLoad(overridePromise) {
+  // Show loading state
+  ['rvSumRevenue','rvSumTokens','rvSumOrders','rvSumAvg'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.textContent = '…';
+  });
+  var params = 'mode=' + _rvMode;
+  if (_rvMode === 'custom') {
+    var f = document.getElementById('rvDateFrom').value;
+    var t = document.getElementById('rvDateTo').value;
+    if (!f || !t) { alert('Vui lòng chọn ngày bắt đầu và kết thúc.'); return; }
+    if (f > t) { alert('Ngày bắt đầu phải trước ngày kết thúc.'); return; }
+    params += '&from=' + f + '&to=' + t;
+  }
+  var dataPromise = overridePromise || fetch('/admin/api/revenue-filter?' + params)
+    .then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  dataPromise.then(function(data) {
+      // Update summary
+      document.getElementById('rvSumRevenue').textContent = (data.total_amount||0).toLocaleString('vi-VN') + 'đ';
+      document.getElementById('rvSumTokens').textContent  = (data.total_tokens||0).toLocaleString('vi-VN');
+      document.getElementById('rvSumOrders').textContent  = (data.total_orders||0);
+      var avg = data.total_orders > 0 ? Math.round(data.total_amount / data.total_orders) : 0;
+      document.getElementById('rvSumAvg').textContent = avg.toLocaleString('vi-VN') + 'đ';
+      var modeLabel = {week:'Tuần này', month:'Tháng này', custom:'Tùy chọn'};
+      document.getElementById('rvRangeInfo').textContent = (data.date_from||'') + ' → ' + (data.date_to||'');
+      // Chart
+      var rows = data.rows || [];
+      var canvas = document.getElementById('rvChart');
+      var empty  = document.getElementById('rvChartEmpty');
+      if (!rows.length) {
+        canvas.style.display = 'none'; empty.style.display = 'block';
+        empty.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:3rem;"><div style="font-size:2.5rem;margin-bottom:10px;">📭</div><div style="font-size:.88rem;">Không có giao dịch trong khoảng thời gian này</div></div>';
+        return;
+      }
+      canvas.style.display = ''; empty.style.display = 'none';
+      var labels   = rows.map(function(r){ return r.day.slice(5); }); // MM-DD
+      var revenues = rows.map(function(r){ return r.total_amount; });
+      var tokens   = rows.map(function(r){ return r.total_tokens; });
+      if (_rvChart) { _rvChart.destroy(); }
+      // Build gradient fill for revenue bars
+      var ctx2d = canvas.getContext('2d');
+      var grad = ctx2d.createLinearGradient(0, 0, 0, 240);
+      grad.addColorStop(0, 'rgba(79,70,229,.82)');
+      grad.addColorStop(1, 'rgba(99,102,241,.22)');
+      _rvChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Doanh thu (đ)', data: revenues,
+              backgroundColor: grad, borderColor: 'rgba(79,70,229,.9)',
+              borderWidth: 1.5, borderRadius: 6, borderSkipped: false,
+              maxBarThickness: 52, barPercentage: 0.55, categoryPercentage: 0.7,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Token bán', data: tokens, type: 'line',
+              borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,.10)',
+              borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 7,
+              pointBackgroundColor: '#fff', pointBorderColor: '#f59e0b', pointBorderWidth: 2,
+              tension: 0.4, fill: true, yAxisID: 'y2'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { boxWidth: 10, boxHeight: 10, borderRadius: 3, useBorderRadius: true, font: { size: 11 }, padding: 16, color: '#6b7280' }
+            },
+            tooltip: {
+              backgroundColor: '#1e293b', titleFont: { size: 12 }, bodyFont: { size: 11 },
+              padding: 10, cornerRadius: 8,
+              callbacks: { label: function(ctx){ return ' ' + ctx.dataset.label + ': ' + (ctx.dataset.yAxisID === 'y' ? ctx.parsed.y.toLocaleString('vi-VN')+'đ' : ctx.parsed.y + ' token'); } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true, position: 'left',
+              grid: { color: '#f1f5f9', drawBorder: false },
+              ticks: { callback: function(v){ return v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v.toLocaleString('vi-VN'); }, font:{size:11}, color:'#9ca3af', maxTicksLimit: 6 },
+              border: { display: false }
+            },
+            y2: {
+              beginAtZero: true, position: 'right',
+              grid: { drawOnChartArea: false, drawBorder: false },
+              ticks: { font:{size:11}, color:'#d97706', maxTicksLimit: 5 },
+              border: { display: false }
+            },
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: { font:{size:11}, color:'#9ca3af', maxRotation: 0,
+                callback: function(val, i){ var lbl = this.getLabelForValue(val); return labels.length > 20 && i % 2 !== 0 ? '' : lbl; }
+              },
+              border: { display: false }
+            }
+          },
+          animation: { duration: 600 }
+        }
+      });
+    })
+    .catch(function(err) {
+      console.error('[Revenue] API lỗi:', err);
+      document.getElementById('rvSumRevenue').textContent = 'Lỗi';
+      document.getElementById('rvSumTokens').textContent  = 'Lỗi';
+      document.getElementById('rvSumOrders').textContent  = 'Lỗi';
+      document.getElementById('rvSumAvg').textContent     = 'Lỗi';
+      var empty = document.getElementById('rvChartEmpty');
+      var canvas = document.getElementById('rvChart');
+      if (canvas) canvas.style.display = 'none';
+      if (empty) { empty.style.display = 'block'; empty.innerHTML = '<div style="text-align:center;color:#ef4444;padding:3rem;font-size:.88rem;">⚠️ Lỗi tải dữ liệu: ' + err.message + '</div>'; }
+    });
+}
+
+function loadRevenueTab() {
+  // Show KPI skeleton immediately
+  ['rvKpiToday','rvKpiMonth'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '<span class="um-skel" style="width:80px;height:1.3rem;border-radius:5px;display:inline-block;vertical-align:middle;"></span>';
+  });
+  // KPI cards — use pre-fetched promise
+  var kpiP = _rvKpiFetchPromise
+    || fetch('/admin/api/revenue-kpi').then(function(r){ return r.json(); }).catch(function(){ return {}; });
+  kpiP.then(function(d) {
+    var el = document.getElementById('rvKpiToday');
+    if (el) el.textContent = (d.today||0).toLocaleString('vi-VN') + 'đ';
+    el = document.getElementById('rvKpiMonth');
+    if (el) el.textContent = (d.month||0).toLocaleString('vi-VN') + 'đ';
+  }).catch(function(){});
+  if (!_rvLoaded) rvSetMode('month');
+  // Chart — use pre-fetched month data on first open, fetch fresh on mode changes
+  var chartPreload = (!_rvLoaded && _rvMode === 'month') ? _rvChartFetchPromise : null;
+  rvLoad(chartPreload);
+  // Orders table: load only once
+  if (!_rvLoaded) {
+    _rvLoaded = true;
+    // Show skeleton rows immediately
+    var oSkels = '';
+    for (var i = 0; i < 5; i++) oSkels += _rvOrderSkelRow();
+    document.getElementById('rvOrdersBody').innerHTML = oSkels;
+    // Use pre-fetched promise
+    var ordersP = _rvOrdersFetchPromise
+      || fetch('/admin/api/sepay-orders').then(function(r){ return r.json(); }).catch(function(){ return []; });
+    ordersP.then(function(orders) {
+      _rvAllOrders = orders;
+      _rvFiltered  = orders.slice();
+      _rvPage = 1;
+      rvRenderOrders();
+    }).catch(function() {
+      document.getElementById('rvOrdersBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:2rem;">Lỗi tải dữ liệu</td></tr>';
+    });
+  }
+}
+
+function rvRenderOrders() {
+  var statusMap = {
+    paid:      '<span class="ap-badge badge-active">✓ Paid</span>',
+    pending:   '<span class="ap-badge badge-draft">Pending</span>',
+    cancelled: '<span class="ap-badge badge-locked">Đã hủy</span>',
+    expired:   '<span class="ap-badge badge-locked">Hết hạn</span>'
+  };
+  var total = _rvFiltered.length;
+  var pages = Math.max(1, Math.ceil(total / _rvPageSize));
+  if (_rvPage > pages) _rvPage = pages;
+  var start = (_rvPage - 1) * _rvPageSize;
+  var slice = _rvFiltered.slice(start, start + _rvPageSize);
+  var html = '';
+  slice.forEach(function(o) {
+    html += '<tr data-search="'+(o.email||'')+' '+(o.order_code||'')+' '+(o.plan_name||'')+'">' +
+      '<td style="font-family:monospace;font-size:.78rem;color:#6b7280;">#' + (o.order_code||'') + '</td>' +
+      '<td style="font-size:.82rem;">' + (o.email || '—') + '</td>' +
+      '<td><span style="font-size:.79rem;font-weight:600;color:#4f46e5;">' + (o.plan_name || '—') + '</span></td>' +
+      '<td style="font-weight:700;color:#059669;">' + (o.amount||0).toLocaleString('vi-VN') + 'đ</td>' +
+      '<td style="text-align:center;font-weight:600;">' + (o.tokens||0) + '</td>' +
+      '<td>' + (statusMap[o.status] || o.status) + '</td>' +
+      '<td style="font-size:.76rem;color:#9ca3af;">' + (o.created_at || '—') + '</td>' +
+    '</tr>';
+  });
+  document.getElementById('rvOrdersBody').innerHTML = html ||
+    '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:2rem;">Chưa có đơn hàng nào</td></tr>';
+  rvRenderPagination(pages);
+}
+
+function rvRenderPagination(pages) {
+  var p = document.getElementById('rvPagination');
+  if (!p) return;
+  if (pages <= 1) { p.innerHTML = ''; return; }
+  var html = '';
+  html += '<button class="rv-page-btn" onclick="rvGoPage('+(_rvPage-1)+')" '+ (_rvPage===1?'disabled':'')+'>‹</button>';
+  var start = Math.max(1, _rvPage - 2);
+  var end   = Math.min(pages, _rvPage + 2);
+  if (start > 1) html += '<button class="rv-page-btn" onclick="rvGoPage(1)">1</button>' + (start>2?'<span style="padding:0 4px;color:#9ca3af;">…</span>':'');
+  for (var i = start; i <= end; i++) {
+    html += '<button class="rv-page-btn' + (i===_rvPage?' active':'') + '" onclick="rvGoPage('+i+')">'+i+'</button>';
+  }
+  if (end < pages) html += (end<pages-1?'<span style="padding:0 4px;color:#9ca3af;">…</span>':'') + '<button class="rv-page-btn" onclick="rvGoPage('+pages+')">'+pages+'</button>';
+  html += '<button class="rv-page-btn" onclick="rvGoPage('+(_rvPage+1)+')" '+(_rvPage===pages?'disabled':'')+'>›</button>';
+  html += '<span style="font-size:.76rem;color:#9ca3af;margin-left:8px;">' + _rvFiltered.length + ' đơn / ' + pages + ' trang</span>';
+  p.innerHTML = html;
+}
+
+function rvGoPage(n) {
+  var pages = Math.ceil(_rvFiltered.length / _rvPageSize);
+  if (n < 1 || n > pages) return;
+  _rvPage = n;
+  rvRenderOrders();
+  document.getElementById('rvOrdersBody').closest('.rv-orders-card').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function rvFilterOrders(val) {
+  var v = val.toLowerCase();
+  _rvFiltered = _rvAllOrders.filter(function(o) {
+    return ((o.email||'') + ' ' + (o.order_code||'') + ' ' + (o.plan_name||'')).toLowerCase().indexOf(v) !== -1;
+  });
+  _rvPage = 1;
+  rvRenderOrders();
+}
+
+function loadFeedbackTab() {
+  if (_fbLoaded) return;
+  _fbLoaded = true;
+  fetch('/admin/api/feedback')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var stats = data && data.stats ? data.stats : {};
+      _fbAll = (data && data.items) ? data.items : [];
+      _fbFiltered = _fbAll.slice();
+
+      var totalEl = document.getElementById('fbTotal');
+      var newEl = document.getElementById('fbNew');
+      var todayEl = document.getElementById('fbToday');
+      if (totalEl) totalEl.textContent = (stats.total || 0);
+      if (newEl) newEl.textContent = (stats.new || 0);
+      if (todayEl) todayEl.textContent = (stats.today || 0);
+
+      renderFeedbackRows(_fbFiltered);
+    })
+    .catch(function(){
+      _fbLoaded = false;
+      var rowsEl = document.getElementById('fbRows');
+      if (rowsEl) {
+        rowsEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:2rem;">Lỗi tải phản hồi</td></tr>';
+      }
+    });
+}
+
+function _fbEsc(v) {
+  return String(v || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderFeedbackRows(items) {
+  var rowsEl = document.getElementById('fbRows');
+  if (!rowsEl) return;
+  if (!items || !items.length) {
+    rowsEl.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:2rem;">Chưa có phản hồi nào</td></tr>';
+    return;
+  }
+  var html = '';
+  items.forEach(function(it, idx){
+    var status = (it.status === 'new')
+      ? '<span class="ap-badge" style="background:#fff7ed;color:#c2410c;">Mới</span>'
+      : '<span class="ap-badge badge-draft">Đã đọc</span>';
+    var subject = _fbEsc(it.subject || 'Không tiêu đề');
+    var safeMsg = _fbEsc(it.message || '');
+    var senderName = _fbEsc(it.name || '—');
+    var senderEmail = _fbEsc(it.email || '—');
+    var sourcePage = _fbEsc(it.source_page || 'home');
+    var createdAt = _fbEsc(it.created_at || '—');
+    html += '<tr>' +
+      '<td style="color:#9ca3af;font-size:.78rem;">#' + (it.id || (idx + 1)) + '</td>' +
+      '<td><div style="font-weight:700;color:#0f172a;font-size:.84rem;">' + senderName + '</div><div style="font-size:.76rem;color:#64748b;">' + senderEmail + '</div></td>' +
+      '<td style="font-weight:600;color:#334155;font-size:.82rem;">' + subject + '</td>' +
+      '<td><div class="fb-message" title="' + safeMsg + '">' + safeMsg + '</div></td>' +
+      '<td><span class="ap-badge badge-draft">' + sourcePage + '</span></td>' +
+      '<td>' + status + '</td>' +
+      '<td style="font-size:.76rem;color:#64748b;">' + createdAt + '</td>' +
+    '</tr>';
+  });
+  rowsEl.innerHTML = html;
+}
+
+function fbFilter(val) {
+  var q = (val || '').toLowerCase();
+  if (!q) {
+    _fbFiltered = _fbAll.slice();
+    renderFeedbackRows(_fbFiltered);
+    return;
+  }
+  _fbFiltered = _fbAll.filter(function(it){
+    var text = ((it.name||'') + ' ' + (it.email||'') + ' ' + (it.subject||'') + ' ' + (it.message||'')).toLowerCase();
+    return text.indexOf(q) !== -1;
+  });
+  renderFeedbackRows(_fbFiltered);
+}
+
+// ── Toggle user active ──
+function toggleUser(uid, checkbox) {
+  fetch('/admin/users/' + uid + '/toggle', {
+    method: 'POST',
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }).then(r => r.json()).then(data => {
+    if (data.error) { alert(data.error); checkbox.checked = !checkbox.checked; }
+  }).catch(() => { checkbox.checked = !checkbox.checked; });
+}
+
+function deleteUser(uid, btn) {
+  var row = btn.closest('tr');
+  fetch('/admin/delete_user/' + uid, {
+    method: 'POST',
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      if (row) row.remove();
+      _usersData = _usersData.filter(function(x){ return x.id !== uid; });
+      var total = _usersData.length;
+      var active = _usersData.filter(function(x){ return x.is_active; }).length;
+      document.getElementById('usersCount').textContent = total;
+      document.getElementById('umTotal').textContent = total;
+      document.getElementById('umActive').textContent = active;
+      document.getElementById('umLocked').textContent = total - active;
+      document.getElementById('umAdmins').textContent = _usersData.filter(function(x){ return x.role==='admin'; }).length;
+      var totalTokens = _usersData.reduce(function(s,x){ return s+(x.token_balance||0); }, 0);
+      document.getElementById('umTokensTotal').textContent = totalTokens.toLocaleString('vi-VN');
+      var overviewEl = document.getElementById('overviewTotalUsers');
+      if (overviewEl) overviewEl.textContent = total;
+      umUpdateVisibleCount();
+    }
+  });
+}
+
+// ── Admin toggle for admin tab in dashboard (keep backward compat) ──
+window.adminToggleUser = toggleUser;
+
+// ── Chart ──
+var chartDrawn = false;
+var chartData = [];
+
+function drawChart() {
+  if (chartDrawn) return;
+  chartDrawn = true;
+  var ctx = document.getElementById('articleChart');
+  if (!ctx || !chartData.length) return;
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.map(d => d.day),
+      datasets: [{
+        label: 'Bài viết tạo',
+        data: chartData.map(d => d.count),
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79,70,229,.08)',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: '#4f46e5',
+        tension: .35,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ── Deferred overview data loader ──
+function _buildTrendCard(t, idx) {
+  var dir = t.direction === 'up' ? '▲' : (t.direction === 'down' ? '▼' : '■');
+  var dirCls = t.direction || 'flat';
+  var pctStr = (t.pct >= 0 ? '+' : '') + (t.pct || 0).toFixed(1) + '%';
+  return '<div class="ov-trend-card">' +
+    '<div class="ov-trend-head">' +
+      '<div class="ov-trend-label">' + t.label + '</div>' +
+      '<span class="ov-trend-badge ' + dirCls + '">' + dir + ' ' + pctStr + '</span>' +
+    '</div>' +
+    '<div class="ov-trend-value">' + (t.current7 || 0) + '</div>' +
+    '<div class="ov-trend-sub">7 ngày gần nhất · so với 7 ngày trước: ' + (t.prev7 || 0) + '</div>' +
+    '<div class="ov-mini-canvas-wrap"><canvas class="ov-mini-canvas" id="ovMiniChart' + idx + '" height="52"></canvas></div>' +
+  '</div>';
+}
+
+function loadOverviewData() {
+  if (_overviewDataLoaded) return;
+  fetch('/admin/api/overview-data')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      _overviewDataLoaded = true;
+      _trendCardsData = d.kpi_trends || [];
+      _activityHeatmap = d.activity_heatmap || {};
+      chartData = d.articles_per_day || [];
+      // Render KPI trend cards
+      var trendGrid = document.getElementById('ovTrendGrid');
+      if (trendGrid) {
+        trendGrid.innerHTML = _trendCardsData.map(function(t, i) { return _buildTrendCard(t, i); }).join('');
+      }
+      // Render top_mags table
+      var topBody = document.getElementById('ovTopMagsBody');
+      if (topBody) {
+        var mags = d.top_mags || [];
+        topBody.innerHTML = mags.length ? mags.map(function(m, i) {
+          return '<tr class="ov-top-row">' +
+            '<td style="color:#9ca3af;">' + (i + 1) + '</td>' +
+            '<td><a href="/magazine/' + m.id + '" target="_blank" style="color:#4f46e5;text-decoration:none;font-weight:600;">' + (m.title || '') + '</a></td>' +
+            '<td style="color:#6b7280;font-size:.8rem;">' + (m.owner_name || m.owner_email || '—') + '</td>' +
+            '<td><span class="ap-badge badge-pub">' + (m.article_count || 0) + '</span></td>' +
+          '</tr>';
+        }).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:2rem;">Chưa có dữ liệu</td></tr>';
+      }
+      // Render recent_arts list
+      var artsList = document.getElementById('ovRecentArts');
+      if (artsList) {
+        var arts = d.recent_arts || [];
+        artsList.innerHTML = arts.length ? arts.map(function(a) {
+          var dot = (a.status === 'published') ? '#16a34a' : '#d97706';
+          return '<li class="ov-activity-item">' +
+            '<div class="ap-activity-dot" style="background:' + dot + ';"></div>' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="font-size:.83rem;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (a.title || '') + '</div>' +
+              '<div style="font-size:.74rem;color:#9ca3af;">' + (a.author_name || a.author_email || '—') + ' · ' + (a.magazine_title || '') + '</div>' +
+            '</div>' +
+            '<div style="font-size:.73rem;color:#9ca3af;white-space:nowrap;">' + (a.created_at || '').substring(0, 10) + '</div>' +
+          '</li>';
+        }).join('') : '<li><div style="color:#9ca3af;text-align:center;width:100%;padding:1rem;">Chưa có hoạt động</div></li>';
+      }
+      // Draw charts and heatmap now that data is ready
+      chartDrawn = false; drawChart();
+      _overviewInsightsInited = false; initOverviewInsights();
+      _overviewPagerInited = false; initOverviewPagination();
+    })
+    .catch(function(e) { console.warn('overview-data failed', e); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  window.addEventListener('resize', function() {
+    if (!_isMobileAdminNav()) {
+      var layout = document.getElementById('apLayout');
+      var btn = document.getElementById('apNavToggle');
+      if (layout) layout.classList.remove('nav-open');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Init Lucide icons
+  if (window.lucide) lucide.createIcons();
+  // Load heavy overview data via AJAX (deferred from page load)
+  loadOverviewData();
+  // Pre-fetch users data in background so tab opens instantly
+  _usersFetchPromise = fetch('/admin/api/users').then(function(r){ return r.json(); }).catch(function(){ return []; });
+  // Pre-fetch magazines data in background so tab opens instantly
+  _magsFetchPromise = fetch('/admin/api/magazines').then(function(r){ return r.json(); }).catch(function(){ return []; });
+  // Pre-fetch revenue data in background so revenue tab opens instantly
+  _rvKpiFetchPromise    = fetch('/admin/api/revenue-kpi').then(function(r){ return r.json(); }).catch(function(){ return {}; });
+  _rvChartFetchPromise  = fetch('/admin/api/revenue-filter?mode=month').then(function(r){ return r.json(); }).catch(function(){ return {}; });
+  _rvOrdersFetchPromise = fetch('/admin/api/sepay-orders').then(function(r){ return r.json(); }).catch(function(){ return []; });
+
+  // Handle SEO form with AJAX
+  var seoForm = document.getElementById('seoForm');
+  if (seoForm) {
+    seoForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      fetch('/admin/system/settings', { method: 'POST', body: new FormData(seoForm) })
+        .then(r => r.json())
+        .then(data => {
+          var btn = seoForm.querySelector('button[type=submit]');
+          btn.textContent = data.success ? '✅ Đã lưu!' : '❌ Lỗi';
+          setTimeout(() => { btn.textContent = '💾 Lưu Cấu Hình'; }, 2000);
+        });
+    });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Hệ thống – Admin</title>
+  
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-w: 240px;
+      --primary: #667eea;
+      --danger:  #e53e3e;
+      --success: #38a169;
+      --warning: #d69e2e;
+      --bg:      #f7f8fc;
+      --card:    #ffffff;
+      --border:  #e2e8f0;
+      --text:    #2d3748;
+      --muted:   #718096;
+    }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar { width: var(--sidebar-w); background: #1a202c; color: #e2e8f0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+    .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid #2d3748; }
+    .sidebar-logo h2 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .5px; }
+    .sidebar-logo span { font-size: 11px; color: #a0aec0; }
+    .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+    .nav-section { font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; padding: 12px 20px 4px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13.5px; color: #a0aec0; text-decoration: none; border-left: 3px solid transparent; transition: all .15s; }
+    .nav-item:hover { background: #2d3748; color: #fff; }
+    .nav-item.active { background: #2d3748; color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid #2d3748; }
+    .sidebar-footer a { font-size: 13px; color: #a0aec0; text-decoration: none; }
+    .sidebar-footer a:hover { color: #fff; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar h1 { font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--muted); }
+    .content { padding: 28px; flex: 1; }
+
+    /* ── Section grid ── */
+    .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 24px; }
+    @media (max-width: 1100px) { .section-grid { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+    .card-full { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin-bottom: 24px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .card-title { font-size: 15px; font-weight: 700; }
+    .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Form ── */
+    .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+    .form-row label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+    .form-row input, .form-row select { border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13.5px; font-family: 'Times New Roman', Times, serif; }
+    .form-row input:focus, .form-row select:focus { border-color: var(--primary); outline: none; }
+    .form-row input[type=password] { font-family: 'Times New Roman', Times, serif; letter-spacing: 2px; }
+    .form-row .hint { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+    .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn { padding: 9px 20px; border-radius: 8px; border: none; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: 'Times New Roman', Times, serif; transition: opacity .15s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { opacity: .85; }
+    .btn-danger  { background: var(--danger);  color: #fff; }
+    .btn-danger:hover  { opacity: .85; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { opacity: .85; }
+    .btn-outline { background: #fff; border: 1px solid var(--border) !important; color: var(--text); }
+    .btn-outline:hover { background: #f8fafc; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+
+    /* ── Stat bar ── */
+    .stat-row { display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+    .stat-mini { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 100px; }
+    .stat-mini-num   { font-size: 20px; font-weight: 800; }
+    .stat-mini-label { font-size: 11.5px; color: var(--muted); }
+
+    /* ── Schedule table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8fafc; font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 9px 12px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* ── Toggle switch ── */
+    .toggle { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 22px; transition: .3s; }
+    .toggle-track::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
+    .toggle input:checked + .toggle-track { background: var(--success); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(18px); }
+
+    /* ── Badge ── */
+    .badge { display: inline-flex; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-success    { background: #c6f6d5; color: #276749; }
+    .badge-failed     { background: #fed7d7; color: #c53030; }
+    .badge-processing { background: #fef3c7; color: #92400e; }
+    .badge-running    { background: #ebf4ff; color: #3182ce; }
+    .badge-paused     { background: #e2e8f0; color: #4a5568; }
+
+    /* ── Log tabs ── */
+    .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+    .tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; font-family: 'Times New Roman', Times, serif; }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-btn:hover { color: var(--text); }
+
+    /* ── Log table ── */
+    .log-msg { font-size: 12px; color: var(--danger); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .log-msg:hover { white-space: normal; }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+    .page-btn { padding: 5px 11px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text); }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 700; }
+    .page-btn.disabled { opacity: .4; pointer-events: none; }
+
+    /* ── API key field ── */
+    .apikey-wrap { display: flex; gap: 8px; align-items: center; }
+    .apikey-wrap input { flex: 1; font-family: 'Times New Roman', Times, serif; font-size: 13px; }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; max-width: 320px; }
+    #toast.show { display: block; }
+
+    /* ── Backup btn ── */
+    .backup-section { display: flex; flex-direction: column; gap: 10px; }
+    .backup-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .backup-btn-wrap { display: flex; align-items: center; gap: 12px; }
+    #backup-status { font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚙️ Admin Panel</h2>
+    <span>AI E-Magazine</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Tổng quan</div>
+    <a href="/admin/dashboard" class="nav-item">📊 Dashboard</a>
+    <div class="nav-section">Quản lý</div>
+    <a href="/admin/users"   class="nav-item">👥 Người dùng</a>
+    <a href="/admin/content" class="nav-item">📰 Nội dung</a>
+    <div class="nav-section">Hệ thống</div>
+    <a href="/admin/system"  class="nav-item active">🖥 Hệ thống</a>
+    <a href="/admin/plans"   class="nav-item">💎 Gói dịch vụ</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/">← Về trang chủ</a>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <h1>🖥 Quản lý Hệ thống</h1>
+    <div class="topbar-right">
+      <span>{{ session.get('user_email','') }}</span>
+      <a href="/logout" style="color:var(--danger);text-decoration:none;font-weight:600;">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════════════════════════════
+         ROW 1: Settings + API Key
+    ══════════════════════════════════ -->
+    <div class="section-grid">
+
+      <!-- ── Cấu hình giới hạn ── -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">⚙️ Cấu hình hệ thống</div>
+            <div class="card-sub">Giới hạn bài viết, chế độ bảo trì</div>
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-row">
+            <label>Giới hạn bài/ngày/user</label>
+            <input type="number" id="daily_article_limit" min="1" max="1000"
+                   value="{{ settings.get('daily_article_limit', {}).get('value', 20) }}" />
+          </div>
+          <div class="form-row">
+            <label>Số bài tối đa/lần sinh</label>
+            <input type="number" id="max_articles_per_gen" min="1" max="50"
+                   value="{{ settings.get('max_articles_per_gen', {}).get('value', 5) }}" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Tên trang web</label>
+          <input type="text" id="site_name"
+                 value="{{ settings.get('site_name', {}).get('value', 'AI E-Magazine') }}" />
+        </div>
+        <div class="form-row">
+          <label>Email liên hệ admin</label>
+          <input type="email" id="contact_email"
+                 value="{{ settings.get('contact_email', {}).get('value', '') }}" />
+        </div>
+        <div class="form-row">
+          <label>Chế độ bảo trì</label>
+          <select id="maintenance_mode">
+            <option value="0" {% if settings.get('maintenance_mode',{}).get('value','0') == '0' %}selected{% endif %}>🟢 Hoạt động bình thường</option>
+            <option value="1" {% if settings.get('maintenance_mode',{}).get('value','0') == '1' %}selected{% endif %}>🔴 Bảo trì (chặn truy cập)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">💾 Lưu cấu hình</button>
+      </div>
+
+      <!-- ── API Key + Backup ── -->
+      <div style="display:flex;flex-direction:column;gap:22px;">
+
+        <!-- API Key -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">🔑 Cấu hình API Key</div>
+              <div class="card-sub">Groq API dùng để sinh bài viết AI</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Groq API Key hiện tại</label>
+            <input type="text" value="{{ masked_key }}" disabled
+                   style="background:#f8fafc;color:var(--muted);font-family: 'Times New Roman', Times, serif;" />
+            <span class="hint">Nhập key mới để thay thế</span>
+          </div>
+          <div class="form-row">
+            <label>API Key mới</label>
+            <div class="apikey-wrap">
+              <input type="password" id="new_api_key" placeholder="gsk_..." autocomplete="off" />
+              <button class="btn btn-sm btn-outline" type="button"
+                      onclick="toggleApiKeyVis()">👁</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveApiKey()">🔑 Cập nhật API Key</button>
+        </div>
+
+        <!-- Backup -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">💾 Backup Database</div>
+              <div class="card-sub">Xuất toàn bộ dữ liệu ra file .sql</div>
+            </div>
+          </div>
+          <div class="backup-section">
+            <p class="backup-desc">
+              Tạo bản sao lưu đầy đủ database <strong>{{ settings.get('site_name',{}).get('value','AI E-Magazine') }}</strong> dưới dạng file SQL.
+              File tải về gồm cấu trúc bảng và toàn bộ dữ liệu hiện tại.
+            </p>
+            <div class="backup-btn-wrap">
+              <a href="/admin/system/backup" class="btn btn-success" id="backup-btn"
+                 onclick="backupClick(this)">⬇️ Tải file backup (.sql)</a>
+              <span id="backup-status"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         ROW 2: Scheduled Jobs
+    ══════════════════════════════════ -->
+    <div class="card-full">
+      <div class="card-head">
+        <div>
+          <div class="card-title">⏰ Lịch tự động sinh bài</div>
+          <div class="card-sub">Tất cả scheduled jobs trong hệ thống</div>
+        </div>
+        <div style="font-size:13px;color:var(--muted);">
+          {{ schedules|length }} lịch •
+          {{ schedules|selectattr('is_active','equalto',1)|list|length }} đang chạy
+        </div>
+      </div>
+      {% if schedules %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tạp chí</th>
+              <th>Chủ sở hữu</th>
+              <th>Tần suất</th>
+              <th>Số bài/lần</th>
+              <th>Lần chạy cuối</th>
+              <th>Trạng thái</th>
+              <th>APScheduler</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in schedules %}
+            <tr id="sched-row-{{ s.id }}">
+              <td style="color:var(--muted);font-size:11px;">{{ loop.index }}</td>
+              <td>
+                <div style="font-weight:600;font-size:13px;">{{ s.magazine_title or '—' }}</div>
+                <div style="font-size:11.5px;color:var(--muted);">{{ s.magazine_topic or '' }}</div>
+              </td>
+              <td style="font-size:12px;">{{ s.owner_email or '—' }}</td>
+              <td style="font-size:12.5px;">
+                {% if s.frequency == 'interval_min' %}
+                  ⚡ Mỗi {{ s.interval_minutes }} phút
+                {% elif s.frequency == 'interval_hour' %}
+                  🕐 Mỗi {{ (s.interval_minutes // 60) if s.interval_minutes >= 60 else 1 }} giờ
+                {% elif s.frequency == 'daily' %}
+                  📅 Hàng ngày {{ '%02d:%02d'|format(s.hour, s.minute) }}
+                {% elif s.frequency == 'weekly' %}
+                  📅 Hàng tuần ({{ s.days_of_week }}) {{ '%02d:%02d'|format(s.hour, s.minute) }}
+                {% else %}
+                  {{ s.frequency }}
+                {% endif %}
+              </td>
+              <td style="text-align:center;font-weight:600;">{{ s.num_articles }}</td>
+              <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;">
+                {{ s.last_run.strftime('%d/%m/%Y %H:%M') if s.last_run else '—' }}
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" {% if s.is_active %}checked{% endif %}
+                         onchange="toggleSched(this, {{ s.id }})" />
+                  <span class="toggle-track"></span>
+                </label>
+              </td>
+              <td>
+                {% set jid = 'sched_' ~ s.id %}
+                {% if jid in running_jobs %}
+                  <span class="badge badge-running">▶ Running</span>
+                {% else %}
+                  <span class="badge badge-paused" id="apsjob-{{ s.id }}">⏸ Paused</span>
+                {% endif %}
+              </td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteSched({{ s.id }}, '{{ (s.magazine_title or '')|replace("'","") }}')">🗑 Xóa</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p style="color:var(--muted);font-size:13.5px;text-align:center;padding:24px 0;">
+        Chưa có lịch tự động nào. Người dùng tạo lịch từ trang tạp chí của họ.
+      </p>
+      {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════
+         ROW 3: Generation Logs
+    ══════════════════════════════════ -->
+    <div class="card-full">
+      <div class="card-head">
+        <div>
+          <div class="card-title">📋 Nhật ký sinh bài viết</div>
+          <div class="card-sub">Lịch sử tất cả lần sinh bài — thành công và thất bại</div>
+        </div>
+        <a href="/admin/system" style="font-size:13px;color:var(--primary);text-decoration:none;">↻ Làm mới</a>
+      </div>
+
+      <!-- Log Stats -->
+      <div class="stat-row">
+        <div class="stat-mini">
+          <span class="stat-mini-num">{{ log_stats.total or 0 }}</span>
+          <span class="stat-mini-label">Tổng lần sinh</span>
+        </div>
+        <div class="stat-mini">
+          <span class="stat-mini-num" style="color:var(--success);">{{ log_stats.success or 0 }}</span>
+          <span class="stat-mini-label">✅ Thành công</span>
+        </div>
+        <div class="stat-mini">
+          <span class="stat-mini-num" style="color:var(--danger);">{{ log_stats.failed or 0 }}</span>
+          <span class="stat-mini-label">❌ Thất bại</span>
+        </div>
+        <div class="stat-mini">
+          <span class="stat-mini-num" style="color:#d97706;">{{ log_stats.processing or 0 }}</span>
+          <span class="stat-mini-label">⏳ Đang xử lý</span>
+        </div>
+        <div class="stat-mini">
+          <span class="stat-mini-num" style="color:var(--primary);">{{ log_stats.avg_time or '—' }}s</span>
+          <span class="stat-mini-label">⏱ Thời gian TB</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <a href="/admin/system?logs=all" class="tab-btn {% if log_tab=='all' %}active{% endif %}">Tất cả</a>
+        <a href="/admin/system?logs=success" class="tab-btn {% if log_tab=='success' %}active{% endif %}">✅ Thành công</a>
+        <a href="/admin/system?logs=failed"  class="tab-btn {% if log_tab=='failed'  %}active{% endif %}">❌ Thất bại</a>
+        <a href="/admin/system?logs=processing" class="tab-btn {% if log_tab=='processing' %}active{% endif %}">⏳ Đang xử lý</a>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Người dùng</th>
+              <th>Chủ đề / Keywords</th>
+              <th>Bài viết tạo ra</th>
+              <th>Trạng thái</th>
+              <th>Thời gian sinh</th>
+              <th>Thông báo lỗi</th>
+              <th>Ngày</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td style="color:var(--muted);font-size:11px;">{{ loop.index + (log_page-1)*30 }}</td>
+              <td style="font-size:12px;">{{ log.user_name or log.user_email or '—' }}</td>
+              <td style="font-size:12px;max-width:160px;">
+                <div style="font-weight:500;">{{ (log.topic or '')[:40] }}</div>
+                <div style="color:var(--muted);font-size:11px;">{{ (log.keywords or '')[:40] }}</div>
+              </td>
+              <td style="font-size:12.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                {% if log.article_title %}
+                  <a href="/article/{{ log.article_id }}" target="_blank" style="color:var(--primary);">
+                    {{ log.article_title[:50] }}
+                  </a>
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ log.status or 'processing' }}">
+                  {% if log.status == 'success' %}✅ OK
+                  {% elif log.status == 'failed' %}❌ Lỗi
+                  {% else %}⏳ Đang xử lý{% endif %}
+                </span>
+              </td>
+              <td style="font-size:12px;white-space:nowrap;">
+                {% if log.generation_time %}{{ '%.1f'|format(log.generation_time) }}s{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if log.error_message %}
+                <span class="log-msg" title="{{ log.error_message }}">{{ log.error_message[:80] }}</span>
+                {% else %}—{% endif %}
+              </td>
+              <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;">
+                {{ log.created_at.strftime('%d/%m %H:%M') if log.created_at else '—' }}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">Chưa có nhật ký nào.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination logs -->
+      {% if log_pages > 1 %}
+      <div class="pagination">
+        <a class="page-btn {% if log_page<=1 %}disabled{% endif %}"
+           href="/admin/system?logs={{ log_tab }}&lp={{ log_page-1 }}">‹</a>
+        {% for p in range(1, log_pages+1) %}
+          {% if p == log_page or p == 1 or p == log_pages or (p >= log_page-2 and p <= log_page+2) %}
+          <a class="page-btn {% if p==log_page %}active{% endif %}"
+             href="/admin/system?logs={{ log_tab }}&lp={{ p }}">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+        <a class="page-btn {% if log_page>=log_pages %}disabled{% endif %}"
+           href="/admin/system?logs={{ log_tab }}&lp={{ log_page+1 }}">›</a>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#276749' : '#c53030';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Save system settings
+function saveSettings() {
+  const fd = new FormData();
+  ['daily_article_limit','max_articles_per_gen','maintenance_mode','site_name','contact_email']
+    .forEach(k => { const el = document.getElementById(k); if(el) fd.append(k, el.value); });
+  fetch('/admin/system/settings', { method:'POST', body: fd })
+    .then(r => r.json())
+    .then(d => { showToast(d.success ? '✅ Đã lưu cấu hình hệ thống' : '❌ Lưu thất bại', d.success); });
+}
+
+// ── Toggle API key visibility
+function toggleApiKeyVis() {
+  const el = document.getElementById('new_api_key');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// ── Save API key
+function saveApiKey() {
+  const key = document.getElementById('new_api_key').value.trim();
+  if (!key) { showToast('Vui lòng nhập API key', false); return; }
+  const fd = new FormData();
+  fd.append('api_key', key);
+  fetch('/admin/system/apikey', { method:'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        showToast('🔑 Đã cập nhật API key thành công');
+        document.getElementById('new_api_key').value = '';
+      } else {
+        showToast(d.error || 'Cập nhật thất bại', false);
+      }
+    });
+}
+
+// ── Toggle schedule
+function toggleSched(el, sid) {
+  fetch(`/admin/system/schedule/${sid}/toggle`, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (!d.success) { showToast(d.error || 'Lỗi', false); el.checked = !el.checked; return; }
+      const badge = document.getElementById(`apsjob-${sid}`);
+      if (badge) {
+        badge.textContent = d.is_active ? '▶ Running' : '⏸ Paused';
+        badge.className = 'badge ' + (d.is_active ? 'badge-running' : 'badge-paused');
+      }
+      showToast(d.is_active ? '▶ Đã bật lịch tự động' : '⏸ Đã tạm dừng lịch');
+    })
+    .catch(() => { showToast('Lỗi kết nối', false); el.checked = !el.checked; });
+}
+
+// ── Delete schedule
+function deleteSched(sid, name) {
+  if (!confirm(`Xóa lịch tự động cho tạp chí "${name}"?\nThao tác này không thể hoàn tác.`)) return;
+  fetch(`/admin/system/schedule/${sid}/delete`, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.success) {
+        const row = document.getElementById(`sched-row-${sid}`);
+        if (row) row.remove();
+        showToast('🗑 Đã xóa lịch tự động');
+      } else {
+        showToast(d.error || 'Xóa thất bại', false);
+      }
+    });
+}
+
+// ── Backup button feedback
+function backupClick(el) {
+  const status = document.getElementById('backup-status');
+  status.textContent = '⏳ Đang tạo backup...';
+  setTimeout(() => { status.textContent = '✅ Đang tải file về...'; }, 1000);
+  setTimeout(() => { status.textContent = ''; }, 5000);
+}
+</script>
+</body>
+</html>

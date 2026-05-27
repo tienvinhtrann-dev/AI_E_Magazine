@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo bài báo mới - AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-container {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .create-card {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .create-card h2 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .create-card .subtitle {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    .info-box {
+        background: #f0f7ff;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border-radius: 4px;
+    }
+
+    .info-box h4 {
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .info-box ul {
+        margin-left: 1.5rem;
+        color: #666;
+    }
+
+    .example-keywords {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .keyword-chip {
+        padding: 0.25rem 0.75rem;
+        background: #e8eaf6;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: #5e35b1;
+        cursor: pointer;
+    }
+
+    .keyword-chip:hover {
+        background: #d1d9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container create-container">
+    <div class="create-card">
+        <h2>🤖 Tạo bài báo tự động với AI</h2>
+        <p class="subtitle">Nhập thông tin bên dưới, AI sẽ tự động tìm kiếm, tổng hợp và viết bài cho bạn</p>
+        
+        <div class="info-box">
+            <h4>💡 Cách hoạt động:</h4>
+            <ul>
+                <li>AI sẽ tìm kiếm bài viết liên quan trên các trang tin tức</li>
+                <li>Tổng hợp thông tin từ nhiều nguồn</li>
+                <li>Viết lại thành bài báo hoàn chỉnh</li>
+                <li>Bạn có thể chỉnh sửa trước khi xuất bản</li>
+            </ul>
+        </div>
+        
+        <form method="POST" action="/create">
+            <div class="form-group">
+                <label for="topic">Chủ đề bài báo *</label>
+                <input type="text" id="topic" name="topic" 
+                       placeholder="VD: Trí Tuệ Nhân Tạo trong Y Tế" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Mô tả ngắn</label>
+                <textarea id="description" name="description" 
+                          placeholder="VD: Tìm hiểu về ứng dụng AI trong chẩn đoán và điều trị bệnh"></textarea>
+                <small style="color: #999;">Mô tả giúp AI hiểu rõ hơn về nội dung bạn muốn</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="keywords">Từ khóa tìm kiếm *</label>
+                <input type="text" id="keywords" name="keywords" 
+                       placeholder="VD: trí tuệ nhân tạo, y tế, chẩn đoán" required>
+                <small style="color: #999;">Từ khóa giúp AI tìm bài viết chính xác hơn</small>
+                
+                <div class="example-keywords">
+                    <span style="color: #999; font-size: 0.9rem;">Gợi ý:</span>
+                    <span class="keyword-chip" onclick="setKeywords('ChatGPT OpenAI')">ChatGPT OpenAI</span>
+                    <span class="keyword-chip" onclick="setKeywords('công nghệ AI')">công nghệ AI</span>
+                    <span class="keyword-chip" onclick="setKeywords('startup Việt Nam')">startup Việt Nam</span>
+                    <span class="keyword-chip" onclick="setKeywords('bitcoin cryptocurrency')">bitcoin cryptocurrency</span>
+                </div>
+            </div>
+            
+            <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn white-btn">Tạo bài báo</button>
+                <a href="/dashboard" class="btn white-btn">Hủy</a>
+            <style>
+                .white-btn {
+                    background: #fff !important;
+                    color: #222 !important;
+                    font-weight: bold !important;
+                    font-size: 1rem !important;
+                    border: 2px solid #222 !important;
+                    box-shadow: none !important;
+                    transition: background 0.2s, color 0.2s;
+                }
+                .white-btn:hover {
+                    background: #f5f5f5 !important;
+                    color: #000 !important;
+                }
+            </style>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function setKeywords(keywords) {
+    document.getElementById('keywords').value = keywords;
+}
+</script>
+{% endblock %}

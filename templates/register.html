@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - AI E-Magazine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <!-- Header Section -->
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <img src="/static/images/logo.png" alt="Logo" style="height: 96px; width: 96px; object-fit: contain; background: transparent; border-radius: 12px; display: block; margin: 0 auto;">
+                </div>
+                <h1>Tạo tài khoản</h1>
+                <p class="auth-subtitle">Hệ Thống tạo tạp chí bằng AI</p>
+            </div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} fade-in">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Register Form -->
+            <form method="POST" class="auth-form">
+                <div class="input-group">
+                    <div class="input-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 6L12 13L2 6" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <input type="email" name="email" placeholder="Email" required autocomplete="email">
+                </div>
+                
+                <div class="input-group">
+                    <div style="position: relative; width: 100%; display: flex; align-items: center;">
+                        <div class="input-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#667eea" stroke-width="2"/>
+                                <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <input type="password" name="password" placeholder="Mật khẩu (tối thiểu 6 ký tự)" required minlength="6" autocomplete="new-password" id="register-password" style="width: 100%;">
+                        <span class="toggle-password" onclick="togglePassword('register-password', this)" style="cursor:pointer; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display:flex; align-items:center;">
+                            <svg width="22" height="22" fill="none" stroke="#888" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill"></div>
+                    </div>
+                    <p class="strength-text">Độ mạnh mật khẩu: <span>Nhập mật khẩu</span></p>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <span>Đăng ký</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="auth-separator">
+                <span>hoặc</span>
+            </div>
+
+            <a class="btn-google" href="/auth/google">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-.8 2.6-1.7 3.4l2.8 2.2c1.7-1.6 2.7-4 2.7-6.8 0-.6-.1-1.1-.1-1.6H12z"/>
+                    <path fill="#34A853" d="M6.1 14.2l-.8.6-2.4 1.9C4.3 19.6 8 22 12 22c2.8 0 5.1-.9 6.8-2.4l-2.8-2.2c-.8.6-1.9 1-3.4 1-2.6 0-4.8-1.7-5.6-4.2z"/>
+                    <path fill="#FBBC05" d="M2.9 6.9C2.2 8.2 1.8 9.6 1.8 11s.4 2.8 1.1 4.1l4.2-3.3C7 10.9 7 10.4 7 10s0-.9.1-1.3l-4.2-1.8z"/>
+                    <path fill="#4285F4" d="M12 4.2c1.5 0 2.8.5 3.8 1.5l2.9-2.9C16.9 1.2 14.7.2 12 .2 8 0 4.3 2.4 2.9 6.9l4.2 1.8C7.8 6 9.7 4.2 12 4.2z"/>
+                </svg>
+                <span>Đăng ký với Google</span>
+            </a>
+            
+            <!-- Footer Links -->
+            <div class="auth-footer">
+                <p class="auth-link">
+                    Đã có tài khoản? <a href="/login">Đăng nhập ngay</a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Background Animation -->
+        <div class="bg-animation">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+        </div>
+    </div>
+    
+    <script>
+    // Password strength indicator
+    const passwordInput = document.getElementById('register-password');
+    const strengthFill = document.querySelector('.strength-fill');
+    const strengthText = document.querySelector('.strength-text span');
+    if(passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const value = this.value;
+            let strength = 0;
+            if (value.length >= 6) strength += 25;
+            if (value.length >= 8) strength += 25;
+            if (/[A-Z]/.test(value)) strength += 25;
+            if (/[0-9]/.test(value)) strength += 25;
+            strengthFill.style.width = strength + '%';
+            if (strength === 0) {
+                strengthText.textContent = 'Nhập mật khẩu';
+                strengthFill.style.background = '#e0e0e0';
+            } else if (strength <= 25) {
+                strengthText.textContent = 'Yếu';
+                strengthFill.style.background = '#f44336';
+            } else if (strength <= 50) {
+                strengthText.textContent = 'Trung bình';
+                strengthFill.style.background = '#ff9800';
+            } else if (strength <= 75) {
+                strengthText.textContent = 'Khá';
+                strengthFill.style.background = '#2196f3';
+            } else {
+                strengthText.textContent = 'Mạnh';
+                strengthFill.style.background = '#4caf50';
+            }
+        });
+    }
+    function togglePassword(inputId, el) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            el.innerHTML = `<svg width=\"22\" height=\"22\" fill=\"none\" stroke=\"#888\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.77 21.77 0 0 1 5.06-6.06M1 1l22 22\"/><path d=\"M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47\"/></svg>`;
+        } else {
+            input.type = 'password';
+            el.innerHTML = `<svg width=\"22\" height=\"22\" fill=\"none\" stroke=\"#888\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>`;
+        }
+    }
+    </script>
+</body>
+</html>
+

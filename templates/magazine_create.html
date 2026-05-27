@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo tạp chí mới - AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: #ffffff !important;
+        min-height: 100vh;
+    }
+    body > header { display: none; }
+    main { padding: 3rem 0 5rem; }
+
+    .ws-shell {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+    /* Back link */
+    .create-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: color 0.2s;
+    }
+    .create-back:hover { color: #00d4a0; }
+
+    /* Step indicator */
+    .step-track {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 2.5rem;
+    }
+    .step-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.78rem;
+        font-weight: 700;
+        border: 2px solid #cbd5e1;
+        background: #f1f5f9;
+        color: #64748b;
+        transition: all 0.3s;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .step-dot.active {
+        border-color: #00b375;
+        background: rgba(0,179,117,0.15);
+        color: #00d4a0;
+        box-shadow: 0 0 0 4px rgba(0,179,117,0.12);
+    }
+    .step-dot.done {
+        border-color: #00b375;
+        background: #00b375;
+        color: #fff;
+    }
+    .step-line {
+        flex: 1;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 -1px;
+        transition: background 0.4s;
+    }
+    .step-line.done { background: rgba(0,179,117,0.4); }
+    .step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        text-align: center;
+        margin-top: 0.4rem;
+    }
+    .step-dot.active + .step-label,
+    .step-item.active .step-label { color: #00d4a0; }
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+    }
+    .step-track-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 0;
+        margin-bottom: 2.5rem;
+    }
+    .step-track-inner {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Page header */
+    .create-header {
+        margin-bottom: 2rem;
+    }
+    .create-eyebrow {
+        display: inline-block;
+        background: rgba(0,179,117,0.12);
+        border: 1px solid rgba(0,179,117,0.3);
+        color: #00d4a0;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.9rem;
+        border-radius: 999px;
+        margin-bottom: 0.8rem;
+    }
+    .create-title {
+        font-size: clamp(1.6rem, 3vw, 2rem);
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.4rem;
+        line-height: 1.25;
+    }
+    .create-title .hl {
+        background: linear-gradient(135deg, #00b375, #00d4c8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .create-subtitle {
+        color: #475569;
+        font-size: 0.92rem;
+        line-height: 1.6;
+    }
+
+    /* Card */
+    .create-card {
+        background: #f8fafc;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 24px;
+        padding: 2.2rem 2.4rem;
+    }
+
+    /* Form fields */
+    .form-group { margin-bottom: 1.4rem; }
+    .form-group label {
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        background: #ffffff;
+        color: #1e293b;
+        transition: border-color .25s, box-shadow .25s, background .25s;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #94a3b8; }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        border-color: #00b375;
+        background: #f0fdf9;
+        box-shadow: 0 0 0 3px rgba(0,179,117,0.12);
+    }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+    .hint { font-size: 0.8rem; color: #64748b; margin-top: 6px; line-height: 1.5; }
+
+    /* Slug row */
+    .slug-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        border-radius: 12px;
+        padding: 0 1rem;
+        transition: border-color .25s, box-shadow .25s;
+    }
+    .slug-row:focus-within {
+        border-color: #00b375;
+        box-shadow: 0 0 0 3px rgba(0,179,117,0.12);
+        background: #f0fdf9;
+    }
+    .slug-prefix {
+        font-size: 0.88rem;
+        color: #64748b;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .slug-row input {
+        flex: 1;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 0 !important;
+        min-width: 0;
+    }
+    .slug-row input:focus { box-shadow: none !important; }
+
+    /* Categories */
+    .categories-box {
+        border-radius: 14px;
+        border: 1px solid rgba(0,0,0,0.08);
+        padding: 1rem;
+        background: #f8fafc;
+        margin-top: .6rem;
+    }
+    .category-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1.4fr 0.7fr auto;
+        gap: .6rem;
+        align-items: center;
+        margin-bottom: .6rem;
+    }
+    .category-row input[type="text"],
+    .category-row input[type="number"] {
+        width: 100%;
+        padding: 0.65rem .9rem;
+        border-radius: 10px;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        background: #ffffff;
+        color: #1e293b;
+        font-size: .9rem;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .category-row input:focus { border-color: rgba(0,179,117,0.5); }
+    .remove-cat-btn {
+        border-radius: 999px;
+        padding: .45rem .8rem;
+        border: none;
+        background: rgba(220,38,38,0.15);
+        color: #f87171;
+        cursor: pointer;
+        font-size: .8rem;
+        white-space: nowrap;
+    }
+    .add-cat-btn {
+        margin-top: .4rem;
+        border-radius: 999px;
+        padding: .55rem 1.2rem;
+        border: none;
+        background: rgba(0,179,117,0.15);
+        border: 1px solid rgba(0,179,117,0.3);
+        color: #00d4a0;
+        font-size: .88rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .keyword-note {
+        font-size: .8rem;
+        color: #f87171;
+        margin-bottom: .4rem;
+        line-height: 1.4;
+    }
+    .total-badge { display: none; }
+
+    /* Wizard footer */
+    .wizard-footer {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 1.6rem;
+    }
+    .submit-btn {
+        flex: 1;
+        padding: 0.95rem 1.5rem;
+        font-size: 0.97rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all .25s;
+    }
+    .submit-btn.btn-primary {
+        background: linear-gradient(135deg, #00b375, #00d4c8);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(0,179,117,0.3);
+    }
+    .submit-btn.btn-primary:hover {
+        box-shadow: 0 8px 28px rgba(0,179,117,0.5);
+        transform: translateY(-2px);
+    }
+    .submit-btn.btn-secondary {
+        background: rgba(255,255,255,0.06);
+        border: 1.5px solid rgba(255,255,255,0.1);
+        color: #94a3b8;
+    }
+    .submit-btn.btn-secondary:hover {
+        background: rgba(255,255,255,0.1);
+        color: #e2e8f0;
+    }
+    .submit-btn:disabled {
+        opacity: 0.4;
+        transform: none !important;
+        cursor: not-allowed;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.7);
+        backdrop-filter: blur(6px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: white;
+        font-size: 1.1rem;
+    }
+    .spinner {
+        width: 52px; height: 52px;
+        border: 4px solid rgba(0,179,117,0.25);
+        border-top-color: #00b375;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+        margin-bottom: 1.2rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ws-shell">
+
+  <!-- Back -->
+  <a href="/dashboard" class="create-back">← Quay lại Dashboard</a>
+
+  <!-- Step tracker -->
+  <div style="margin-bottom:2rem;">
+    <div class="step-track-inner" id="stepTrackInner">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="create-header">
+    <div class="create-eyebrow">✦ Tạp chí mới</div>
+    <h1 class="create-title">Tạo <span class="hl">tạp chí</span> của bạn</h1>
+    <p class="create-subtitle">Nhập thông tin cơ bản, AI sẽ tự động viết bài và xuất bản cho bạn.</p>
+  </div>
+
+  <!-- Card -->
+  <div class="create-card">
+    <form method="POST" id="createForm">
+
+      <!-- STEP 1: Tiêu đề -->
+      <div class="form-group wizard-step" data-step="1">
+        <label>Tên tạp chí của bạn <span style="color:#f87171">*</span></label>
+        <input type="text" name="title" id="titleInput" required placeholder="Ví dụ: Tạp chí Ẩm Thực Việt">
+        <div class="hint">Tiêu đề hiển thị ở phía trên cùng của tạp chí.</div>
+      </div>
+
+      <!-- STEP 2: URL -->
+      <div class="form-group wizard-step" data-step="2" style="display:none;">
+        <label>Địa chỉ URL tạp chí <span style="color:#f87171">*</span></label>
+        <div class="slug-row">
+          <span class="slug-prefix">/magazine/</span>
+          <input type="text" name="slug" id="slugInput" placeholder="ten-tap-chi">
+        </div>
+        <div class="hint">Ví dụ: <strong>amthucviet</strong> → đường dẫn: <code style="color:#00d4a0;">/magazine/amthucviet</code></div>
+        <div id="slugStatus" style="font-size:13px;margin-top:6px;"></div>
+      </div>
+
+      <!-- STEP 3: Tên hiển thị -->
+      <div class="form-group wizard-step" data-step="3" id="displayNameGroup" style="display:none;">
+        <label>Tên tác giả hiển thị <span style="color:#f87171">*</span></label>
+        <input type="text" name="display_name" id="displayNameInput" maxlength="200" placeholder="Tên bạn muốn hiển thị với độc giả" required>
+        <div class="hint">Tên này sẽ xuất hiện trên mỗi bài viết với vai trò tác giả.</div>
+      </div>
+
+      <!-- Hidden fields -->
+      <div style="display:none;">
+        <textarea name="description"></textarea>
+        <div class="categories-box">
+          <div id="categoriesContainer">
+            <div class="category-row">
+              <input type="text" name="category_name[]" placeholder="Danh mục mặc định">
+              <input type="text" name="category_keywords[]" placeholder="Từ khóa (tuỳ chọn)">
+              <input type="number" name="category_count[]" min="1" value="1">
+              <button type="button" class="remove-cat-btn" style="display:none;">Xóa</button>
+            </div>
+          </div>
+          <input type="hidden" name="num_articles" id="numArticlesHidden" value="0">
+        </div>
+      </div>
+
+      <div class="wizard-footer">
+        <button type="button" class="submit-btn btn-secondary" id="wizardPrev" style="display:none;">← Trước</button>
+        <button type="button" class="submit-btn btn-primary" id="wizardNext">Tiếp theo →</button>
+        <button type="submit" class="submit-btn btn-primary" id="submitBtn" style="display:none;">🚀 Hoàn tất</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Đang tạo tạp chí của bạn…</div>
+  <div style="font-size:.88rem; opacity:.6; margin-top:.5rem;">Chỉ mất vài giây.</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ----- Step tracker render -----
+var STEP_LABELS = ['Tên tạp chí', 'Địa chỉ URL', 'Tác giả'];
+function renderStepTrack(current) {
+    var wrap = document.getElementById('stepTrackInner');
+    if (!wrap) return;
+    var html = '<div style="display:flex;align-items:center;width:100%;gap:0;">';
+    for (var i = 1; i <= 3; i++) {
+        var isDone = i < current;
+        var isActive = i === current;
+        var dotClass = isDone ? 'step-dot done' : (isActive ? 'step-dot active' : 'step-dot');
+        var label = STEP_LABELS[i - 1];
+        html += '<div style="display:flex;flex-direction:column;align-items:center;">';
+        html += '<div class="' + dotClass + '">' + (isDone ? '✓' : i) + '</div>';
+        html += '<div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:' + (isActive ? '#00d4a0' : '#475569') + ';margin-top:0.35rem;white-space:nowrap;">' + label + '</div>';
+        html += '</div>';
+        if (i < 3) {
+            var lineClass = 'step-line' + (isDone ? ' done' : '');
+            html += '<div class="' + lineClass + '" style="margin-bottom:1.2rem;"></div>';
+        }
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+}
+
+// ----- Wizard 3 bước: Tiêu đề -> URL -> Tên hiển thị -----
+
+function slugify(text) {
+    if (!text) return '';
+    return text
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // bỏ dấu tiếng Việt
+        .replace(/[^a-zA-Z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase();
+}
+
+const form = document.getElementById('createForm');
+const titleInput = document.getElementById('titleInput');
+const slugInput = document.getElementById('slugInput');
+const displayNameInput = document.getElementById('displayNameInput');
+const slugStatus = document.getElementById('slugStatus');
+const prevBtn = document.getElementById('wizardPrev');
+const nextBtn = document.getElementById('wizardNext');
+const finishBtn = document.getElementById('submitBtn');
+const steps = document.querySelectorAll('.wizard-step');
+
+let currentStep = 1;
+let slugAvailable = false;
+let slugCheckTimer = null;
+
+function showStep(step) {
+    currentStep = step;
+    renderStepTrack(step);
+    steps.forEach(function (el) {
+        const s = parseInt(el.getAttribute('data-step') || '1', 10);
+        el.style.display = (s === step) ? 'block' : 'none';
+    });
+
+    // Điều khiển nút
+    if (step === 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+        finishBtn.style.display = 'none';
+    } else if (step === 2) {
+        prevBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
+        finishBtn.style.display = 'none';
+    } else {
+        prevBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'none';
+        finishBtn.style.display = 'inline-block';
+    }
+
+    updateButtonState();
+}
+
+function updateButtonState() {
+    if (currentStep === 1) {
+        nextBtn.disabled = !titleInput.value.trim();
+    } else if (currentStep === 2) {
+        nextBtn.disabled = !slugAvailable;
+    }
+}
+
+function triggerSlugCheck() {
+    if (!slugInput) return;
+    const raw = slugInput.value.trim();
+
+    slugAvailable = false;
+    updateButtonState();
+
+    if (!raw) {
+        if (slugStatus) {
+            slugStatus.textContent = '';
+        }
+        return;
+    }
+
+    if (slugStatus) {
+        slugStatus.style.color = '#6c757d';
+        slugStatus.textContent = 'Đang kiểm tra địa chỉ…';
+    }
+
+    if (slugCheckTimer) {
+        clearTimeout(slugCheckTimer);
+    }
+
+    slugCheckTimer = setTimeout(function () {
+        fetch('/api/check-magazine-slug?slug=' + encodeURIComponent(raw))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (!slugStatus) return;
+                if (data.ok && data.available) {
+                    slugStatus.style.color = '#198754';
+                    slugStatus.textContent = 'Địa chỉ tạp chí này đang hoạt động (có thể sử dụng).';
+                    slugAvailable = true;
+                } else {
+                    slugStatus.style.color = '#dc3545';
+                    slugStatus.textContent = data.message || 'Rất tiếc, địa chỉ tạp chí này đã được sử dụng.';
+                    slugAvailable = false;
+                }
+                updateButtonState();
+            })
+            .catch(function () {
+                if (!slugStatus) return;
+                slugStatus.style.color = '#dc3545';
+                slugStatus.textContent = 'Không kiểm tra được địa chỉ, vui lòng thử lại.';
+            });
+    }, 400);
+}
+
+// Sự kiện input
+if (titleInput) {
+    titleInput.addEventListener('input', function () {
+        if (currentStep === 1 && slugInput && !slugInput.value.trim()) {
+            slugInput.value = slugify(titleInput.value);
+            triggerSlugCheck();
+        }
+        updateButtonState();
+    });
+}
+
+if (slugInput) {
+    slugInput.addEventListener('input', function () {
+        slugInput.value = slugify(slugInput.value);
+        triggerSlugCheck();
+    });
+}
+
+// Điều hướng bước
+prevBtn.addEventListener('click', function () {
+    if (currentStep > 1) {
+        showStep(currentStep - 1);
+    }
+});
+
+nextBtn.addEventListener('click', function () {
+    if (currentStep === 1) {
+        if (!titleInput.reportValidity()) return;
+    } else if (currentStep === 2) {
+        if (!slugInput.value.trim()) {
+            slugInput.reportValidity();
+            return;
+        }
+        if (!slugAvailable) {
+            slugStatus.style.color = '#dc3545';
+            slugStatus.textContent = 'Vui lòng chọn một địa chỉ khác, địa chỉ này chưa hợp lệ.';
+            return;
+        }
+    }
+    if (currentStep < 3) {
+        showStep(currentStep + 1);
+        if (currentStep === 3 && displayNameInput && !displayNameInput.value) {
+            displayNameInput.focus();
+        }
+    }
+});
+
+// Submit: chỉ disable nút "Hoàn tất", để trình duyệt tự redirect
+form.addEventListener('submit', function () {
+    if (finishBtn) {
+        finishBtn.disabled = true;
+    }
+});
+
+// Khởi tạo bước đầu tiên
+showStep(1);
+</script>
+{% endblock %}

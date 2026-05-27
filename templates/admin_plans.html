@@ -1,0 +1,737 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Gói dịch vụ – Admin</title>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --sidebar-w:240px;
+      --primary:#667eea;--danger:#e53e3e;--success:#38a169;
+      --warning:#d69e2e;--bg:#f7f8fc;--card:#ffffff;
+      --border:#e2e8f0;--text:#2d3748;--muted:#718096;
+    }
+    body{font-family: 'Times New Roman', Times, serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+
+    /* ── Sidebar ── */
+    .sidebar{width:var(--sidebar-w);background:#1a202c;color:#e2e8f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid #2d3748}
+    .sidebar-logo h2{font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px}
+    .sidebar-logo span{font-size:11px;color:#a0aec0}
+    .sidebar-nav{flex:1;padding:16px 0;overflow-y:auto}
+    .nav-section{font-size:10px;font-weight:700;color:#4a5568;letter-spacing:1px;padding:12px 20px 4px;text-transform:uppercase}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13.5px;color:#a0aec0;text-decoration:none;border-left:3px solid transparent;transition:all .15s}
+    .nav-item:hover{background:#2d3748;color:#fff}
+    .nav-item.active{background:#2d3748;color:var(--primary);border-left-color:var(--primary);font-weight:600}
+    .sidebar-footer{padding:16px 20px;border-top:1px solid #2d3748}
+    .sidebar-footer a{font-size:13px;color:#a0aec0;text-decoration:none}
+    .sidebar-footer a:hover{color:#fff}
+
+    /* ── Main ── */
+    .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between}
+    .topbar h1{font-size:18px;font-weight:700}
+    .topbar-right{display:flex;gap:12px;align-items:center;font-size:13px;color:var(--muted)}
+    .content{padding:28px;flex:1}
+
+    /* ── Flash ── */
+    .flash{padding:10px 16px;border-radius:8px;margin-bottom:16px;font-size:13.5px;font-weight:500}
+    .flash.success{background:#c6f6d5;color:#276749}
+    .flash.error  {background:#fed7d7;color:#c53030}
+    .flash.info   {background:#bee3f8;color:#2b6cb0}
+
+    /* ── Tabs ── */
+    .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px}
+    .tab-btn{padding:10px 22px;font-size:13.5px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family: 'Times New Roman', Times, serif;text-decoration:none;display:inline-block}
+    .tab-btn:hover{color:var(--primary)}
+    .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+    /* ── Card ── */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+    .card-title{font-size:15px;font-weight:700}
+
+    /* ── Plan Cards ── */
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+    .plan-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:22px 20px;position:relative;transition:box-shadow .2s}
+    .plan-card:hover{box-shadow:0 6px 24px rgba(0,0,0,.1)}
+    .plan-card.inactive{opacity:.55}
+    .plan-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;margin-bottom:10px}
+    .plan-price{font-size:26px;font-weight:800;color:#111;margin-bottom:4px}
+    .plan-price span{font-size:14px;font-weight:400;color:var(--muted)}
+    .plan-desc{font-size:12.5px;color:var(--muted);margin-bottom:14px;min-height:36px}
+    .plan-features{list-style:none;font-size:13px;margin-bottom:16px}
+    .plan-features li{padding:4px 0;display:flex;align-items:center;gap:8px}
+    .plan-features li::before{content:'✓';color:var(--success);font-weight:700}
+    .plan-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .plan-inactive-tag{position:absolute;top:12px;right:14px;font-size:11px;background:#fed7d7;color:#c53030;padding:2px 8px;border-radius:10px;font-weight:600}
+
+    /* ── Stat mini row ── */
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    .stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+    .stat-box-num{font-size:26px;font-weight:800}
+    .stat-box-label{font-size:11.5px;color:var(--muted);margin-top:2px}
+    .stat-box.blue .stat-box-num{color:#3182ce}
+    .stat-box.green .stat-box-num{color:var(--success)}
+    .stat-box.orange .stat-box-num{color:#d69e2e}
+    .stat-box.purple .stat-box-num{color:#805ad5}
+
+    /* ── Table ── */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13.5px}
+    th{background:#f8fafc;font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;border-bottom:2px solid var(--border);white-space:nowrap}
+    td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#f8fafc}
+
+    /* ── Badge ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+    .badge-active   {background:#c6f6d5;color:#276749}
+    .badge-pending  {background:#fefcbf;color:#744210}
+    .badge-expired  {background:#e2e8f0;color:#4a5568}
+    .badge-cancelled{background:#fed7d7;color:#c53030}
+    .badge-completed{background:#c6f6d5;color:#276749}
+    .badge-failed   {background:#fed7d7;color:#c53030}
+
+    /* ── Buttons ── */
+    .btn{padding:7px 14px;border-radius:7px;font-size:12.5px;font-weight:600;border:none;cursor:pointer;font-family: 'Times New Roman', Times, serif;transition:opacity .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+    .btn:hover{opacity:.85}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-success{background:var(--success);color:#fff}
+    .btn-danger {background:var(--danger);color:#fff}
+    .btn-warning{background:var(--warning);color:#fff}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-sm{padding:4px 10px;font-size:12px}
+
+    /* ── Modal ── */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+    .modal-bg.open{display:flex}
+    .modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+    .modal h2{font-size:16px;font-weight:700;margin-bottom:20px}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px}
+    .form-group input,.form-group textarea,.form-group select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 12px;font-size:13.5px;font-family: 'Times New Roman', Times, serif;outline:none;transition:border-color .15s}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--primary)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-check{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-top:6px}
+    .form-check input{width:16px;height:16px;accent-color:var(--primary)}
+    .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+    /* ── Chart ── */
+    .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+    .chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .chart-card h3{font-size:14px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+    /* ── Pagination ── */
+    .pagination{display:flex;gap:6px;margin-top:16px;align-items:center}
+    .page-link{padding:5px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-decoration:none;color:var(--text)}
+    .page-link:hover{background:#f8fafc}
+    .page-link.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+    /* ── Toast ── */
+    #toast{position:fixed;bottom:24px;right:24px;background:#2d3748;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;display:none;z-index:999}
+    #toast.show{display:block}
+
+    /* ── Filters ── */
+    .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+    .filter-bar select,.filter-bar input{border:1.5px solid var(--border);border-radius:7px;padding:7px 11px;font-size:13px;font-family: 'Times New Roman', Times, serif;outline:none}
+    .filter-bar select:focus,.filter-bar input:focus{border-color:var(--primary)}
+
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stat-row{grid-template-columns:repeat(2,1fr)}.charts-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚙️ Admin Panel</h2>
+    <span>AI E-Magazine</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Tổng quan</div>
+    <a href="/admin/dashboard" class="nav-item">📊 Dashboard</a>
+    <div class="nav-section">Quản lý</div>
+    <a href="/admin/users"   class="nav-item">👥 Người dùng</a>
+    <a href="/admin/content" class="nav-item">📰 Nội dung</a>
+    <div class="nav-section">Hệ thống</div>
+    <a href="/admin/system"  class="nav-item">🖥 Hệ thống</a>
+    <a href="/admin/plans"   class="nav-item active">💎 Gói dịch vụ</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/">← Về trang chủ</a>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <h1>💎 Quản lý Gói dịch vụ</h1>
+    <div class="topbar-right">
+      <span>{{ user_email }}</span>
+      <a href="/logout" style="color:var(--danger);text-decoration:none;font-weight:600;">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- ── TABS ── -->
+    <div class="tabs">
+      <a href="/admin/plans?tab=plans"   class="tab-btn {% if tab=='plans' %}active{% endif %}">🗂 Gói dịch vụ</a>
+      <a href="/admin/plans?tab=subs"    class="tab-btn {% if tab=='subs' %}active{% endif %}">📋 Đăng ký</a>
+      <a href="/admin/plans?tab=revenue" class="tab-btn {% if tab=='revenue' %}active{% endif %}">💰 Doanh thu</a>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 1: PLANS
+    ════════════════════════════════════════════════════ -->
+    {% if tab == 'plans' %}
+
+    <div class="card-header" style="margin-bottom:16px">
+      <h2 style="font-size:15px;font-weight:700">Danh sách gói hiện có</h2>
+      <button class="btn btn-primary" onclick="openModal('modal-create-plan')">+ Tạo gói mới</button>
+    </div>
+
+    <div class="plans-grid">
+      {% for p in plans %}
+      <div class="plan-card {% if not p.is_active %}inactive{% endif %}">
+        {% if not p.is_active %}<span class="plan-inactive-tag">Tạm dừng</span>{% endif %}
+        <span class="plan-badge" style="background:{{ p.badge_color }}">{{ p.name }}</span>
+        <div class="plan-price">
+          {% if p.price_monthly == 0 %}
+            Miễn phí
+          {% else %}
+            {{ "{:,.0f}".format(p.price_monthly) }}<span> VNĐ/tháng</span>
+          {% endif %}
+        </div>
+        <div class="plan-desc">{{ p.description or '' }}</div>
+        <ul class="plan-features">
+          <li>🪙 {{ p.articles_per_day }} Token nạp</li>
+          <li>Lịch tự động: {% if p.auto_schedule %}✅ Có{% else %}❌ Không{% endif %}</li>
+        </ul>
+        <div class="plan-actions">
+          <button class="btn btn-outline btn-sm" onclick='editPlan({{ p | tojson }})'>✏️ Sửa</button>
+          <button class="btn btn-sm {% if p.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                  onclick="togglePlan({{ p.id }}, this)">
+            {% if p.is_active %}⏸ Tắt{% else %}▶ Bật{% endif %}
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deletePlan({{ p.id }}, '{{ p.name }}')">🗑</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- So sánh bảng -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">📊 So sánh gói</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Gói</th>
+              <th>Giá/tháng</th>
+              <th>Token nạp</th>
+              <th>Lịch tự động</th>
+              <th>Trạng thái</th>
+              <th>Thứ tự</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in plans %}
+            <tr>
+              <td><span class="badge" style="background:{{ p.badge_color }};color:#fff">{{ p.name }}</span></td>
+              <td>{% if p.price_monthly == 0 %}Miễn phí{% else %}{{ "{:,.0f}".format(p.price_monthly) }} VNĐ{% endif %}</td>
+              <td>{{ p.articles_per_day }}</td>
+              <td>{% if p.auto_schedule %}✅{% else %}❌{% endif %}</td>
+              <td>
+                <span class="badge {% if p.is_active %}badge-active{% else %}badge-expired{% endif %}">
+                  {% if p.is_active %}Hoạt động{% else %}Tạm dừng{% endif %}
+                </span>
+              </td>
+              <td>{{ p.sort_order }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 2: SUBSCRIPTIONS
+    ════════════════════════════════════════════════════ -->
+    {% elif tab == 'subs' %}
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <span class="card-title">➕ Gán gói cho người dùng</span>
+      </div>
+      <form method="POST" action="/admin/plans/subscribe" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;align-items:end">
+        <div class="form-group" style="margin:0">
+          <label>User ID</label>
+          <input type="number" name="user_id" placeholder="VD: 5" required style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Gói dịch vụ</label>
+          <select name="plan_id" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%">
+            {% for p in plans %}
+            <option value="{{ p.id }}">{{ p.name }} ({{ "{:,.0f}".format(p.price_monthly) if p.price_monthly else 'Miễn phí' }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Số tháng</label>
+          <input type="number" name="months" value="1" min="1" max="24" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Số tiền đã trả</label>
+          <input type="number" name="amount_paid" value="0" min="0" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Phương thức</label>
+          <select name="payment_method" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%">
+            <option value="manual">Thủ công</option>
+            <option value="bank_transfer">Chuyển khoản</option>
+            <option value="cash">Tiền mặt</option>
+            <option value="momo">MoMo</option>
+            <option value="vnpay">VNPay</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Ghi chú</label>
+          <input type="text" name="notes" placeholder="Ghi chú (tùy chọn)" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:100%"/>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button type="submit" class="btn btn-success" style="width:100%">✔ Kích hoạt</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Danh sách đăng ký</span>
+        <form method="GET" action="/admin/plans" class="filter-bar" style="margin:0">
+          <input type="hidden" name="tab" value="subs"/>
+          <select name="sub_status" onchange="this.form.submit()">
+            <option value="" {% if not sub_status %}selected{% endif %}>Tất cả trạng thái</option>
+            <option value="active"    {% if sub_status=='active'    %}selected{% endif %}>Active</option>
+            <option value="pending"   {% if sub_status=='pending'   %}selected{% endif %}>Pending</option>
+            <option value="expired"   {% if sub_status=='expired'   %}selected{% endif %}>Expired</option>
+            <option value="cancelled" {% if sub_status=='cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+        </form>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Người dùng</th>
+              <th>Gói</th>
+              <th>Trạng thái</th>
+              <th>Bắt đầu</th>
+              <th>Kết thúc</th>
+              <th>Đã trả</th>
+              <th>Phương thức</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in subs %}
+            <tr>
+              <td>{{ s.id }}</td>
+              <td>
+                <div style="font-weight:600">{{ s.full_name or '—' }}</div>
+                <div style="font-size:12px;color:var(--muted)">{{ s.email }}</div>
+              </td>
+              <td><span class="badge" style="background:{{ s.badge_color }};color:#fff">{{ s.plan_name }}</span></td>
+              <td>
+                <span class="badge badge-{{ s.status }}">{{ s.status }}</span>
+              </td>
+              <td>{{ s.start_date or '—' }}</td>
+              <td>{{ s.end_date or '—' }}</td>
+              <td>{{ "{:,.0f}".format(s.amount_paid or 0) }} VNĐ</td>
+              <td>{{ s.payment_method or '—' }}</td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-primary btn-sm" onclick="openRenewModal({{ s.id }}, '{{ s.plan_name }}')">↻ Gia hạn</button>
+                {% if s.status not in ['cancelled','expired'] %}
+                <button class="btn btn-danger btn-sm" onclick="cancelSub({{ s.id }}, this)">✕</button>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Chưa có đăng ký nào.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if sub_pages > 1 %}
+      <div class="pagination">
+        {% for p in range(1, sub_pages+1) %}
+        <a href="/admin/plans?tab=subs&sub_status={{ sub_status }}&sp={{ p }}"
+           class="page-link {% if p==sub_page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         TAB 3: REVENUE
+    ════════════════════════════════════════════════════ -->
+    {% elif tab == 'revenue' %}
+
+    <!-- Stat boxes -->
+    <div class="stat-row">
+      <div class="stat-box blue">
+        <div class="stat-box-num">{{ "{:,.0f}".format(rev_stats.get('total_revenue',0)) }}</div>
+        <div class="stat-box-label">💰 Tổng doanh thu (VNĐ)</div>
+      </div>
+      <div class="stat-box green">
+        <div class="stat-box-num">{{ "{:,.0f}".format(rev_stats.get('month_revenue',0)) }}</div>
+        <div class="stat-box-label">📅 Doanh thu tháng này</div>
+      </div>
+      <div class="stat-box orange">
+        <div class="stat-box-num">{{ rev_stats.get('active_subs', 0) }}</div>
+        <div class="stat-box-label">✅ Đăng ký đang hoạt động</div>
+      </div>
+      <div class="stat-box purple">
+        <div class="stat-box-num">{{ rev_stats.get('pending_subs', 0) }}</div>
+        <div class="stat-box-label">⏳ Chờ xác nhận</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>📈 Doanh thu 12 tháng gần nhất</h3>
+        <canvas id="revenueChart" height="90"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>🍰 Doanh thu theo gói</h3>
+        <canvas id="planChart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- Subs by plan table -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span class="card-title">👥 Người dùng theo gói</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Gói</th><th>Tổng đăng ký</th><th>Đang active</th></tr>
+          </thead>
+          <tbody>
+            {% for row in rev_stats.get('subs_by_plan', []) %}
+            <tr>
+              <td><span class="badge" style="background:{{ row.badge_color }};color:#fff">{{ row.name }}</span></td>
+              <td>{{ row.total_subs or 0 }}</td>
+              <td>{{ row.active_subs or 0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment history -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">🧾 Lịch sử giao dịch</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Người dùng</th><th>Gói</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th><th>Ngày</th><th>Ghi chú</th></tr>
+          </thead>
+          <tbody>
+            {% for t in payments %}
+            <tr>
+              <td>{{ t.id }}</td>
+              <td>
+                <div style="font-weight:600">{{ t.full_name or '—' }}</div>
+                <div style="font-size:12px;color:var(--muted)">{{ t.email }}</div>
+              </td>
+              <td><span class="badge" style="background:{{ t.badge_color }};color:#fff">{{ t.plan_name }}</span></td>
+              <td style="font-weight:700">{{ "{:,.0f}".format(t.amount or 0) }} VNĐ</td>
+              <td>{{ t.payment_method or '—' }}</td>
+              <td><span class="badge badge-{{ t.status }}">{{ t.status }}</span></td>
+              <td style="font-size:12px">{{ t.created_at.strftime('%d/%m/%Y %H:%M') if t.created_at else '—' }}</td>
+              <td style="font-size:12px;color:var(--muted)">{{ t.notes or '' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Chưa có giao dịch nào.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ MODAL: TẠO GÓI MỚI ═══ -->
+<div class="modal-bg" id="modal-create-plan">
+  <div class="modal">
+    <h2>➕ Tạo gói dịch vụ mới</h2>
+    <form method="POST" action="/admin/plans/create">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên gói *</label>
+          <input type="text" name="name" placeholder="VD: Pro" required/>
+        </div>
+        <div class="form-group">
+          <label>Giá/tháng (VNĐ)</label>
+          <input type="number" name="price_monthly" value="0" min="0" step="1000"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số Token nạp</label>
+          <input type="number" name="articles_per_day" value="10" min="1"/>
+        </div>
+        <div style="display:none">
+          <input type="hidden" name="magazines_limit" value="0"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Màu badge (hex)</label>
+          <input type="color" name="badge_color" value="#667eea" style="height:38px;padding:2px"/>
+        </div>
+        <div class="form-group">
+          <label>Thứ tự sắp xếp</label>
+          <input type="number" name="sort_order" value="0" min="0"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-check">
+          <input type="checkbox" name="auto_schedule"/> Hỗ trợ lịch tự động
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Mô tả</label>
+        <textarea name="description" rows="2" placeholder="Mô tả ngắn về gói..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-create-plan')">Hủy</button>
+        <button type="submit" class="btn btn-primary">Tạo gói</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ MODAL: SỬA GÓI ═══ -->
+<div class="modal-bg" id="modal-edit-plan">
+  <div class="modal">
+    <h2>✏️ Chỉnh sửa gói</h2>
+    <form method="POST" id="form-edit-plan" action="">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tên gói *</label>
+          <input type="text" name="name" id="edit-name" required/>
+        </div>
+        <div class="form-group">
+          <label>Giá/tháng (VNĐ)</label>
+          <input type="number" name="price_monthly" id="edit-price" min="0" step="1000"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số Token nạp</label>
+          <input type="number" name="articles_per_day" id="edit-arts" min="1"/>
+          <input type="hidden" name="magazines_limit" value="0"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Màu badge</label>
+          <input type="color" name="badge_color" id="edit-color" style="height:38px;padding:2px"/>
+        </div>
+        <div class="form-group">
+          <label>Thứ tự</label>
+          <input type="number" name="sort_order" id="edit-order" min="0"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-check">
+          <input type="checkbox" name="auto_schedule" id="edit-sched"/> Hỗ trợ lịch tự động
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Mô tả</label>
+        <textarea name="description" id="edit-desc" rows="2"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit-plan')">Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ MODAL: GIA HẠN ═══ -->
+<div class="modal-bg" id="modal-renew">
+  <div class="modal">
+    <h2>↻ Gia hạn đăng ký</h2>
+    <form method="POST" id="form-renew" action="">
+      <div class="form-group">
+        <label>Gói: <strong id="renew-plan-name"></strong></label>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Số tháng gia hạn</label>
+          <input type="number" name="months" value="1" min="1" max="24"/>
+        </div>
+        <div class="form-group">
+          <label>Số tiền thu (VNĐ)</label>
+          <input type="number" name="amount" value="0" min="0" step="1000"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <input type="text" name="notes" placeholder="Ghi chú thanh toán..."/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modal-renew')">Hủy</button>
+        <button type="submit" class="btn btn-success">Gia hạn</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Modal helpers ──
+function openModal(id){ document.getElementById(id).classList.add('open') }
+function closeModal(id){ document.getElementById(id).classList.remove('open') }
+// Close on bg click
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click', e=>{ if(e.target===bg) bg.classList.remove('open') })
+})
+
+function showToast(msg, ok=true){
+  const t=document.getElementById('toast')
+  t.textContent=msg
+  t.style.background = ok ? '#276749' : '#c53030'
+  t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'), 3000)
+}
+
+// ── Edit plan ──
+function editPlan(p){
+  document.getElementById('edit-name').value  = p.name
+  document.getElementById('edit-price').value = p.price_monthly
+  document.getElementById('edit-arts').value  = p.articles_per_day
+  document.getElementById('edit-color').value = p.badge_color || '#667eea'
+  document.getElementById('edit-order').value = p.sort_order
+  document.getElementById('edit-sched').checked = !!p.auto_schedule
+  document.getElementById('edit-desc').value  = p.description || ''
+  document.getElementById('form-edit-plan').action = `/admin/plans/${p.id}/edit`
+  openModal('modal-edit-plan')
+}
+
+// ── Toggle plan ──
+function togglePlan(id, btn){
+  fetch(`/admin/plans/${id}/toggle`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){ showToast('Đã cập nhật trạng thái gói!'); setTimeout(()=>location.reload(),800) }
+      else showToast('Lỗi!', false)
+    })
+}
+
+// ── Delete plan ──
+function deletePlan(id, name){
+  if(!confirm(`Xóa gói "${name}"?`)) return
+  fetch(`/admin/plans/${id}/delete`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){ showToast('Đã xóa gói!'); setTimeout(()=>location.reload(),800) }
+      else showToast('Không thể xóa (có thể đang được sử dụng)!', false)
+    })
+}
+
+// ── Cancel subscription ──
+function cancelSub(id, btn){
+  if(!confirm('Hủy đăng ký này?')) return
+  fetch(`/admin/plans/sub/${id}/cancel`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){ showToast('Đã hủy đăng ký!'); setTimeout(()=>location.reload(),800) }
+      else showToast('Lỗi!', false)
+    })
+}
+
+// ── Renew modal ──
+function openRenewModal(id, planName){
+  document.getElementById('renew-plan-name').textContent = planName
+  document.getElementById('form-renew').action = `/admin/plans/sub/${id}/renew`
+  openModal('modal-renew')
+}
+
+// ── Charts (Revenue tab) ──
+{% if tab == 'revenue' %}
+const monthlyData = {{ rev_stats.get('monthly', []) | tojson }};
+const byPlanData  = {{ rev_stats.get('by_plan', [])  | tojson }};
+
+// Revenue line chart
+const ctx1 = document.getElementById('revenueChart')
+if(ctx1){
+  new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: monthlyData.map(r=>r.month),
+      datasets: [{
+        label: 'Doanh thu (VNĐ)',
+        data: monthlyData.map(r=>r.revenue),
+        backgroundColor: 'rgba(102,126,234,.7)',
+        borderColor: '#667eea',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        y:{ ticks:{ callback: v => v.toLocaleString('vi-VN') } }
+      }
+    }
+  })
+}
+
+// Pie chart by plan
+const ctx2 = document.getElementById('planChart')
+if(ctx2 && byPlanData.length){
+  new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: byPlanData.map(r=>r.name),
+      datasets: [{
+        data: byPlanData.map(r=>parseFloat(r.revenue||0)),
+        backgroundColor: byPlanData.map(r=>r.badge_color||'#ccc'),
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{ position:'bottom', labels:{ font:{size:12} } },
+        tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${ctx.raw.toLocaleString('vi-VN')} VNĐ` } }
+      }
+    }
+  })
+}
+{% endif %}
+</script>
+</body>
+</html>

@@ -1,0 +1,1546 @@
+{% extends "base.html" %}
+
+{% block title %}AI E-Magazine — Nền tảng nội dung tự động{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background: #080e1f; color: #eaf6ff; }
+  main { padding: 0; }
+
+  /* Độ tương phản cao hơn cho mobile */
+  @media (max-width: 768px) {
+    body, main, section, .landing-hero, .intro-inner, .contact-inner {
+      color: #f6fcff !important;
+      background: #0a1224 !important;
+    }
+    .landing-hero h1, .section-title, .contact-heading, .intro-heading {
+      color: #fff !important;
+      text-shadow: 0 2px 12px #003b2e44, 0 1px 0 #000a;
+    }
+    .landing-hero p, .intro-lead, .contact-desc, .contact-info-label {
+      color: #c6e6ff !important;
+      text-shadow: 0 1px 4px #001a2e33;
+    }
+    .contact-info-val, .hero-stat-strong {
+      color: #00ffd5 !important;
+      text-shadow: 0 1px 8px #00ffd533;
+    }
+    .contact-form input, .contact-form textarea {
+      background: #101c2e !important;
+      color: #eaf6ff !important;
+      border: 1.5px solid #00d4c8 !important;
+    }
+    .contact-form input::placeholder, .contact-form textarea::placeholder {
+      color: #7fd6c8 !important;
+      opacity: 0.95;
+    }
+    .contact-form button {
+      background: linear-gradient(135deg, #00b375, #00d4c8);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      font-size: 1.05rem;
+      box-shadow: 0 4px 18px #00ffd522;
+    }
+    .contact-form button:hover {
+      background: linear-gradient(135deg, #00ffd5, #00b375);
+      color: #0a1224;
+    }
+    .contact-info-item {
+      background: #0e1a2e !important;
+      border: 1.5px solid #00d4c8 !important;
+    }
+    .contact-icon {
+      background: #00d4c8 !important;
+      color: #0a1224 !important;
+      border: none !important;
+    }
+    .contact-eyebrow {
+      background: #00d4c8 !important;
+      color: #0a1224 !important;
+      border: none !important;
+      font-weight: 900;
+    }
+    .intro-eyebrow {
+      background: #00d4c8 !important;
+      color: #0a1224 !important;
+      border: none !important;
+      font-weight: 900;
+    }
+    .hero-btn-primary, .hero-btn-outline {
+      font-size: 1.08rem;
+      padding: 1.1rem 2.5rem;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      box-shadow: 0 4px 18px #00ffd522;
+    }
+    .hero-btn-primary {
+      background: linear-gradient(135deg, #00ffd5, #00b375);
+      color: #0a1224;
+    }
+    .hero-btn-outline {
+      border: 2px solid #00ffd5;
+      color: #00ffd5;
+      background: transparent;
+    }
+    .hero-btn-outline:hover {
+      background: #00ffd5;
+      color: #0a1224;
+    }
+    .hero-stats {
+      color: #b8ffe6 !important;
+      font-size: 1.08rem;
+    }
+    .hero-stats span:hover {
+      color: #00ffd5 !important;
+    }
+    .intro-features li {
+      color: #b8ffe6 !important;
+    }
+    .intro-features li:hover {
+      color: #00ffd5 !important;
+    }
+    .intro-quote {
+      color: #00ffd5 !important;
+      background: #0e1a2e !important;
+      border-left: 3px solid #00ffd5 !important;
+    }
+    .intro-browser {
+      background: #0e1a2e !important;
+      box-shadow: 0 8px 32px #00ffd522 !important;
+    }
+    .browser-bar {
+      background: #101c2e !important;
+      color: #00ffd5 !important;
+    }
+    .footer, footer {
+      background: #0a1224 !important;
+      color: #7fd6c8 !important;
+      border-top: 2px solid #00d4c8 !important;
+    }
+  }
+
+  /* ── Gradient text utility ── */
+  .text-gradient {
+    background: linear-gradient(135deg, #00b375 0%, #00d4c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .landing-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 20px;
+  }
+
+  /* ── Hero ── */
+  .landing-hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    background:
+      linear-gradient(120deg, rgba(0,0,0,0.72), rgba(5,10,30,0.45)),
+      url("{{ url_for('static', filename='images/login.jpg') }}") center/cover no-repeat;
+    overflow: hidden;
+  }
+  /* subtle animated shimmer overlay */
+  .landing-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(0,179,117,0.06) 50%, transparent 70%);
+    background-size: 200% 200%;
+    animation: shimmer 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+  }
+
+  .landing-hero-inner {
+    position: relative;
+    max-width: 1100px;
+    padding: 4rem 1.5rem 5rem;
+  }
+  .landing-hero h1 {
+    font-size: clamp(1.8rem, 3.8vw, 3.4rem);
+    margin-bottom: 1.2rem;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: normal;
+    background: linear-gradient(135deg, #ffffff 0%, #a8f0da 60%, #00d4c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    transition: filter 0.3s;
+  }
+  .landing-hero h1:hover {
+    filter: brightness(1.15);
+  }
+  .landing-hero p {
+    font-size: 1.05rem;
+    max-width: 740px;
+    margin: 0 auto 2.2rem;
+    line-height: 1.7;
+    color: rgba(210, 240, 255, 0.85);
+    transition: color 0.3s;
+  }
+  .landing-hero p:hover {
+    color: #c0ffe8;
+  }
+  .hero-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .hero-btn-primary,
+  .hero-btn-outline {
+    border-radius: 999px;
+    padding: 0.9rem 2.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: all 0.25s ease;
+    display: inline-block;
+  }
+  .hero-btn-primary {
+    background: linear-gradient(135deg, #00b375 0%, #00c98a 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0, 179, 117, 0.45);
+  }
+  .hero-btn-primary:hover {
+    background: linear-gradient(135deg, #00935f 0%, #00b375 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 179, 117, 0.65);
+    color: #fff;
+  }
+  .hero-btn-outline {
+    background: transparent;
+    border-color: rgba(255,255,255,0.7);
+    color: #fff;
+  }
+  .hero-btn-outline:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: #00d4a0;
+    color: #00d4a0;
+    transform: translateY(-2px);
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+    font-size: 0.95rem;
+    color: rgba(200, 235, 255, 0.75);
+    opacity: 1;
+  }
+  .hero-stats span {
+    transition: color 0.25s;
+  }
+  .hero-stats span:hover {
+    color: #80ffdc;
+    opacity: 1;
+  }
+  .hero-stat-strong {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #00e0aa;
+  }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.75rem;
+    transition: color 0.25s;
+  }
+  .section-title:hover {
+    color: #00b375;
+  }
+  .section-underline {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #00b375, #00d4c8);
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    transition: width 0.3s ease;
+  }
+  .landing-section:hover .section-underline {
+    width: 90px;
+  }
+
+  /* ── Intro ── */
+  #gioi-thieu {
+    background: linear-gradient(160deg, #0b1020 0%, #0d1a2e 55%, #091525 100%);
+    padding: 5rem 0;
+  }
+  .intro-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .intro-eyebrow {
+    display: inline-block;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+  }
+  .intro-heading {
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 0.4rem;
+    color: #f1f5f9;
+  }
+  .intro-heading .hl {
+    background: linear-gradient(135deg, #00b375 0%, #00d4c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-top: 2.2rem;
+  }
+  .intro-lead {
+    font-size: 1rem;
+    color: #64748b;
+    line-height: 1.75;
+    margin-bottom: 1.8rem;
+  }
+  .intro-features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+  .intro-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 0.95rem;
+    font-size: 0.97rem;
+    color: #94a3b8;
+    transition: color 0.25s;
+  }
+  .intro-features li:hover { color: #00d4a0; }
+  .intro-check {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00b375, #00c98a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    box-shadow: 0 3px 10px rgba(0,179,117,0.35);
+  }
+  .intro-check svg {
+    width: 11px;
+    height: 11px;
+    stroke: #fff;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .intro-quote {
+    border-left: 3px solid #00b375;
+    padding: 0.7rem 1.1rem;
+    background: rgba(0,179,117,0.1);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.95rem;
+    color: #00d4a0;
+    font-weight: 600;
+    font-style: italic;
+  }
+  /* Right visual */
+  .intro-visual {
+    position: relative;
+  }
+  .intro-glow {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,179,117,0.14) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .intro-browser {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(15,23,42,0.2), 0 0 0 1px rgba(0,0,0,0.05);
+    transition: transform 0.4s cubic-bezier(.22,1,.36,1), box-shadow 0.4s;
+  }
+  .intro-browser:hover {
+    transform: translateY(-8px) rotate(-0.4deg);
+    box-shadow: 0 48px 100px rgba(0,179,117,0.22), 0 0 0 1px rgba(0,179,117,0.1);
+  }
+  .browser-bar {
+    background: #f3f4f6;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .browser-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .browser-dot:nth-child(1) { background: #ef4444; }
+  .browser-dot:nth-child(2) { background: #f59e0b; }
+  .browser-dot:nth-child(3) { background: #10b981; }
+  .browser-url {
+    flex: 1;
+    background: #fff;
+    border-radius: 5px;
+    height: 22px;
+    margin: 0 0.5rem;
+    border: 1px solid #e5e7eb;
+    padding: 0 0.6rem;
+    font-size: 0.7rem;
+    color: #9ca3af;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+  .intro-browser video {
+    width: 100%;
+    display: block;
+  }
+  .intro-badge {
+    position: absolute;
+    background: #fff;
+    border-radius: 12px;
+    padding: 0.55rem 1rem;
+    box-shadow: 0 10px 32px rgba(15,23,42,0.18);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    z-index: 2;
+  }
+  .intro-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .intro-badge-1 {
+    top: -14px; right: -8px;
+    color: #0f1628;
+    animation: floatBadge 3.5s ease-in-out infinite;
+  }
+  .intro-badge-1 .intro-badge-dot { background: #00b375; box-shadow: 0 0 6px rgba(0,179,117,0.6); }
+  .intro-badge-2 {
+    bottom: 14px; left: -14px;
+    background: linear-gradient(135deg, #0f1628 0%, #1a2a4a 100%);
+    color: #fff;
+    animation: floatBadge 3.5s ease-in-out infinite;
+    animation-delay: 1.5s;
+  }
+  .intro-badge-2 .intro-badge-dot { background: #00d4c8; box-shadow: 0 0 6px rgba(0,212,200,0.7); }
+  @keyframes floatBadge {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+
+  /* ── Services ── */
+  #dich-vu {
+    background: linear-gradient(160deg, #0d1a2e 0%, #0b1020 55%, #091525 100%);
+    padding: 5rem 0;
+  }
+  .services-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .services-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .services-eyebrow {
+    display: inline-block;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.38rem 1.1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .services-heading {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.7rem;
+  }
+  .services-sub {
+    color: #64748b;
+    font-size: 1rem;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem;
+  }
+  .service-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2rem 1.8rem 1.6rem;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+    transition: background 0.35s, border-color 0.35s, transform 0.35s, box-shadow 0.35s;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-a), var(--card-b));
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s cubic-bezier(.22,1,.36,1);
+  }
+  .service-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(0,179,117,0.3);
+    transform: translateY(-7px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-num {
+    position: absolute;
+    top: 1rem; right: 1.2rem;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    user-select: none;
+    font-family: 'Courier New', monospace;
+    transition: color 0.35s;
+  }
+  .service-card:hover .service-num { color: rgba(255,255,255,0.09); }
+  .service-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--card-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    font-size: 1.45rem;
+    transition: transform 0.3s;
+  }
+  .service-card:hover .service-icon { transform: scale(1.1) rotate(-4deg); }
+  .service-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #e2e8f0;
+    margin-bottom: 0.55rem;
+    transition: color 0.25s;
+  }
+  .service-card:hover .service-title { color: #00d4a0; }
+  .service-desc {
+    font-size: 0.88rem;
+    color: #64748b;
+    line-height: 1.7;
+    transition: color 0.25s;
+  }
+  .service-card:hover .service-desc { color: #94a3b8; }
+  .service-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--card-a);
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .service-card:hover .service-arrow { opacity: 1; transform: translateX(0); }
+
+  /* ── Why us ── */
+  #tai-sao {
+    background: linear-gradient(160deg, #0b1020 0%, #0d1a2e 55%, #091525 100%);
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #tai-sao::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,179,117,0.1) 0%, transparent 65%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  #tai-sao::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 65%);
+    bottom: -80px; left: -80px;
+    pointer-events: none;
+  }
+  .why-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .why-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+  .why-eyebrow {
+    display: inline-block;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.38rem 1.1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .why-heading {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.7rem;
+  }
+  .why-heading .hl {
+    background: linear-gradient(135deg, #00b375 0%, #00d4c8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .why-sub {
+    color: #64748b;
+    font-size: 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  /* stats row */
+  .why-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-bottom: 4rem;
+    flex-wrap: wrap;
+  }
+  .why-stat {
+    text-align: center;
+  }
+  .why-stat-num {
+    font-size: 2.8rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .why-stat-label {
+    font-size: 0.82rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .why-stat-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.08);
+    align-self: stretch;
+  }
+  /* benefits grid */
+  .why-benefits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 4rem;
+  }
+  .why-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    padding: 1.6rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
+  }
+  .why-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(0,179,117,0.25);
+    transform: translateY(-3px);
+  }
+  .why-card-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--wci);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+  .why-card-text h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.3rem;
+    transition: color 0.25s;
+  }
+  .why-card:hover .why-card-text h4 { color: #fff; }
+  .why-card-text p {
+    font-size: 0.84rem;
+    color: #64748b;
+    line-height: 1.6;
+    transition: color 0.25s;
+  }
+  .why-card:hover .why-card-text p { color: #94a3b8; }
+  /* partners */
+  .partners-label {
+    text-align: center;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 2rem;
+  }
+  .partners-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .partner-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.02em;
+    transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s;
+    cursor: default;
+  }
+  .partner-pill:hover {
+    background: rgba(0,179,117,0.12);
+    border-color: rgba(0,179,117,0.35);
+    color: #00d4a0;
+    transform: translateY(-2px);
+  }
+
+  /* ── Pricing ── */
+  #bang-gia {
+    background: linear-gradient(160deg, #091525 0%, #0b1020 55%, #0d1a2e 100%);
+    padding: 6rem 0;
+  }
+  .pricing-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .pricing-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+  .pricing-eyebrow {
+    display: inline-block;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.38rem 1.1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .pricing-heading {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.6rem;
+  }
+  .pricing-heading .hl {
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .pricing-sub {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  .pricing-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 24px;
+    padding: 2.4rem 2rem;
+    box-shadow: none;
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .pricing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    border-color: rgba(0,179,117,0.25);
+  }
+  .pricing-card.featured {
+    background: linear-gradient(160deg, #0b1020, #0d1a2e);
+    border: 1.5px solid rgba(0,179,117,0.4);
+    box-shadow: 0 8px 40px rgba(0,179,117,0.2);
+  }
+  .pricing-card.featured:hover {
+    box-shadow: 0 24px 60px rgba(0,179,117,0.35);
+  }
+  .pricing-badge {
+    position: absolute;
+    top: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,179,117,0.4);
+  }
+  .pricing-tier {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin-bottom: 0.8rem;
+  }
+  .pricing-card.featured .pricing-tier { color: #64748b; }
+  .pricing-price {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #f1f5f9;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .pricing-card.featured .pricing-price { color: #f1f5f9; }
+  .pricing-unit {
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: #6b7280;
+  }
+  .pricing-card.featured .pricing-unit { color: #64748b; }
+  .pricing-token {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(0,179,117,0.1);
+    border: 1px solid rgba(0,179,117,0.2);
+    color: #00935f;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    margin: 0.8rem 0 1.2rem;
+    width: fit-content;
+  }
+  .pricing-card.featured .pricing-token {
+    background: rgba(0,212,200,0.12);
+    border-color: rgba(0,212,200,0.25);
+    color: #00d4a0;
+  }
+  .pricing-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin-bottom: 1.2rem;
+  }
+  .pricing-card.featured .pricing-divider { background: rgba(255,255,255,0.08); }
+  .pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
+    transition: color 0.2s;
+  }
+  .pricing-card.featured .pricing-features li { color: #94a3b8; }
+  .pricing-features li:hover { color: #00d4a0; }
+  .pricing-card.featured .pricing-features li:hover { color: #00d4a0; }
+  .pricing-check {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(0,179,117,0.12);
+    color: #00b375;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 900;
+    margin-top: 1px;
+  }
+  .pricing-card.featured .pricing-check {
+    background: rgba(0,212,200,0.15);
+    color: #00d4a0;
+  }
+  .pricing-cta { margin-top: auto; }
+  .pricing-cta a {
+    display: block;
+    text-align: center;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    background: rgba(0,179,117,0.1);
+    border: 1.5px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: all 0.25s;
+  }
+  .pricing-cta a:hover {
+    background: #00b375;
+    border-color: #00b375;
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(0,179,117,0.4);
+    transform: translateY(-2px);
+  }
+  .pricing-card.featured .pricing-cta a {
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0,179,117,0.35);
+  }
+  .pricing-card.featured .pricing-cta a:hover {
+    box-shadow: 0 8px 28px rgba(0,179,117,0.55);
+  }
+
+  /* ── Contact ── */
+  #lien-he {
+    background: linear-gradient(160deg, #0b1020 0%, #0d1a2e 55%, #091525 100%);
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #lien-he::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,179,117,0.09) 0%, transparent 65%);
+    bottom: -100px; right: -50px;
+    pointer-events: none;
+  }
+  .contact-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 5rem;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  .contact-eyebrow {
+    display: inline-block;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.3);
+    color: #00d4a0;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.38rem 1.1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  .contact-heading {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.25;
+    margin-bottom: 0.8rem;
+  }
+  .contact-heading .hl {
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .contact-desc {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+  .contact-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    margin-bottom: 0.8rem;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .contact-info-item:hover {
+    background: rgba(0,179,117,0.08);
+    border-color: rgba(0,179,117,0.2);
+  }
+  .contact-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(0,179,117,0.12);
+    border: 1px solid rgba(0,179,117,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: background 0.25s;
+  }
+  .contact-info-item:hover .contact-icon { background: rgba(0,179,117,0.2); }
+  .contact-info-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+  .contact-info-val {
+    font-weight: 700;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    transition: color 0.25s;
+  }
+  .contact-info-item:hover .contact-info-val { color: #00d4a0; }
+  .contact-form {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    padding: 2.4rem;
+    border-radius: 24px;
+    backdrop-filter: blur(10px);
+  }
+  .contact-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    font-size: 0.92rem;
+    color: #e2e8f0;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .contact-form input::placeholder,
+  .contact-form textarea::placeholder { color: #475569; }
+  .contact-form input:focus,
+  .contact-form textarea:focus {
+    border-color: rgba(0,179,117,0.5);
+    background: rgba(0,179,117,0.05);
+    box-shadow: 0 0 0 3px rgba(0,179,117,0.1);
+  }
+  .contact-form textarea { min-height: 130px; resize: vertical; margin-bottom: 0; }
+  .contact-form button {
+    margin-top: 0.8rem;
+    padding: 0.9rem 2rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #00b375, #00d4c8);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0,179,117,0.35);
+    transition: all 0.25s;
+  }
+  .contact-form button:hover {
+    box-shadow: 0 8px 28px rgba(0,179,117,0.55);
+    transform: translateY(-2px);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 992px) {
+    .intro-grid,
+    .why-benefits,
+    .pricing-grid,
+    .contact-inner {
+      grid-template-columns: 1fr;
+    }
+    .contact-inner { gap: 2.5rem; }
+    .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .landing-section { padding: 3rem 20px; }
+    #dich-vu { padding: 3.5rem 0; }
+    .intro-badge { display: none; }
+  }
+  @media (max-width: 640px) {
+    .hero-actions { flex-direction: column; }
+    .hero-stats { gap: 1.5rem; }
+    .partners-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .services-grid { grid-template-columns: 1fr; }
+    .intro-heading { font-size: 1.8rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="landing-hero">
+  <div class="landing-hero-inner">
+    <h1>Chào mừng đến với dịch vụ của chúng tôi</h1>
+    <p>
+      Giúp bạn sở hữu website tạp chí chuyên nghiệp, luôn được cập nhật nội dung tự động
+      bởi AI, tối ưu hóa hiệu suất kinh doanh và thời gian vận hành.
+    </p>
+    <div class="hero-actions">
+      {% if not user_email %}
+      <a href="/register" class="hero-btn-primary">Bắt đầu ngay</a>
+      <a href="/login" class="hero-btn-outline">Đăng nhập</a>
+      {% else %}
+      <a href="/dashboard" class="hero-btn-primary" id="goToDashboardBtn">Bắt đầu ngay</a>
+      {% endif %}
+    </div>
+    <div class="hero-stats">
+      <span><span class="hero-stat-strong">{{ magazines|length or 0 }}+</span> tạp chí đang hoạt động</span>
+      <span><span class="hero-stat-strong">Tạo bài tự động</span> theo lịch bạn đặt</span>
+      <span><span class="hero-stat-strong">Hỗ trợ 24/7</span> đồng hành triển khai</span>
+    </div>
+  </div>
+</section>
+
+<!-- GIỚI THIỆU -->
+<section id="gioi-thieu">
+  <div class="intro-inner">
+  <div class="intro-eyebrow">✦ Về Chúng Tôi</div>
+  <h2 class="intro-heading">
+    Nền tảng tạp chí<br>
+    <span class="hl">AI-powered</span> hiện đại nhất
+  </h2>
+  <div class="intro-grid">
+    <div>
+      <p class="intro-lead">Giải pháp toàn diện giúp doanh nghiệp &amp; cá nhân sở hữu website tạp chí chuyên nghiệp, tự động vận hành bởi trí tuệ nhân tạo.</p>
+      <ul class="intro-features">
+        <li>
+          <span class="intro-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Tạo website nhanh chóng chỉ với vài thao tác đơn giản.
+        </li>
+        <li>
+          <span class="intro-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Đăng bài tự động mỗi ngày, giữ website luôn mới mẻ và thu hút khách hàng.
+        </li>
+        <li>
+          <span class="intro-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Tối ưu SEO để nội dung luôn sẵn sàng tiếp cận khách hàng trên Google.
+        </li>
+        <li>
+          <span class="intro-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></span>
+          Giao diện đẹp, hiện đại, phù hợp với mọi ngành nghề.
+        </li>
+      </ul>
+      <div class="intro-quote">Chỉ cần tập trung vào chiến lược, phần nội dung hãy để AI lo.</div>
+    </div>
+    <div class="intro-visual">
+      <div class="intro-glow"></div>
+      <div class="intro-browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span>
+          <span class="browser-dot"></span>
+          <span class="browser-dot"></span>
+          <span class="browser-url">ai-emagazine.local / dashboard</span>
+        </div>
+        <video id="demoVideo" controls muted loop playsinline preload="none"
+               style="cursor:pointer;"
+               data-src="{{ url_for('static', filename='video/demo.mp4') }}">
+          Trình duyệt của bạn không hỗ trợ phát video.
+        </video>
+      </div>
+      <div class="intro-badge intro-badge-1">
+        <span class="intro-badge-dot"></span>
+        {{ magazines|length or 0 }}+ tạp chí đang hoạt động
+      </div>
+      <div class="intro-badge intro-badge-2">
+        <span class="intro-badge-dot"></span>
+        AI tự động đăng bài 24/7
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+<script>
+(function() {
+  var v = document.getElementById('demoVideo');
+  if (!v) return;
+  var src = v.getAttribute('data-src');
+  if (!src) return;
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) {
+        var s = document.createElement('source');
+        s.src = src; s.type = 'video/mp4';
+        v.appendChild(s); v.load(); v.play().catch(function(){});
+        obs.disconnect();
+      }
+    }, { threshold: 0.25 });
+    obs.observe(v);
+  } else {
+    setTimeout(function() {
+      var s = document.createElement('source');
+      s.src = src; s.type = 'video/mp4';
+      v.appendChild(s); v.load();
+    }, 1500);
+  }
+}());
+</script>
+
+<!-- DỊCH VỤ -->
+<section id="dich-vu">
+  <div class="services-inner">
+    <div class="services-header">
+      <div class="services-eyebrow">✦ Tính năng nổi bật</div>
+      <h2 class="services-heading">Dịch vụ của chúng tôi</h2>
+      <p class="services-sub">Các tính năng cốt lõi giúp bạn vận hành hệ thống tạp chí trực tuyến hoàn toàn tự động.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card" style="--card-a:#00b375;--card-b:#00d4c8;--card-icon:rgba(0,179,117,0.15);">
+        <span class="service-num">01</span>
+        <div class="service-icon">⚡</div>
+        <div class="service-title">Website tự động chỉ trong vài phút</div>
+        <div class="service-desc">Khởi tạo website tạp chí với cấu trúc chuẩn, sẵn sàng đăng nội dung ngay lập tức.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+      <div class="service-card" style="--card-a:#3b82f6;--card-b:#6366f1;--card-icon:rgba(59,130,246,0.15);">
+        <span class="service-num">02</span>
+        <div class="service-icon">📰</div>
+        <div class="service-title">Đăng bài tự động mỗi ngày</div>
+        <div class="service-desc">Thiết lập chủ đề và lịch đăng, hệ thống AI sẽ tự động tạo bài và xuất bản.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+      <div class="service-card" style="--card-a:#8b5cf6;--card-b:#a78bfa;--card-icon:rgba(139,92,246,0.15);">
+        <span class="service-num">03</span>
+        <div class="service-icon">📈</div>
+        <div class="service-title">Tối ưu SEO mạnh mẽ</div>
+        <div class="service-desc">Tiêu đề, mô tả và cấu trúc bài viết được tối ưu để tăng khả năng xuất hiện trên công cụ tìm kiếm.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+      <div class="service-card" style="--card-a:#f59e0b;--card-b:#fbbf24;--card-icon:rgba(245,158,11,0.15);">
+        <span class="service-num">04</span>
+        <div class="service-icon">🛠️</div>
+        <div class="service-title">Quản lý dễ dàng, không cần kỹ thuật</div>
+        <div class="service-desc">Giao diện trực quan, chỉ cần kéo - chọn - bấm, không yêu cầu lập trình.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+      <div class="service-card" style="--card-a:#10b981;--card-b:#34d399;--card-icon:rgba(16,185,129,0.15);">
+        <span class="service-num">05</span>
+        <div class="service-icon">💰</div>
+        <div class="service-title">Tiết kiệm chi phí, tăng hiệu quả</div>
+        <div class="service-desc">Tự động hoá khâu sản xuất nội dung, giảm chi phí nhân sự viết bài.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+      <div class="service-card" style="--card-a:#00d4c8;--card-b:#06b6d4;--card-icon:rgba(0,212,200,0.15);">
+        <span class="service-num">06</span>
+        <div class="service-icon">📞</div>
+        <div class="service-title">Hỗ trợ 24/7</div>
+        <div class="service-desc">Đội ngũ kỹ thuật và AI luôn sẵn sàng hỗ trợ bạn trong suốt quá trình vận hành.</div>
+        <div class="service-arrow">Khám phá →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TẠI SAO CHỌN CHÚNG TÔI -->
+<section id="tai-sao">
+  <div class="why-inner">
+    <div class="why-header">
+      <div class="why-eyebrow">✦ Lý do chọn chúng tôi</div>
+      <h2 class="why-heading">Tại sao chọn <span class="hl">AI E-Magazine</span>?</h2>
+      <p class="why-sub">Chúng tôi giúp bạn vận hành hệ thống tạp chí hiện đại mà không cần kỹ thuật.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="why-stats">
+      <div class="why-stat">
+        <div class="why-stat-num">{{ magazines|length or 0 }}+</div>
+        <div class="why-stat-label">Tạp chí đang hoạt động</div>
+      </div>
+      <div class="why-stat-divider"></div>
+      <div class="why-stat">
+        <div class="why-stat-num">24/7</div>
+        <div class="why-stat-label">Hỗ trợ khách hàng</div>
+      </div>
+      <div class="why-stat-divider"></div>
+      <div class="why-stat">
+        <div class="why-stat-num">100%</div>
+        <div class="why-stat-label">Tự động hoà</div>
+      </div>
+      <div class="why-stat-divider"></div>
+      <div class="why-stat">
+        <div class="why-stat-num">SEO</div>
+        <div class="why-stat-label">Tối ưu mọi bài viết</div>
+      </div>
+    </div>
+
+    <!-- Benefits grid -->
+    <div class="why-benefits">
+      <div class="why-card" style="--wci:rgba(0,179,117,0.15);">
+        <div class="why-card-icon">⚡</div>
+        <div class="why-card-text">
+          <h4>Tạo website tức thì</h4>
+          <p>Chỉ với vài cú click là có ngay hệ thống tạp chí hoàn chỉnh, sẵn sàng hoạt động.</p>
+        </div>
+      </div>
+      <div class="why-card" style="--wci:rgba(59,130,246,0.15);">
+        <div class="why-card-icon">🤖</div>
+        <div class="why-card-text">
+          <h4>Đăng bài hoàn toàn tự động</h4>
+          <p>AI tự viết và xuất bản nội dung mỗi ngày, luôn giữ website mới mẻ.</p>
+        </div>
+      </div>
+      <div class="why-card" style="--wci:rgba(139,92,246,0.15);">
+        <div class="why-card-icon">📈</div>
+        <div class="why-card-text">
+          <h4>Tối ưu SEO toàn diện</h4>
+          <p>Từ cấu trúc website đến từng bài viết, tất cả đều được tối ưu cho Google.</p>
+        </div>
+      </div>
+      <div class="why-card" style="--wci:rgba(245,158,11,0.15);">
+        <div class="why-card-icon">🛡️</div>
+        <div class="why-card-text">
+          <h4>Hỗ trợ 24/7 tận tâm</h4>
+          <p>Đội ngũ và hệ thống AI luôn đồng hành trong suốt quá trình triển khai.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- BẢNG GIÁ -->
+<section id="bang-gia">
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <div class="pricing-eyebrow">✦ Bảng giá</div>
+      <h2 class="pricing-heading">Chọn gói phù hợp với <span class="hl">nhu cầu của bạn</span></h2>
+      <p class="pricing-sub">Linh hoạt nâng cấp bất cứ lúc nào. Không cần cam kết dài hạn.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Basic</div>
+        <div class="pricing-price">2.000đ<span class="pricing-unit"> / tháng</span></div>
+        <div class="pricing-token">🪙 Nhận 10 Token</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Website tạp chí đầy đủ</li>
+          <li><span class="pricing-check">✓</span>Đăng bài tự động</li>
+          <li><span class="pricing-check">✓</span>Hỗ trợ cơ bản qua email</li>
+        </ul>
+        <div class="pricing-cta"><a href="/register">Bắt đầu miễn phí</a></div>
+      </div>
+      <div class="pricing-card featured">
+        <span class="pricing-badge">⭐ Được đề xuất</span>
+        <div class="pricing-tier">Khởi đầu</div>
+        <div class="pricing-price">5.000đ<span class="pricing-unit"> / tháng</span></div>
+        <div class="pricing-token">🪙 Nhận 15 Token</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Website tạp chí đầy đủ</li>
+          <li><span class="pricing-check">✓</span>Đăng bài tự động</li>
+          <li><span class="pricing-check">✓</span>Hỗ trợ ưu tiên, tư vấn triển khai</li>
+        </ul>
+        <div class="pricing-cta"><a href="/#lien-he">Đăng ký ngay</a></div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Cơ bản</div>
+        <div class="pricing-price">10.000đ<span class="pricing-unit"> / tháng</span></div>
+        <div class="pricing-token">🪙 Nhận 35 Token</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Website tạp chí đầy đủ</li>
+          <li><span class="pricing-check">✓</span>Lịch đăng linh hoạt & số lượng lớn</li>
+          <li><span class="pricing-check">✓</span>Hỗ trợ chuyên sâu & tích hợp mở rộng</li>
+        </ul>
+        <div class="pricing-cta"><a href="/#lien-he">Liên hệ tư vấn</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIÊN HỆ & CHÂN TRANG GỘP -->
+<section id="lien-he">
+  <div class="contact-inner" style="display: flex; flex-direction: column; align-items: center; gap: 2.5rem;">
+    <div style="width: 100%; max-width: 900px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 2.5rem;">
+      <div style="flex: 1 1 320px; min-width: 260px;">
+        <div class="contact-eyebrow">✦ Liên hệ</div>
+        <h2 class="contact-heading">Sẵn sàng <span class="hl">bắt đầu?</span><br>Hãy nhắn cho chúng tôi</h2>
+        <p class="contact-desc">Nếu bạn cần tư vấn hoặc demo, vui lòng để lại thông tin. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.</p>
+        <div class="contact-info-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-info-label">Hotline</div>
+            <div class="contact-info-val">+84 818 883 882</div>
+          </div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <div class="contact-info-label">Email</div>
+            <div class="contact-info-val">vinh222160@student.nctu.edu.vn</div>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form" style="flex: 1 1 340px; min-width: 260px;">
+        <form action="/contact-feedback" method="POST">
+          <div class="contact-row">
+            <input type="text" name="name" placeholder="Tên của bạn" required>
+            <input type="email" name="email" placeholder="Email" required>
+          </div>
+          <input type="text" name="subject" placeholder="Tiêu đề" style="margin-bottom:1rem; display:block; width:100%; box-sizing:border-box;">
+          <textarea name="message" placeholder="Lời nhắn của bạn" required></textarea>
+          <button type="submit">Gửi tin nhắn →</button>
+        </form>
+      </div>
+    </div>
+    <footer style="width:100%;margin-top:2.5rem;background:none;padding:0;text-align:center;color:#999;">
+      <div class="container">
+        <p>&copy; 2026 AI E-Magazine | Tạo bài báo tự động với AI</p>
+      </div>
+    </footer>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  @view-transition { navigation: auto; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  body { animation: pageIn 0.18s ease both; }
+</style>
+<!-- Speculation Rules: Chrome 109+ prerender dashboard hoàn toàn trong nền -->
+<script type="speculationrules">
+{"prerender":[{"urls":["/dashboard"]}]}
+</script>
+<script>
+(function() {
+  var btn = document.getElementById('goToDashboardBtn');
+  if (!btn) return;
+
+  var _html = null;
+  var _fetching = false;
+
+  function prefetch() {
+    if (_fetching || _html) return;
+    _fetching = true;
+    fetch('/dashboard', { credentials: 'same-origin' })
+      .then(function(r) { return (r.ok && !r.redirected) ? r.text() : null; })
+      .then(function(h) { _fetching = false; if (h) _html = h; })
+      .catch(function() { _fetching = false; });
+  }
+
+  // Bắt đầu tải ngầm khi hover (user chưa kịp click)
+  btn.addEventListener('mouseenter', prefetch, { once: true });
+  // Tải ngầm sau khi trang home xong
+  window.addEventListener('load', function() { setTimeout(prefetch, 300); });
+
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (_html) {
+      // HTML đã cache → swap tức thì, không reload
+      history.pushState({}, '', '/dashboard');
+      document.open(); document.write(_html); document.close();
+    } else {
+      // Speculation Rules đã prerender → navigation cực nhanh
+      window.location.href = '/dashboard';
+    }
+  });
+}());
+</script>
+{% endblock %}

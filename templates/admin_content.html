@@ -1,0 +1,489 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý Nội dung – Admin</title>
+  
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar-w: 240px;
+      --primary: #667eea;
+      --danger:  #e53e3e;
+      --success: #38a169;
+      --warning: #d69e2e;
+      --bg:      #f7f8fc;
+      --card:    #ffffff;
+      --border:  #e2e8f0;
+      --text:    #2d3748;
+      --muted:   #718096;
+    }
+
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w); background: #1a202c; color: #e2e8f0;
+      display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+    }
+    .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid #2d3748; }
+    .sidebar-logo h2 { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .5px; }
+    .sidebar-logo span { font-size: 11px; color: #a0aec0; }
+    .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+    .nav-section { font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: 1px; padding: 12px 20px 4px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13.5px; color: #a0aec0; text-decoration: none; border-left: 3px solid transparent; transition: all .15s; }
+    .nav-item:hover { background: #2d3748; color: #fff; }
+    .nav-item.active { background: #2d3748; color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid #2d3748; }
+    .sidebar-footer a { font-size: 13px; color: #a0aec0; text-decoration: none; }
+    .sidebar-footer a:hover { color: #fff; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar h1 { font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--muted); }
+    .content { padding: 28px; flex: 1; }
+
+    /* ── Stat chips ── */
+    .stat-row { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+    .stat-chip { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; display: flex; flex-direction: column; gap: 2px; min-width: 110px; cursor: pointer; text-decoration:none; transition: box-shadow .15s; }
+    .stat-chip:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .stat-chip.active-chip { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(102,126,234,.2); }
+    .stat-chip-num  { font-size: 22px; font-weight: 800; }
+    .stat-chip-label { font-size: 11.5px; color: var(--muted); }
+
+    /* ── Filter bar ── */
+    .filter-bar { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 22px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .filter-bar input[type=text] { border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-family: 'Times New Roman', Times, serif; flex: 1; min-width: 180px; }
+    .filter-bar input:focus { border-color: var(--primary); outline: none; }
+    .filter-bar select { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: 'Times New Roman', Times, serif; background: #fff; }
+    .filter-bar select:focus { border-color: var(--primary); outline: none; }
+    .btn-filter { padding: 8px 18px; border-radius: 8px; border: none; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Times New Roman', Times, serif; }
+    .btn-reset  { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: #fff; color: var(--text); font-size: 13px; cursor: pointer; font-family: 'Times New Roman', Times, serif; text-decoration: none; }
+    .flag-check { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+
+    /* ── Card ── */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+    .card-title { font-size: 15px; font-weight: 700; }
+    .result-count { font-size: 13px; color: var(--muted); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8fafc; font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; padding: 10px 12px; border-bottom: 2px solid var(--border); white-space: nowrap; }
+    td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr.flagged-row { background: #fffbeb; }
+    tr.hidden-row  { opacity: .55; }
+    tr:hover td    { background: #f8fafc; }
+    tr.flagged-row:hover td { background: #fef9c3; }
+
+    /* ── Badge ── */
+    .badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-published { background: #c6f6d5; color: #276749; }
+    .badge-draft     { background: #e2e8f0; color: #4a5568; }
+    .badge-pending   { background: #fef3c7; color: #92400e; }
+    .badge-hidden    { background: #fed7d7; color: #c53030; }
+    .badge-flagged   { background: #fef3c7; color: #92400e; }
+
+    /* ── Thumb ── */
+    .thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; background: #e2e8f0; display: block; flex-shrink: 0; }
+    .thumb-placeholder { width: 48px; height: 36px; background: #e2e8f0; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+    /* ── Action buttons ── */
+    .actions { display: flex; gap: 5px; flex-wrap: wrap; }
+    .btn-act { padding: 4px 9px; font-size: 11.5px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-family: 'Times New Roman', Times, serif; font-weight: 600; white-space: nowrap; transition: background .15s; }
+    .btn-act:hover { background: #f8fafc; }
+    .btn-act.danger  { border-color: #feb2b2; background: #fff5f5; color: var(--danger); }
+    .btn-act.danger:hover  { background: #fed7d7; }
+    .btn-act.warn    { border-color: #fbd38d; background: #fffbeb; color: #c05621; }
+    .btn-act.warn:hover    { background: #fef3c7; }
+    .btn-act.primary { border-color: #a3bffa; background: #ebf4ff; color: #3c4fe0; }
+    .btn-act.primary:hover { background: #dbeafe; }
+    .btn-act.success { border-color: #9ae6b4; background: #f0fff4; color: #276749; }
+    .btn-act.success:hover { background: #c6f6d5; }
+    .btn-preview { font-size: 11.5px; color: var(--muted); text-decoration: none; padding: 4px 9px; border: 1px solid var(--border); border-radius: 6px; }
+    .btn-preview:hover { background: #f8fafc; color: var(--text); }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .page-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text); }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 700; }
+    .page-btn.disabled { opacity:.4; pointer-events:none; }
+
+    /* ── Modal ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close { font-size: 20px; background: none; border: none; cursor: pointer; color: var(--muted); }
+    .modal-body { padding: 20px 22px; overflow-y: auto; flex: 1; font-size: 13.5px; line-height: 1.7; }
+    .modal-body h2 { font-size: 17px; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
+    .modal-body .meta { font-size: 12px; color: var(--muted); margin-bottom: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .modal-body img { max-width: 100%; border-radius: 6px; margin-bottom: 12px; }
+    .modal-body p { margin-bottom: 10px; }
+
+    /* ── Flag modal ── */
+    .flag-modal { width: 92%; max-width: 420px; }
+    .flag-modal textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 13.5px; font-family: 'Times New Roman', Times, serif; resize: vertical; min-height: 90px; }
+    .flag-modal textarea:focus { border-color: var(--primary); outline: none; }
+    .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 13px; display: none; z-index: 999; max-width: 320px; }
+    #toast.show { display: block; }
+
+    @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>⚙️ Admin Panel</h2>
+    <span>AI E-Magazine</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Tổng quan</div>
+    <a href="/admin/dashboard" class="nav-item">📊 Dashboard</a>
+    <div class="nav-section">Quản lý</div>
+    <a href="/admin/users"   class="nav-item">👥 Người dùng</a>
+    <a href="/admin/content" class="nav-item active">📰 Nội dung</a>
+    <div class="nav-section">Hệ thống</div>
+    <a href="/admin/system"  class="nav-item">🖥 Hệ thống</a>
+    <a href="/admin/plans"   class="nav-item">💎 Gói dịch vụ</a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/">← Về trang chủ</a>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar">
+    <h1>📰 Quản lý Nội dung</h1>
+    <div class="topbar-right">
+      <span>{{ session.get('user_email','') }}</span>
+      <a href="/logout" style="color:var(--danger);text-decoration:none;font-weight:600;">Đăng xuất</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── STAT CHIPS ── -->
+    <div class="stat-row">
+      <a href="/admin/content" class="stat-chip {% if not current_status and not current_flagged %}active-chip{% endif %}">
+        <span class="stat-chip-num">{{ stats.total or 0 }}</span>
+        <span class="stat-chip-label">Tất cả</span>
+      </a>
+      <a href="/admin/content?status=published" class="stat-chip {% if current_status=='published' %}active-chip{% endif %}">
+        <span class="stat-chip-num" style="color:var(--success);">{{ stats.published or 0 }}</span>
+        <span class="stat-chip-label">Đã xuất bản</span>
+      </a>
+      <a href="/admin/content?status=pending" class="stat-chip {% if current_status=='pending' %}active-chip{% endif %}">
+        <span class="stat-chip-num" style="color:#d97706;">{{ stats.pending or 0 }}</span>
+        <span class="stat-chip-label">Chờ duyệt</span>
+      </a>
+      <a href="/admin/content?status=draft" class="stat-chip {% if current_status=='draft' %}active-chip{% endif %}">
+        <span class="stat-chip-num" style="color:var(--muted);">{{ stats.draft or 0 }}</span>
+        <span class="stat-chip-label">Nháp</span>
+      </a>
+      <a href="/admin/content?status=hidden" class="stat-chip {% if current_status=='hidden' %}active-chip{% endif %}">
+        <span class="stat-chip-num" style="color:var(--danger);">{{ stats.hidden or 0 }}</span>
+        <span class="stat-chip-label">Đã ẩn</span>
+      </a>
+      <a href="/admin/content?flagged=1" class="stat-chip {% if current_flagged %}active-chip{% endif %}">
+        <span class="stat-chip-num" style="color:#c05621;">{{ stats.flagged or 0 }}</span>
+        <span class="stat-chip-label">🚩 Bị gắn cờ</span>
+      </a>
+    </div>
+
+    <!-- ── FILTER BAR ── -->
+    <form method="GET" action="/admin/content" class="filter-bar">
+      {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}" />{% endif %}
+      <input type="text" name="q" value="{{ current_q }}" placeholder="🔍 Tìm theo tiêu đề, từ khóa..." />
+      <select name="status">
+        <option value="">Tất cả trạng thái</option>
+        <option value="published" {% if current_status=='published' %}selected{% endif %}>Đã xuất bản</option>
+        <option value="pending"   {% if current_status=='pending'   %}selected{% endif %}>Chờ duyệt</option>
+        <option value="draft"     {% if current_status=='draft'     %}selected{% endif %}>Nháp</option>
+        <option value="hidden"    {% if current_status=='hidden'    %}selected{% endif %}>Đã ẩn</option>
+      </select>
+      <label class="flag-check">
+        <input type="checkbox" name="flagged" value="1" {% if current_flagged %}checked{% endif %} />
+        🚩 Chỉ cờ
+      </label>
+      <button type="submit" class="btn-filter">Lọc</button>
+      <a href="/admin/content" class="btn-reset">Xóa lọc</a>
+    </form>
+
+    <!-- ── TABLE ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Danh sách bài viết</span>
+        <span class="result-count">{{ total }} kết quả — Trang {{ page }}/{{ pages }}</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ảnh</th>
+              <th style="min-width:260px;">Tiêu đề</th>
+              <th>Tác giả</th>
+              <th>Tạp chí</th>
+              <th>Trạng thái</th>
+              <th>Lượt xem</th>
+              <th>Ngày tạo</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in articles %}
+            <tr class="{% if a.flagged %}flagged-row{% elif a.status=='hidden' %}hidden-row{% endif %}" id="row-{{ a.id }}">
+              <td style="color:var(--muted);font-size:11px;">{{ loop.index + (page-1)*25 }}</td>
+              <td>
+                {% if a.image_urls and a.image_urls|length > 0 %}
+                  <img class="thumb" src="{{ a.image_urls[0] }}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                  <div class="thumb-placeholder" style="display:none;">🖼</div>
+                {% else %}
+                  <div class="thumb-placeholder">🖼</div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="font-weight:600;font-size:13px;line-height:1.4;max-width:300px;">
+                  {{ a.title[:80] }}{% if a.title|length > 80 %}…{% endif %}
+                </div>
+                {% if a.flagged %}
+                <div style="font-size:11px;color:#c05621;margin-top:3px;">
+                  🚩 {{ a.flag_reason or 'Nội dung bị gắn cờ' }}
+                </div>
+                {% endif %}
+                {% if a.topic %}
+                <div style="font-size:11px;color:var(--muted);margin-top:2px;">{{ a.topic }}</div>
+                {% endif %}
+              </td>
+              <td style="font-size:12px;white-space:nowrap;">{{ a.author_name or a.author_email or '—' }}</td>
+              <td style="font-size:12px;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ a.magazine_title or '—' }}
+              </td>
+              <td>
+                <span class="badge badge-{{ a.status or 'draft' }}" id="badge-{{ a.id }}">
+                  {% if a.status == 'published' %}✅ Xuất bản
+                  {% elif a.status == 'pending' %}⏳ Chờ duyệt
+                  {% elif a.status == 'hidden'  %}🙈 Ẩn
+                  {% else %}📝 Nháp{% endif %}
+                </span>
+              </td>
+              <td style="text-align:center;font-size:12px;">{{ a.view_count or 0 }}</td>
+              <td style="font-size:11.5px;color:var(--muted);white-space:nowrap;">
+                {{ a.created_at.strftime('%d/%m/%Y') if a.created_at else '—' }}
+              </td>
+              <td>
+                <div class="actions">
+                  <!-- Preview -->
+                  <a class="btn-preview" href="/article/{{ a.id }}" target="_blank">👁 Xem</a>
+
+                  <!-- Duyệt (nếu pending) -->
+                  {% if a.status == 'pending' %}
+                  <button class="btn-act success" onclick="approveArt({{ a.id }})">✅ Duyệt</button>
+                  {% endif %}
+
+                  <!-- Ẩn / Hiện -->
+                  {% if a.status != 'hidden' %}
+                  <button class="btn-act warn" onclick="hideArt({{ a.id }})">🙈 Ẩn</button>
+                  {% else %}
+                  <button class="btn-act primary" onclick="unhideArt({{ a.id }})">👁 Hiện</button>
+                  {% endif %}
+
+                  <!-- Gắn cờ / Bỏ cờ -->
+                  {% if not a.flagged %}
+                  <button class="btn-act warn" onclick="openFlagModal({{ a.id }})">🚩 Cờ</button>
+                  {% else %}
+                  <button class="btn-act primary" onclick="unflagArt({{ a.id }})">✓ Bỏ cờ</button>
+                  {% endif %}
+
+                  <!-- Xóa -->
+                  <button class="btn-act danger" onclick="deleteArt({{ a.id }}, '{{ a.title[:30]|replace("'","") }}')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:32px;">Không có bài viết nào phù hợp.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if pages > 1 %}
+      <div class="pagination">
+        <a class="page-btn {% if page<=1 %}disabled{% endif %}"
+           href="/admin/content?page={{ page-1 }}&q={{ current_q }}&status={{ current_status }}{% if current_flagged %}&flagged=1{% endif %}">‹</a>
+        {% for p in range(1, pages+1) %}
+          {% if p == page or (p >= page-2 and p <= page+2) or p == 1 or p == pages %}
+            {% if p != 1 and p != pages and (p < page-2 or p > page+2) %}
+              <span class="page-btn disabled">…</span>
+            {% else %}
+            <a class="page-btn {% if p==page %}active{% endif %}"
+               href="/admin/content?page={{ p }}&q={{ current_q }}&status={{ current_status }}{% if current_flagged %}&flagged=1{% endif %}">{{ p }}</a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        <a class="page-btn {% if page>=pages %}disabled{% endif %}"
+           href="/admin/content?page={{ page+1 }}&q={{ current_q }}&status={{ current_status }}{% if current_flagged %}&flagged=1{% endif %}">›</a>
+      </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══════════ PREVIEW MODAL ═══════════ -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">👁 Xem trước bài viết</span>
+      <button class="modal-close" onclick="closeModal('preview-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="preview-body">Đang tải...</div>
+  </div>
+</div>
+
+<!-- ═══════════ FLAG MODAL ═══════════ -->
+<div class="modal-overlay" id="flag-modal">
+  <div class="modal flag-modal">
+    <div class="modal-header">
+      <span class="modal-title">🚩 Gắn cờ nội dung vi phạm</span>
+      <button class="modal-close" onclick="closeModal('flag-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:10px;font-size:13.5px;color:var(--muted);">Nhập lý do gắn cờ (tùy chọn):</p>
+      <textarea id="flag-reason" placeholder="VD: Nội dung vi phạm bản quyền, thông tin sai lệch..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-reset" onclick="closeModal('flag-modal')">Hủy</button>
+      <button class="btn-filter" onclick="submitFlag()" style="background:#c05621;">🚩 Xác nhận gắn cờ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+let _flagTargetId = null;
+
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#276749' : '#c53030';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+// ── Approve
+function approveArt(id) {
+  fetch(`/admin/content/${id}/approve`, { method:'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        const b = document.getElementById(`badge-${id}`);
+        if (b) { b.className = 'badge badge-published'; b.textContent = '✅ Xuất bản'; }
+        showToast('✅ Đã duyệt và xuất bản bài viết');
+        // Remove "duyệt" button in row
+        document.querySelectorAll(`#row-${id} .btn-act.success`).forEach(el => el.remove());
+      } else { showToast('Duyệt thất bại', false); }
+    });
+}
+
+// ── Hide
+function hideArt(id) {
+  fetch(`/admin/content/${id}/hide`, { method:'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        document.getElementById(`row-${id}`).classList.add('hidden-row');
+        const b = document.getElementById(`badge-${id}`);
+        if (b) { b.className = 'badge badge-hidden'; b.textContent = '🙈 Ẩn'; }
+        showToast('🙈 Đã ẩn bài viết');
+      } else { showToast('Thao tác thất bại', false); }
+    });
+}
+
+// ── Unhide
+function unhideArt(id) {
+  fetch(`/admin/content/${id}/unhide`, { method:'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        document.getElementById(`row-${id}`).classList.remove('hidden-row');
+        const b = document.getElementById(`badge-${id}`);
+        if (b) { b.className = 'badge badge-published'; b.textContent = '✅ Xuất bản'; }
+        showToast('👁 Đã khôi phục bài viết');
+      } else { showToast('Thao tác thất bại', false); }
+    });
+}
+
+// ── Flag
+function openFlagModal(id) {
+  _flagTargetId = id;
+  document.getElementById('flag-reason').value = '';
+  openModal('flag-modal');
+}
+function submitFlag() {
+  if (!_flagTargetId) return;
+  const reason = document.getElementById('flag-reason').value.trim();
+  const fd = new FormData();
+  fd.append('reason', reason);
+  fetch(`/admin/content/${_flagTargetId}/flag`, { method:'POST', body: fd })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        document.getElementById(`row-${_flagTargetId}`).classList.add('flagged-row');
+        showToast('🚩 Đã gắn cờ bài viết');
+        closeModal('flag-modal');
+        // Reload để cập nhật hiển thị flag_reason
+        setTimeout(() => location.reload(), 1200);
+      } else { showToast('Thao tác thất bại', false); }
+    });
+}
+
+// ── Unflag
+function unflagArt(id) {
+  fetch(`/admin/content/${id}/unflag`, { method:'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        document.getElementById(`row-${id}`).classList.remove('flagged-row');
+        showToast('✓ Đã bỏ cờ bài viết');
+        setTimeout(() => location.reload(), 1200);
+      } else { showToast('Thao tác thất bại', false); }
+    });
+}
+
+// ── Delete
+function deleteArt(id, title) {
+  if (!confirm(`Xóa bài viết "${title}..."?\nThao tác này không thể hoàn tác.`)) return;
+  fetch(`/admin/content/${id}/delete`, { method:'POST' })
+    .then(r => r.json()).then(d => {
+      if (d.success) {
+        const row = document.getElementById(`row-${id}`);
+        if (row) row.remove();
+        showToast('🗑 Đã xóa bài viết');
+      } else { showToast('Xóa thất bại', false); }
+    });
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

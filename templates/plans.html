@@ -1,0 +1,632 @@
+﻿{% extends "base.html" %}
+{% block title %}Bảng giá – AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+  .pricing-hero {
+    text-align: center;
+    padding: 3.5rem 1rem 2rem;
+  }
+  .pricing-hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: .6rem;
+  }
+  .pricing-hero p {
+    font-size: 1.1rem;
+    color: #718096;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ── Plan cards grid ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 2.5rem auto 3rem;
+    padding: 0 1rem;
+  }
+  .pricing-card {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 32px 26px 28px;
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .pricing-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.1);
+  }
+  .pricing-card.featured {
+    border-color: #059669;
+    box-shadow: 0 8px 30px rgba(5,150,105,.25);
+  }
+  .featured-tag {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #059669;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .plan-name-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 14px;
+  }
+  .plan-price-big {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1;
+  }
+  .plan-price-big .currency {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #718096;
+    vertical-align: super;
+  }
+  .plan-price-big .period {
+    font-size: .9rem;
+    font-weight: 400;
+    color: #718096;
+  }
+  .plan-desc {
+    font-size: 13.5px;
+    color: #718096;
+    margin: 10px 0 22px;
+    min-height: 38px;
+  }
+  .feature-list {
+    list-style: none;
+    margin-bottom: 26px;
+  }
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 14px;
+    color: #4a5568;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list .check { color: #38a169; font-weight: 700; font-size: 15px; }
+  .feature-list .cross { color: #e53e3e; font-size: 15px; }
+
+  .btn-plan {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity .2s, transform .2s;
+  }
+  .btn-plan:hover { opacity: .88; transform: translateY(-1px); }
+  .btn-plan-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+  .btn-plan-outline {
+    border: 2px solid #667eea;
+    color: #667eea;
+    background: transparent;
+  }
+  .btn-plan-success { background: #38a169; color: #fff; }
+  .btn-active {
+    background: #c6f6d5;
+    color: #276749;
+    font-size: 13.5px;
+    letter-spacing: .3px;
+  }
+
+  /* ── Comparison table ── */
+  .compare-section {
+    max-width: 900px;
+    margin: 0 auto 4rem;
+    padding: 0 1rem;
+  }
+  .compare-section h2 {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1a202c;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,.07);
+  }
+  .compare-table th {
+    padding: 14px 18px;
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 14px;
+    color: #4a5568;
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .compare-table th:first-child { text-align: left; }
+  .compare-table td {
+    padding: 13px 18px;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px solid #f0f4f8;
+    color: #4a5568;
+  }
+  .compare-table td:first-child { text-align: left; font-weight: 500; color: #2d3748; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: #f8fafc; }
+  .check-mark { color: #38a169; font-size: 18px; font-weight: 700; }
+  .cross-mark { color: #e53e3e; font-size: 15px; }
+
+  /* ── FAQ ── */
+  .faq-section {
+    max-width: 720px;
+    margin: 0 auto 4rem;
+    padding: 0 1rem;
+  }
+  .faq-section h2 { text-align:center; font-size:1.5rem; font-weight:700; margin-bottom:1.5rem; color:#1a202c; }
+  .faq-item { margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #fff; }
+  .faq-question {
+    width: 100%; text-align: left; background: none; border: none;
+    padding: 16px 20px; font-size: 14.5px; font-weight: 600;
+    color: #2d3748; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Times New Roman', Times, serif;
+  }
+  .faq-question:hover { background: #f8fafc; }
+  .faq-answer { padding: 0 20px 16px; font-size: 13.5px; color: #718096; line-height: 1.7; display: none; }
+  .faq-answer.open { display: block; }
+
+  @media(max-width: 600px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+    .pricing-hero h1 { font-size: 1.7rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:1100px">
+
+  <!-- Hero -->
+  <div class="pricing-hero">
+    <h1>💎 Gói Cước Dịch Vụ</h1>
+    <p>Chọn gói cước phù hợp với nhu cầu của bạn. Tạo 1 bài viết = 1 Token, 1 tạp chí = 2 Token. Nạp càng nhiều, ưu đãi càng lớn.</p>
+    {% if active_sub %}
+    <div style="display:inline-block;background:#c6f6d5;color:#276749;padding:8px 20px;border-radius:20px;font-size:13.5px;font-weight:600;margin-top:1rem">
+      ✅ Bạn đang dùng gói <strong>{{ active_sub.plan_name }}</strong>
+      — hết hạn {{ active_sub.end_date }}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Plan cards -->
+  <div class="pricing-grid">
+
+    {% for plan in plans %}
+    <div class="pricing-card {% if loop.index0 == 1 %}featured{% endif %}">
+      {% if loop.index0 == 1 %}<span class="featured-tag">Được đề xuất</span>{% endif %}
+      <span class="plan-name-badge" style="background:{{ plan.badge_color or '#16a34a' }};">{{ plan.name }}</span>
+      <div class="plan-price-big">
+        <span class="currency">₫</span>{{ "{:,}".format(plan.price_monthly | int) | replace(",", ".") }}<span class="period">/tháng</span>
+      </div>
+      <div class="plan-desc">{{ plan.description or ('Nhận ' + (plan.articles_per_day | string) + ' Token') }}</div>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> {{ plan.articles_per_day }} token nạp mỗi lần</li>
+        {% if plan.magazines_limit and plan.magazines_limit > 0 %}
+        <li><span class="check">✓</span> {{ plan.magazines_limit }} tạp chí tối đa</li>
+        {% else %}
+        <li><span class="check">✓</span> Tạp chí không giới hạn</li>
+        {% endif %}
+        {% if plan.auto_schedule %}
+        <li><span class="check">✓</span> Hỗ trợ lịch tự động</li>
+        {% else %}
+        <li><span style="color:#9ca3af">✗</span> Không có lịch tự động</li>
+        {% endif %}
+      </ul>
+      {% if user_email %}
+        <button type="button" class="btn-plan btn-plan-success"
+          onclick="buyPlan('plan_id', {{ plan.id }})">Mua ngay</button>
+      {% else %}
+        <a href="/login" class="btn-plan btn-plan-success">Đăng nhập để mua ngay</a>
+      {% endif %}
+    </div>
+    {% else %}
+    <p style="text-align:center;color:#718096;grid-column:1/-1;padding:2rem">Chưa có gói dịch vụ nào.</p>
+    {% endfor %}
+
+  </div>
+
+  <!-- Comparison table -->
+  {% if plans %}
+  <div class="compare-section">
+    <h2>📊 So sánh tính năng</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Tính năng</th>
+          {% for plan in plans %}
+          <th><span style="background:{{ plan.badge_color or '#059669' }};color:#fff;padding:3px 12px;border-radius:14px;font-size:12px">{{ plan.name }}</span></th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Giá / tháng</td>
+          {% for plan in plans %}
+          <td>{{ "{:,}".format(plan.price_monthly | int) | replace(",", ".") }}₫</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Token nhận được</td>
+          {% for plan in plans %}
+          <td>{{ plan.articles_per_day }} Token</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Tạp chí tối đa</td>
+          {% for plan in plans %}
+          <td>{% if plan.magazines_limit and plan.magazines_limit > 0 %}{{ plan.magazines_limit }}{% else %}∞{% endif %}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Website tạp chí</td>
+          {% for plan in plans %}
+          <td><span class="check-mark">✓</span></td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <td>Lịch đăng tự động</td>
+          {% for plan in plans %}
+          <td>{% if plan.auto_schedule %}<span class="check-mark">✓</span>{% else %}<span class="cross-mark">✗</span>{% endif %}</td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <h2>❓ Câu hỏi thường gặp</h2>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Tôi có thể nâng cấp / hạ cấp gói không?
+        <span>▾</span>
+      </button>
+      <div class="faq-answer">
+        Có, bạn có thể liên hệ admin bất kỳ lúc nào để thay đổi gói. Gói mới sẽ có hiệu lực ngay sau khi được xác nhận.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Thanh toán bằng hình thức nào?
+        <span>▾</span>
+      </button>
+      <div class="faq-answer">
+        Hiện tại hệ thống thanh toán qua SePay (chuyển khoản ngân hàng tự động đối soát). Sau khi chuyển khoản đúng nội dung, token sẽ được cộng tự động.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Gói Free có hết hạn không?
+        <span>▾</span>
+      </button>
+      <div class="faq-answer">
+        Gói Free không hết hạn. Bạn có thể sử dụng miễn phí với các giới hạn cơ bản mà không cần đăng ký trả phí.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Lịch tự động sinh bài là gì?
+        <span>▾</span>
+      </button>
+      <div class="faq-answer">
+        Đây là tính năng cho phép hệ thống tự động tạo và đăng bài viết theo lịch bạn thiết lập (hàng ngày, hàng tuần, ...). Chỉ có ở gói Pro và Business.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Payment Modal ── -->
+<div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:20px;max-width:580px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;max-height:92vh;overflow-y:auto">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;padding:1rem 1.4rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:700;font-size:1.05rem">💳 Thanh toán SePay</span>
+      <button id="pmCloseBtn" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1;padding:0 .3rem">×</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:1.2rem 1.4rem">
+      <!-- QR -->
+      <div style="text-align:center;margin-bottom:1rem">
+        <img id="pmQR" src="" alt="VietQR" style="max-width:200px;border-radius:12px;border:1px solid #e5e7eb">
+      </div>
+      <!-- Info rows -->
+      <div style="background:#f8fafc;border-radius:12px;padding:1rem;font-size:.9rem">
+        <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #e5e7eb">
+          <span style="color:#64748b">Gói</span><strong id="pmPlan"></strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #e5e7eb">
+          <span style="color:#64748b">Số tiền</span><strong id="pmAmount" style="color:#059669;font-size:1rem"></strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #e5e7eb">
+          <span style="color:#64748b">Ngân hàng</span><strong id="pmBank"></strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #e5e7eb">
+          <span style="color:#64748b">Chủ tài khoản</span><strong id="pmAccName"></strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid #e5e7eb">
+          <span style="color:#64748b">Số TK</span>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <strong id="pmAccNo" style="font-family:monospace"></strong>
+            <button id="pmCopyAccNo" style="border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:.15rem .5rem;font-size:.75rem;cursor:pointer">Sao chép</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0">
+          <span style="color:#64748b">Nội dung CK</span>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <strong id="pmContent" style="font-family:monospace;color:#0f766e"></strong>
+            <button id="pmCopyContent" style="border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:.15rem .5rem;font-size:.75rem;cursor:pointer">Sao chép</button>
+          </div>
+        </div>
+      </div>
+      <!-- Note -->
+      <div style="margin-top:.8rem;background:#ecfeff;border:1px solid #a5f3fc;border-radius:9px;padding:.7rem .8rem;color:#155e75;font-size:.85rem">
+        ⚡ Chuyển khoản <strong>đúng số tiền</strong> và <strong>đúng nội dung</strong> — tự động xác nhận trong vài giây.
+      </div>
+      <!-- Status bar -->
+      <div id="pmStatus" style="margin-top:.8rem;padding:.65rem .8rem;border-radius:9px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.9rem">
+        ⏳ Đang chờ giao dịch...
+      </div>
+      <!-- Actions -->
+      <div style="margin-top:.9rem;display:flex;gap:.6rem;flex-wrap:wrap">
+        <button id="pmVerifyBtn" onclick="pmManualVerify()" style="flex:2;background:#059669;color:#fff;border:none;border-radius:9px;padding:.7rem 1rem;font-weight:600;cursor:pointer;font-size:.9rem">
+          ⚡ Tôi đã chuyển khoản
+        </button>
+        <button id="pmCloseFooterBtn" style="flex:1;background:#f1f5f9;color:#334155;border:none;border-radius:9px;padding:.7rem 1rem;font-weight:600;cursor:pointer;font-size:.9rem">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFaq(btn){
+  const ans = btn.nextElementSibling;
+  const isOpen = ans.classList.contains('open');
+  document.querySelectorAll('.faq-answer').forEach(function(a){ a.classList.remove('open'); });
+  document.querySelectorAll('.faq-question span').forEach(function(s){ s.textContent='▾'; });
+  if(!isOpen){
+    ans.classList.add('open');
+    btn.querySelector('span').textContent='▴';
+  }
+}
+
+// ── Payment popup ──
+(function(){
+  var _pollTimer = null;
+  var _showConfirmTimer = null;
+  var _orderCode = null;
+  var _pollCount = 0;
+  var _done = false;
+
+  function g(id){ return document.getElementById(id); }
+
+  function pmCopyText(sourceId, btn){
+    var text = g(sourceId).textContent.trim();
+    var fallback = function(){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try{ document.execCommand('copy'); } catch(e){}
+      document.body.removeChild(ta);
+      btn.textContent='Đã sao chép';
+      setTimeout(function(){ btn.textContent='Sao chép'; }, 1200);
+    };
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(text).then(function(){
+        btn.textContent='Đã sao chép';
+        setTimeout(function(){ btn.textContent='Sao chép'; }, 1200);
+      }).catch(fallback);
+    } else { fallback(); }
+  }
+
+  function pmSetStatus(icon, msg, type){
+    var el = g('pmStatus');
+    el.innerHTML = icon + ' ' + msg;
+    if(type === 'paid'){
+      el.style.background='#ecfdf5'; el.style.borderColor='#86efac'; el.style.color='#166534';
+    } else if(type === 'error'){
+      el.style.background='#fef2f2'; el.style.borderColor='#fca5a5'; el.style.color='#991b1b';
+    } else if(type === 'checking'){
+      el.style.background='#eff6ff'; el.style.borderColor='#bfdbfe'; el.style.color='#1e40af';
+    } else {
+      el.style.background='#fffbeb'; el.style.borderColor='#fde68a'; el.style.color='#92400e';
+    }
+  }
+
+  function pmCloseModal(){
+    if(_done) return;
+    clearInterval(_pollTimer); _pollTimer = null;
+    clearTimeout(_showConfirmTimer); _showConfirmTimer = null;
+    _orderCode = null; _pollCount = 0;
+    g('payModal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function pmOnPaid(){
+    if(_done) return;
+    _done = true;
+    clearInterval(_pollTimer); _pollTimer = null;
+    clearTimeout(_showConfirmTimer); _showConfirmTimer = null;
+    var btn = g('pmVerifyBtn');
+    if(btn){ btn.disabled = true; btn.textContent = '✅ Đã xác nhận'; }
+    pmSetStatus('✅', 'Thanh toán thành công! Token đã được cộng. Đang tải lại...', 'paid');
+    setTimeout(function(){
+      window.location.href = '/payment/success?order_code=' + _orderCode;
+    }, 1500);
+  }
+
+  window.pmManualVerify = function(){
+    if(_done || !_orderCode) return;
+    var btn = g('pmVerifyBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Đang kiểm tra...';
+    pmSetStatus('🔍', 'Đang xác minh giao dịch với SePay...', 'checking');
+    fetch('/payment/verify/' + _orderCode, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.ok && d.status === 'paid'){
+        pmOnPaid();
+      } else {
+        var msg = d.message || 'Chưa tìm thấy giao dịch. Vui lòng chờ thêm 1-2 phút rồi thử lại.';
+        pmSetStatus('⏳', msg, '');
+        btn.disabled = false;
+        btn.textContent = '⚡ Tôi đã chuyển khoản';
+      }
+    })
+    .catch(function(){
+      pmSetStatus('⚠️', 'Lỗi kết nối. Vui lòng thử lại.', 'error');
+      btn.disabled = false;
+      btn.textContent = '⚡ Tôi đã chuyển khoản';
+    });
+  };
+
+  function pmCheckStatus(){
+    if(!_orderCode || _done) return;
+    fetch('/payment/status/' + _orderCode, { credentials: 'same-origin' })
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(d){
+        if(d.status === 'paid'){
+          pmOnPaid();
+        } else if(d.status === 'cancelled' || d.status === 'expired'){
+          clearInterval(_pollTimer); _pollTimer = null;
+          pmSetStatus('❌', 'Đơn hàng đã bị huỷ hoặc hết hạn.', 'error');
+        }
+      })
+      .catch(function(){ /* silent retry next poll */ });
+  }
+
+  function pmOpenModal(d){
+    _done = false;
+    _orderCode = d.order_code;
+    _pollCount = 0;
+    g('pmQR').src = d.qr_url;
+    g('pmPlan').textContent = d.plan_name + ' (+' + d.tokens + ' token)';
+    g('pmAmount').textContent = Number(d.amount).toLocaleString('vi-VN') + ' đ';
+    g('pmBank').textContent = d.bank_name;
+    g('pmAccName').textContent = d.account_name;
+    g('pmAccNo').textContent = d.account_no;
+    g('pmContent').textContent = d.transfer_content;
+    pmSetStatus('⏳', 'Đang chờ giao dịch...', '');
+    var vBtn = g('pmVerifyBtn');
+    if(vBtn){ vBtn.disabled = false; vBtn.textContent = '⚡ Tôi đã chuyển khoản'; }
+    g('payModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Poll immediately, then every 3 seconds
+    pmCheckStatus();
+    _pollTimer = setInterval(function(){ pmCheckStatus(); _pollCount++; }, 3000);
+  }
+
+  // Expose globally for onclick attributes
+  window.buyPlan = function(keyType, keyVal){
+    // Hiện modal ngay lập tức với trạng thái loading
+    _done = false;
+    _orderCode = null;
+    _pollCount = 0;
+    g('pmQR').src = '';
+    g('pmPlan').textContent = '...';
+    g('pmAmount').textContent = '...';
+    g('pmBank').textContent = '...';
+    g('pmAccName').textContent = '...';
+    g('pmAccNo').textContent = '...';
+    g('pmContent').textContent = '...';
+    pmSetStatus('⏳', 'Đang tạo đơn hàng...', 'checking');
+    var vBtn = g('pmVerifyBtn');
+    if(vBtn){ vBtn.disabled = true; vBtn.textContent = '⚡ Tôi đã chuyển khoản'; }
+    g('payModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    var fd = new FormData();
+    fd.append(keyType, keyVal);
+    fetch('/payment/create', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: fd
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.ok){
+        pmSetStatus('❌', d.error || 'Lỗi tạo đơn hàng. Vui lòng thử lại.', 'error');
+        return;
+      }
+      // Điền dữ liệu vào modal
+      _orderCode = d.order_code;
+      g('pmQR').src = d.qr_url;
+      g('pmPlan').textContent = d.plan_name + ' (+' + d.tokens + ' token)';
+      g('pmAmount').textContent = Number(d.amount).toLocaleString('vi-VN') + ' đ';
+      g('pmBank').textContent = d.bank_name;
+      g('pmAccName').textContent = d.account_name;
+      g('pmAccNo').textContent = d.account_no;
+      g('pmContent').textContent = d.transfer_content;
+      pmSetStatus('⏳', 'Đang chờ giao dịch...', '');
+      if(vBtn){ vBtn.disabled = false; }
+      // Bắt đầu polling
+      pmCheckStatus();
+      _pollTimer = setInterval(function(){ pmCheckStatus(); _pollCount++; }, 3000);
+    })
+    .catch(function(){
+      pmSetStatus('❌', 'Không kết nối được server. Vui lòng thử lại.', 'error');
+    });
+  };
+
+  // Button event listeners (after DOM ready)
+  document.addEventListener('DOMContentLoaded', function(){
+    g('pmCloseBtn').addEventListener('click', pmCloseModal);
+    g('pmCloseFooterBtn').addEventListener('click', pmCloseModal);
+    g('pmCopyAccNo').addEventListener('click', function(){ pmCopyText('pmAccNo', this); });
+    g('pmCopyContent').addEventListener('click', function(){ pmCopyText('pmContent', this); });
+    g('payModal').addEventListener('click', function(e){
+      if(e.target === this) pmCloseModal();
+    });
+  });
+})();
+</script>
+{% endblock %}

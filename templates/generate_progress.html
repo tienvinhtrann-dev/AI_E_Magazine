@@ -1,0 +1,141 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Đang tạo bài báo... - AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-container {
+        max-width: 700px;
+        margin: 3rem auto;
+        text-align: center;
+    }
+
+    .progress-card {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .spinner {
+        width: 80px;
+        height: 80px;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 2rem auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .progress-status {
+        margin: 2rem 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .progress-log {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        max-height: 400px;
+        overflow-y: auto;
+        text-align: left;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 0.9rem;
+    }
+
+    .progress-log p {
+        margin: 0.5rem 0;
+        color: #666;
+    }
+
+    .progress-log .success {
+        color: #28a745;
+    }
+
+    .progress-log .error {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container progress-container">
+    <div class="progress-card">
+        <h2>🤖 AI đang tạo bài báo cho bạn...</h2>
+        <div class="spinner"></div>
+        <div class="progress-status" id="status">Đang khởi động...</div>
+        
+        <div class="progress-log" id="log">
+            <p>⏳ Bắt đầu quá trình tạo bài báo...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const topic = "{{ topic }}";
+const description = "{{ description }}";
+const keywords = "{{ keywords }}";
+
+async function generateArticle() {
+    try {
+        updateLog('🔍 Đang tìm kiếm bài viết liên quan...');
+        updateStatus('Đang tìm kiếm trên các trang tin tức...');
+        
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: topic,
+                description: description,
+                keywords: keywords
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateLog('<span class="success">✅ Tạo bài báo thành công!</span>');
+            updateStatus('Hoàn thành! Đang chuyển hướng...');
+            
+            setTimeout(() => {
+                window.location.href = result.redirect_url;
+            }, 1000);
+        } else {
+            updateLog('<span class="error">❌ ' + result.error + '</span>');
+            updateStatus('Có lỗi xảy ra');
+            // Nếu hết token, chuyển về trang Gói dịch vụ
+            const redirectTo = result.redirect_url || '/create';
+            setTimeout(() => {
+                window.location.href = redirectTo;
+            }, 3000);
+        }
+        
+    } catch (error) {
+        updateLog('<span class="error">❌ Lỗi: ' + error.message + '</span>');
+        updateStatus('Có lỗi xảy ra');
+    }
+}
+
+function updateStatus(message) {
+    document.getElementById('status').textContent = message;
+}
+
+function updateLog(message) {
+    const log = document.getElementById('log');
+    log.innerHTML += '<p>' + message + '</p>';
+    log.scrollTop = log.scrollHeight;
+}
+
+// Start generation
+generateArticle();
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa: {{ article.title }} - AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .edit-card h2 {
+        margin-bottom: 2rem;
+        color: #333;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .preview-btn {
+        margin-left: auto;
+    }
+</style>
+<style>
+    .btn-custom-white {
+        background: #fff !important;
+        color: #111 !important;
+        font-weight: bold !important;
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        font-size: 1.1rem !important;
+        padding: 0.7rem 2rem !important;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-custom-white:hover, .btn-custom-white:focus {
+        background: #f3f3f3 !important;
+        color: #111 !important;
+        border: 1px solid #888 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container edit-container">
+    <div class="edit-card">
+        <h2>✏️ Chỉnh sửa bài viết</h2>
+        
+        <form method="POST" action="/edit/{{ article.id }}">
+            <div class="form-group">
+                <label for="title">📰 Tiêu đề *</label>
+                <input type="text" id="title" name="title" 
+                       value="{{ article.title }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="summary">📝 Tóm tắt</label>
+                <textarea id="summary" name="summary" 
+                          rows="3">{{ article.summary }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="keywords">🔑 Từ khóa</label>
+                <input type="text" id="keywords" name="keywords" 
+                       value="{{ article.keywords }}">
+                <small style="color: #999;">Phân cách bằng dấu phẩy</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="content">📄 Nội dung *</label>
+                <textarea id="content" name="content" 
+                          rows="20" required>{{ article.content }}</textarea>
+                <small style="color: #999;">Sử dụng ## để tạo tiêu đề phụ</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-custom-white">Lưu thay đổi</button>
+                <a href="/article/{{ article.id }}" class="btn btn-custom-white">Hủy</a>
+                <a href="/article/{{ article.id }}" class="btn btn-custom-white preview-btn">Xem trước</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

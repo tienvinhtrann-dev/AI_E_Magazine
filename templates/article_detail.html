@@ -1,0 +1,746 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .article-container {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .article-header {
+        background: white;
+        border-radius: 12px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .article-header h1 {
+        font-size: 2.5rem;
+        color: #333;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .article-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        color: #666;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .article-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .article-summary {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        color: #555;
+        font-style: italic;
+    }
+
+    .article-content {
+        background: white;
+        border-radius: 12px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        line-height: 1.8;
+        font-size: 1.05rem;
+        color: #333;
+    }
+
+    .article-content h2 {
+        color: #333;
+        margin: 2.5rem 0 1rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .article-content h3 {
+        color: #444;
+        margin: 2rem 0 1rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .article-content p {
+        margin-bottom: 1.5rem;
+        text-align: justify;
+        line-height: 2;
+    }
+
+    .article-content ul, .article-content ol {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+    }
+
+    .article-content li {
+        margin-bottom: 0.75rem;
+    }
+
+    .article-content strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .article-content em {
+        font-style: italic;
+        color: #555;
+    }
+
+    .article-content blockquote {
+        border-left: 4px solid #667eea;
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        color: #555;
+        font-style: italic;
+    }
+
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5rem 0 0.5rem 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .article-content figure {
+        margin: 2rem 0;
+    }
+
+    .article-content figcaption {
+        font-size: 0.9rem;
+        color: #666;
+        font-style: italic;
+        text-align: center;
+        margin-top: 0.8rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .article-content .image-source {
+        font-size: 0.85rem;
+        color: #999;
+        display: block;
+        margin-top: 0.3rem;
+    }
+
+    .article-sources {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .article-sources h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .article-sources ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .article-sources li {
+        padding: 0.5rem 0;
+    }
+
+    .article-sources a {
+        color: #667eea;
+        text-decoration: none;
+    }
+
+    .article-actions {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .btn-custom-white, .btn-custom-white:visited, .btn-custom-white:active {
+            background: #fff !important;
+            color: #111 !important;
+            font-weight: bold !important;
+            border: 2px solid #ccc !important;
+            box-shadow: none !important;
+            font-size: 1.2rem !important;
+            padding: 0.9rem 2.5rem !important;
+            min-width: 160px;
+            text-align: center;
+            transition: background 0.2s, color 0.2s;
+            border-radius: 12px !important;
+            margin: 0;
+            display: inline-block;
+            text-decoration: none !important;
+        }
+        .btn-custom-white:hover, .btn-custom-white:focus {
+            background: #f3f3f3 !important;
+            color: #111 !important;
+            border: 2px solid #888 !important;
+        }
+    }
+
+    .article-tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin: 1rem 0;
+    }
+
+    .tag {
+        padding: 0.5rem 1rem;
+        background: #f0f0f0;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+<style>
+    .btn-custom-white {
+        background: #fff !important;
+        color: #111 !important;
+        font-weight: bold !important;
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        font-size: 1.1rem !important;
+        padding: 0.7rem 2rem !important;
+        transition: background 0.2s, color 0.2s;
+    }
+    .btn-custom-white:hover, .btn-custom-white:focus {
+        background: #f3f3f3 !important;
+        color: #111 !important;
+        border: 1px solid #888 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Floating Social Toolbar -->
+<div class="floating-toolbar" style="position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 999; display: flex; flex-direction: column; gap: 12px;">
+    <!-- Zalo -->
+    <a href="https://zalo.me" target="_blank" rel="noopener noreferrer" style="width: 50px; height: 50px; border-radius: 50%; background: #0068ff; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 12px rgba(0,104,255,0.3); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="14" fill="white">Zalo</text></svg>
+    </a>
+    
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" rel="noopener noreferrer" style="width: 50px; height: 50px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e0e0e0; transition: all 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </a>
+    
+    <!-- Print -->
+    <button onclick="window.print()" style="width: 50px; height: 50px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; border: 1px solid #e0e0e0; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#666"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+    </button>
+    
+    <!-- Font Size Controls -->
+    <div style="background: white; border-radius: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e0e0e0; overflow: hidden;">
+        <button onclick="changeFontSize(1)" style="width: 50px; height: 40px; background: transparent; border: none; cursor: pointer; font-size: 18px; font-weight: bold; color: #666; transition: background 0.3s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">+</button>
+        <div style="width: 50px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; color: #333; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0;">Aa</div>
+        <button onclick="changeFontSize(-1)" style="width: 50px; height: 40px; background: transparent; border: none; cursor: pointer; font-size: 20px; font-weight: bold; color: #666; transition: background 0.3s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">−</button>
+    </div>
+</div>
+
+<script>
+let currentFontSize = 16;
+function changeFontSize(delta) {
+    currentFontSize += delta;
+    if (currentFontSize < 12) currentFontSize = 12;
+    if (currentFontSize > 24) currentFontSize = 24;
+    const content = document.querySelector('.article-content');
+    if (content) {
+        content.style.fontSize = currentFontSize + 'px';
+    }
+}
+</script>
+
+<div class="container" style="display: flex; gap: 2.5rem; align-items: flex-start;">
+    <div class="article-container" style="flex: 1; min-width: 0;">
+        <div class="article-header">
+        <h1>{{ article.title }}</h1>
+        
+        <div class="article-meta">
+            <div class="article-meta-item">
+                👤 {{ article.author_name or article.author_email }}
+            </div>
+            <div class="article-meta-item">
+                📅 {{ article.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="article-meta-item">
+                👁️ {{ article.view_count }} lượt xem
+            </div>
+            <div class="article-meta-item">
+                {% if article.status == 'published' %}
+                    <span style="color: #28a745;">✅ Đã xuất bản</span>
+                {% elif article.status == 'draft' %}
+                    <span style="color: #ffc107;">📄 Bản nháp</span>
+                {% else %}
+                    <span style="color: #17a2b8;">⏳ Chờ duyệt</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if article.summary %}
+            <div class="article-summary">
+                {{ article.summary }}
+            </div>
+        {% endif %}
+
+        {% if article.keywords %}
+            <div class="article-tags">
+                {% for keyword in article.keywords.split(',') %}
+                    <span class="tag">{{ keyword.strip() }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if user_email and (article.user_id == session.user_id or user_role == 'admin') %}
+            <div class="article-actions">
+                <a href="/edit/{{ article.id }}" class="btn-custom-white">Chỉnh sửa</a>
+                {% if article.status != 'published' %}
+                    <form method="POST" action="/publish/{{ article.id }}" style="margin: 0; display: inline-block;">
+                        <button type="submit" class="btn-custom-white">Xuất bản</button>
+                    </form>
+                {% endif %}
+                <form method="POST" action="/delete/{{ article.id }}" 
+                      onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?')" style="margin: 0; display: inline-block;">
+                    <button type="submit" class="btn-custom-white">Xóa</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Featured Image -->
+    {% if article.image_urls %}
+        {% if article.image_urls is string %}
+            {% if article.image_urls.startswith and article.image_urls.startswith('[') %}
+                {% set img_urls = article.image_urls|replace("'", '"')|from_json %}
+            {% else %}
+                {% set img_urls = [] %}
+            {% endif %}
+        {% else %}
+            {% set img_urls = article.image_urls %}
+        {% endif %}
+
+        {% if img_urls and img_urls|length > 0 and img_urls[0] %}
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
+            <img src="{{ img_urls[0] }}" 
+                 alt="{{ article.title }}" 
+                 style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
+                 onerror="this.onerror=null; this.src='https://picsum.photos/seed/{{ article.id }}/800/420';">
+            {% if article.source_urls and article.source_urls|length > 0 %}
+            <div style="margin-top: 0.65rem; font-size: 0.9rem; color: #666;">
+                Nguồn ảnh: <a href="{{ article.source_urls[0] }}" target="_blank" rel="noopener noreferrer" style="color:#667eea; text-decoration:none;">{{ article.source_urls[0] }}</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="article-content">
+        {% set paragraphs = article.content.split('\n\n') %}
+        {% for para in paragraphs %}
+            {% set para_stripped = para.strip() %}
+            {% if para_stripped and not para_stripped.startswith('---') and not para_stripped.startswith('**Nguồn tham khảo') and '- VnExpress:' not in para_stripped and (not para_stripped.startswith('- ') or '://' not in para_stripped) %}
+                {% if para_stripped.startswith('<img') %}
+                    {{ para_stripped|safe }}
+                {% elif para_stripped.startswith('## ') %}
+                    <h2>{{ para_stripped[3:] }}</h2>
+                {% else %}
+                    <p>{{ para.strip()|replace('\n', '<br>')|safe }}</p>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if article.source_urls and article.source_urls|length > 0 %}
+        <div class="article-sources">
+            <h3>📚 Nguồn tham khảo</h3>
+            <ul>
+                {% for url in article.source_urls %}
+                    <li>🔗 <a href="{{ url }}" target="_blank">{{ url }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Nhận xét -->
+    <div class="comments-section" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-top: 2.5rem; padding: 2rem 2.5rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+        <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1.2rem;">Nhận xét ({{ comments|length }})</h3>
+        {% if user_email %}
+        <form method="post" style="display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1.5rem;">
+            <textarea name="comment_content" rows="2" placeholder="Viết nhận xét của bạn..." required style="flex:1; border-radius: 8px; border: 1.5px solid #ddd; padding: 0.8rem 1rem; font-size: 1.05rem; resize: vertical;"></textarea>
+            <button type="submit" class="btn" style="padding: 0.7rem 1.5rem; font-weight: bold; border-radius: 8px; border: none; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; box-shadow: 0 6px 14px rgba(37,99,235,0.25);">Gửi</button>
+        </form>
+        {% else %}
+        <div style="margin-bottom: 1.5rem; color: #888;">Bạn cần <a href="/login" style="color:#1976d2;font-weight:bold;">đăng nhập</a> để nhận xét.</div>
+        {% endif %}
+        <div style="max-height: 420px; overflow-y: auto;" id="comments-list">
+            {% for c in comments %}
+            <div class="comment-item" data-comment-id="{{ c.id }}" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #e3e7fa; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #667eea; font-weight: bold;">
+                        {{ c.user_name[:1] if c.user_name else (c.user_email[:1]|upper) }}
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight: bold; color: #222;">{{ c.user_name or c.user_email }}</div>
+                        <div style="color: #444; margin: 0.2rem 0 0.5rem 0;">{{ c.content }}</div>
+                        <div style="font-size: 0.95rem; color: #888; display: flex; gap: 1.2rem; align-items: center;">
+                            <span>{{ c.created_at.strftime('%H:%M %d/%m/%Y') if c.created_at else '' }}</span>
+                            {% if user_email %}
+                                <span class="like-btn" data-comment-id="{{ c.id }}" style="cursor:pointer; color: {% if c.user_liked %}#1976d2{% else %}#888{% endif %}; font-weight: {% if c.user_liked %}bold{% else %}normal{% endif %};">
+                                    👍 Thích <span class="likes-count">({{ c.likes_count }})</span>
+                                </span>
+                                <span class="reply-btn" data-comment-id="{{ c.id }}" style="cursor:pointer; color:#888;">💬 Trả lời</span>
+                            {% else %}
+                                <span style="color:#888;">👍 Thích ({{ c.likes_count }})</span>
+                            {% endif %}
+                        </div>
+                        <!-- Form trả lời (ẩn) -->
+                        <div class="reply-form" id="reply-form-{{ c.id }}" style="display:none; margin-top:0.8rem;">
+                            <textarea class="reply-content" rows="2" placeholder="Nhập câu trả lời..." style="width:100%; border-radius:6px; border:1.5px solid #ddd; padding:0.5rem; font-size:1rem;"></textarea>
+                            <div style="margin-top:0.5rem; display:flex; gap:0.5rem;">
+                                <button class="submit-reply-btn" data-comment-id="{{ c.id }}" style="padding:0.4rem 1rem; background:#1976d2; color:#fff; border:none; border-radius:6px; cursor:pointer;">Gửi</button>
+                                <button class="cancel-reply-btn" data-comment-id="{{ c.id }}" style="padding:0.4rem 1rem; background:#ccc; color:#333; border:none; border-radius:6px; cursor:pointer;">Hủy</button>
+                            </div>
+                        </div>
+                        <!-- Hiển thị câu trả lời -->
+                        {% if c.replies and c.replies|length > 0 %}
+                        <div class="replies" style="margin-top:1rem; padding-left:1.5rem; border-left:2px solid #e0e0e0;">
+                            {% for r in c.replies %}
+                            <div class="reply-item" style="display:flex; gap:0.8rem; margin-bottom:0.8rem;">
+                                <div style="width:36px; height:36px; border-radius:50%; background:#e3e7fa; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#667eea; font-weight:bold;">
+                                    {{ r.user_name[:1] if r.user_name else (r.user_email[:1]|upper) }}
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-weight:bold; color:#222; font-size:0.95rem;">{{ r.user_name or r.user_email }}</div>
+                                    <div style="color:#444; margin:0.1rem 0 0.3rem 0; font-size:0.95rem;">{{ r.content }}</div>
+                                    <div style="font-size:0.85rem; color:#999;">
+                                        <span>{{ r.created_at.strftime('%H:%M %d/%m/%Y') if r.created_at else '' }}</span>
+                                        {% if user_email %}
+                                        <span class="like-btn" data-comment-id="{{ r.id }}" style="cursor:pointer; color: {% if r.user_liked %}#1976d2{% else %}#888{% endif %}; margin-left:1rem; font-weight: {% if r.user_liked %}bold{% else %}normal{% endif %};">
+                                            👍 Thích <span class="likes-count">({{ r.likes_count }})</span>
+                                        </span>
+                                        {% else %}
+                                        <span style="color:#888; margin-left:1rem;">👍 Thích ({{ r.likes_count }})</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% if comments|length == 0 %}
+                <div style="color: #888;">Chưa có nhận xét nào.</div>
+            {% endif %}
+        </div>
+        
+        <script>
+        // Xử lý Like nhận xét
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const commentId = this.getAttribute('data-comment-id');
+                try {
+                    const response = await fetch(`/api/comment/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        this.style.color = data.liked ? '#1976d2' : '#888';
+                        this.style.fontWeight = data.liked ? 'bold' : 'normal';
+                        this.querySelector('.likes-count').textContent = `(${data.likes_count})`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+        
+        // Xử lý hiện form trả lời
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const form = document.getElementById(`reply-form-${commentId}`);
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+        
+        // Xử lý hủy trả lời
+        document.querySelectorAll('.cancel-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const form = document.getElementById(`reply-form-${commentId}`);
+                form.style.display = 'none';
+                form.querySelector('.reply-content').value = '';
+            });
+        });
+        
+        // Xử lý gửi trả lời
+        document.querySelectorAll('.submit-reply-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const form = document.getElementById(`reply-form-${commentId}`);
+                const content = form.querySelector('.reply-content').value.trim();
+                
+                if (!content) {
+                    alert('Vui lòng nhập nội dung trả lời');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/comment/${commentId}/reply`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            content: content,
+                            article_id: {{ article.id }}
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        location.reload(); // Reload để hiển thị câu trả lời mới
+                    } else {
+                        alert(data.error || 'Không thể gửi trả lời');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Đã xảy ra lỗi');
+                }
+            });
+        });
+        </script>
+    </div>
+    </div>
+    <!-- Sidebar Container -->
+    <div style="width: 320px; min-width: 260px; margin-top: 180px;">
+        <!-- Top Articles - Normal scroll -->
+        <div style="background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(102,126,234,0.10); padding: 1.5rem 1.2rem; max-height: 420px; overflow-y: auto; margin-bottom: 1.5rem;">
+            <h3 style="color: #1976d2; font-size: 1.15rem; margin-bottom: 1.2rem; font-weight: bold; letter-spacing: 0.5px;">🔥 Xem nhiều nhất</h3>
+            {% if top_articles and top_articles|length > 0 %}
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for ta in top_articles[:6] %}
+                    <li style="margin-bottom: 1.2rem;">
+                        <a href="/article/{{ ta.id }}" style="display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: #333;">
+                            {% if ta.image_urls and ta.image_urls|length > 0 and ta.image_urls[0] %}
+                                <img src="{{ ta.image_urls[0] }}" alt="{{ ta.title }}" style="width: 54px; height: 54px; object-fit: cover; border-radius: 8px; background: #eee;">
+                            {% else %}
+                                <div style="width: 54px; height: 54px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.7rem;">📰</div>
+                            {% endif %}
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: bold; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ta.title }}</div>
+                                <div style="font-size: 0.95rem; color: #888; margin-top: 2px;">👁️ {{ ta.view_count }} lượt xem</div>
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <div style="color: #888; font-size: 0.98rem;">Chưa có dữ liệu.</div>
+            {% endif %}
+        </div>
+        
+        <!-- Quảng cáo - Normal scroll -->
+        <div style="margin-bottom: 1.5rem;">
+            <a href="https://cellphones.com.vn/qua-tang-tet?&utm_source=criteo_new&utm_medium=cpc&utm_campaign=/qua-tang-tet&utm_id=502387&cto_pld=c1Zueb1hAABLv_VoH7YRjA" target="_blank" rel="noopener noreferrer" style="display: block; text-decoration: none;">
+                <div style="position: relative; background: linear-gradient(135deg, #ff0844 0%, #ff6b6b 50%, #ffa07a 100%); border-radius: 14px; padding: 5rem 1.5rem; text-align: center; box-shadow: 0 6px 20px rgba(255,8,68,0.35); overflow: hidden; transition: transform 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(255,8,68,0.45)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(255,8,68,0.35)'">
+                    <!-- Decorative elements -->
+                    <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -30px; left: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
+                    
+                    <!-- Content -->
+                    <div style="position: relative; z-index: 1;">
+                        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🎁</div>
+                        <div style="color: #fff; font-size: 1.5rem; font-weight: 900; margin-bottom: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); letter-spacing: 0.5px;">QUÀ TẶNG TẾT 2026</div>
+                        <div style="color: #fff; font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; opacity: 0.95; text-shadow: 0 1px 3px rgba(0,0,0,0.15);">Ưu đãi đặc biệt - Giảm giá sốc</div>
+                        <div style="color: #ffe600; font-size: 1rem; font-weight: 700; margin-bottom: 2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">🔥 DEAL HOT - SĂN NGAY 🔥</div>
+                        <div style="background: #fff; color: #ff0844; padding: 1rem 2.5rem; border-radius: 25px; display: inline-block; font-weight: 900; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            XEM NGAY →
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Weather Widget - STICKY -->
+        <div style="position: sticky; top: 20px; z-index: 1000;">
+            <div id="weatherWidget" style="background: linear-gradient(135deg, rgba(96, 108, 136, 0.9), rgba(63, 76, 107, 0.9)); border-radius: 14px; padding: 1.5rem; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); overflow: hidden;">
+            <!-- Background image overlay -->
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400') center/cover; opacity: 0.15; z-index: 0;"></div>
+            
+            <div style="position: relative; z-index: 1;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h3 id="cityName" style="margin: 0; font-size: 1.3rem; font-weight: 700;">Hà Nội</h3>
+                        <select id="citySelect" onchange="changeCity(this.value)" style="background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.5); color: #333; padding: 0.3rem 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+                            <option value="Hanoi" selected style="background: white; color: #333;">Hà Nội</option>
+                            <option value="Ho Chi Minh City" style="background: white; color: #333;">TP. Hồ Chí Minh</option>
+                            <option value="Da Nang" style="background: white; color: #333;">Đà Nẵng</option>
+                            <option value="Hai Phong" style="background: white; color: #333;">Hải Phòng</option>
+                            <option value="Can Tho" style="background: white; color: #333;">Cần Thơ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Current weather -->
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div id="weatherIcon" style="font-size: 4rem;">☁️</div>
+                    <div>
+                        <div id="currentTemp" style="font-size: 2.5rem; font-weight: 700; line-height: 1;">--°C</div>
+                        <div id="feelsLike" style="font-size: 0.95rem; opacity: 0.9; margin-top: 0.3rem;">Cảm giác: --°C</div>
+                    </div>
+                </div>
+
+                <!-- Weather description -->
+                <div id="weatherDesc" style="background: rgba(255,255,255,0.15); padding: 0.5rem 1rem; border-radius: 8px; text-align: center; font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase;">
+                    Đang tải...
+                </div>
+
+                <!-- Forecast -->
+                <div id="forecast" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center;">
+                    <!-- Forecast items will be inserted here -->
+                </div>
+            </div>
+            
+            <script>
+                let currentCity = 'Hanoi';
+
+                // Fallback weather data
+                function updateWeatherUIFallback(cityName) {
+                    const fallbackData = {
+                        'Hanoi': { temp: 28, feels: 32, desc: 'Có mây', icon: '⛅' },
+                        'Ho Chi Minh City': { temp: 32, feels: 36, desc: 'Nắng nóng', icon: '☀️' },
+                        'Da Nang': { temp: 30, feels: 34, desc: 'Có mây', icon: '⛅' },
+                        'Hai Phong': { temp: 26, feels: 30, desc: 'Nhiều mây', icon: '☁️' },
+                        'Can Tho': { temp: 31, feels: 35, desc: 'Nắng ít mây', icon: '🌤️' }
+                    };
+                    
+                    const cityDisplayNames = {
+                        'Hanoi': 'Hà Nội',
+                        'Ho Chi Minh City': 'TP. Hồ Chí Minh',
+                        'Da Nang': 'Đà Nẵng',
+                        'Hai Phong': 'Hải Phòng',
+                        'Can Tho': 'Cần Thơ'
+                    };
+                    
+                    const data = fallbackData[cityName] || fallbackData['Hanoi'];
+                    
+                    document.getElementById('cityName').textContent = cityDisplayNames[cityName] || cityName;
+                    document.getElementById('currentTemp').textContent = data.temp + '°C';
+                    document.getElementById('feelsLike').textContent = `Cảm giác: ${data.feels}°C`;
+                    document.getElementById('weatherDesc').textContent = data.desc;
+                    document.getElementById('weatherIcon').textContent = data.icon;
+                    
+                    // Generate forecast  
+                    const currentHour = new Date().getHours();
+                    const forecastHTML = [1, 2, 3].map(hour => {
+                        const temp = data.temp + Math.floor(Math.random() * 4) - 2;
+                        const time = (currentHour + hour) % 24;
+                        return `
+                            <div style="background: rgba(255,255,255,0.1); padding: 0.75rem 0.5rem; border-radius: 8px;">
+                                <div style="font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.9;">${time.toString().padStart(2, '0')}:00</div>
+                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">${data.icon}</div>
+                                <div style="font-size: 1.1rem; font-weight: 700;">${temp}°C</div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    document.getElementById('forecast').innerHTML = forecastHTML;
+                }
+
+                async function fetchWeather(city) {
+                    try {
+                        // Try WeatherAPI first
+                        const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=c8d0c1ec0b094c49a67164259242012&q=${city}&aqi=no&lang=vi`);
+                        
+                        if (!response.ok) {
+                            throw new Error('API failed');
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            throw new Error(data.error.message);
+                        }
+
+                        updateWeatherUI(data);
+                    } catch (error) {
+                        console.log('Weather API failed, using fallback data:', error);
+                        // Fallback is already showing, no need to do anything
+                    }
+                }
+
+                function updateWeatherUI(data) {
+                    const current = data.current;
+                    const location = data.location;
+                    
+                    // Update current weather
+                    document.getElementById('cityName').textContent = location.name || 'Hà Nội';
+                    document.getElementById('currentTemp').textContent = Math.round(current.temp_c) + '°C';
+                    document.getElementById('feelsLike').textContent = `Cảm giác: ${Math.round(current.feelslike_c)}°C`;
+                    document.getElementById('weatherDesc').textContent = current.condition.text;
+                    
+                    // Update weather icon
+                    const iconMap = {
+                        'clear': '☀️', 'sunny': '☀️', 'partly cloudy': '⛅',
+                        'cloudy': '☁️', 'overcast': '☁️', 'mist': '🌫️', 'fog': '🌫️',
+                        'rain': '🌧️', 'drizzle': '🌦️', 'snow': '❄️', 'thunder': '⛈️'
+                    };
+                    
+                    let icon = '☁️';
+                    const conditionLower = current.condition.text.toLowerCase();
+                    for (const [key, value] of Object.entries(iconMap)) {
+                        if (conditionLower.includes(key)) {
+                            icon = value;
+                            break;
+                        }
+                    }
+                    document.getElementById('weatherIcon').textContent = icon;
+                }
+
+                function changeCity(city) {
+                    currentCity = city;
+                    // Show fallback immediately
+                    updateWeatherUIFallback(city);
+                    // Then try to fetch real data
+                    fetchWeather(city);
+                }
+
+                // Initialize with fallback data immediately
+                updateWeatherUIFallback(currentCity);
+                
+                // Then try to fetch real data
+                fetchWeather(currentCity);
+
+                // Update every 30 minutes
+                setInterval(() => {
+                    fetchWeather(currentCity);
+                }, 30 * 60 * 1000);
+            </script>
+            </div> <!-- End weather widget -->
+        </div> <!-- End sticky container -->
+    </div> <!-- End sidebar container -->
+</div> <!-- End main container -->
+{% endblock %}

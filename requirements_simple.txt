@@ -1,0 +1,25 @@
+# AI E-Magazine - Simplified Version Requirements
+# Python 3.8+
+
+# Web Framework
+flask==3.0.0
+werkzeug==3.0.1
+python-dotenv==1.0.1
+
+# Database
+mysql-connector-python==8.2.0
+
+# Web Scraping
+requests==2.31.0
+beautifulsoup4==4.12.2
+
+# Optional: Better HTML parsing
+lxml==5.1.0
+
+# AI Content Generation
+google-generativeai==0.3.2
+
+# SePay flow does not require a Python SDK
+
+# Google OAuth token verification (for Flutter Google Sign-In)
+google-auth>=2.47.0

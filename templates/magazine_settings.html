@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Cài đặt tạp chí - {{ magazine.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Cài đặt tạp chí</h1>
+        <p class="page-subtitle">Chỉnh sửa thông tin cơ bản và đường dẫn URL cho tạp chí của bạn.</p>
+    </div>
+    <div>
+        {% if magazine.slug %}
+        <a href="/magazine/{{ magazine.slug }}" class="btn btn-secondary" target="_blank">Xem tạp chí</a>
+        {% else %}
+        <a href="/magazine/{{ magazine.id }}" class="btn btn-secondary" target="_blank">Xem tạp chí</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="settings-grid">
+
+    <div class="card settings-main">
+        <div class="card-body">
+            <form method="POST" action="">
+                <div class="section-label">1. Thông tin cơ bản</div>
+                <div class="form-group">
+                    <label for="title">Tên tạp chí</label>
+                    <input type="text" id="title" name="title" class="form-control" value="{{ magazine.title }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Mô tả tạp chí</label>
+                    <textarea id="description" name="description" rows="3" class="form-control" placeholder="Giới thiệu ngắn về tạp chí...">{{ magazine.description }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="topic">Chủ đề chính</label>
+                        <input type="text" id="topic" name="topic" class="form-control" value="{{ magazine.topic }}" placeholder="Ví dụ: Bóng đá, Công nghệ, Tài chính...">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="keywords">Từ khóa (ngăn cách bằng dấu phẩy)</label>
+                        <input type="text" id="keywords" name="keywords" class="form-control" value="{{ magazine.keywords }}" placeholder="ví dụ: AI, tin tức, phân tích...">
+                    </div>
+                </div>
+
+                <div class="section-label" style="margin-top:1.1rem;">2. Giao diện tạp chí</div>
+                <div class="form-group">
+                    <label>Giao diện (Theme) cho tạp chí</label>
+                    <div class="theme-grid">
+                        {% set current_theme = magazine.theme or 'default' %}
+
+                        <label class="theme-card">
+                            <input type="radio" name="theme" value="default" {% if current_theme == 'default' %}checked{% endif %}>
+                            <div class="theme-preview theme-default">
+                                <span class="theme-label">Mặc định (hiện tại)</span>
+                                <span class="theme-desc">Giao diện đang dùng cho tạp chí của bạn.</span>
+                            </div>
+                        </label>
+
+                        <label class="theme-card">
+                            <input type="radio" name="theme" value="modern-blue" {% if current_theme == 'modern-blue' %}checked{% endif %}>
+                            <div class="theme-preview theme-modern-blue">
+                                <span class="theme-label">Modern Blue</span>
+                                <span class="theme-desc">Tông xanh hiện đại, phù hợp tin tức công nghệ.</span>
+                            </div>
+                        </label>
+
+                        <label class="theme-card">
+                            <input type="radio" name="theme" value="dark-night" {% if current_theme == 'dark-night' %}checked{% endif %}>
+                            <div class="theme-preview theme-dark-night">
+                                <span class="theme-label">Dark Night</span>
+                                <span class="theme-desc">Giao diện nền tối, đọc buổi tối thoải mái hơn.</span>
+                            </div>
+                        </label>
+
+                        <label class="theme-card">
+                            <input type="radio" name="theme" value="warm-sunset" {% if current_theme == 'warm-sunset' %}checked{% endif %}>
+                            <div class="theme-preview theme-warm-sunset">
+                                <span class="theme-label">Warm Sunset</span>
+                                <span class="theme-desc">Cam ấm áp, hợp blog cá nhân, lifestyle.</span>
+                            </div>
+                        </label>
+
+                        <label class="theme-card">
+                            <input type="radio" name="theme" value="clean-newspaper" {% if current_theme == 'clean-newspaper' %}checked{% endif %}>
+                            <div class="theme-preview theme-clean-newspaper">
+                                <span class="theme-label">Clean Newspaper</span>
+                                <span class="theme-desc">Đen trắng tối giản, giống báo giấy truyền thống.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section-label" style="margin-top:1.1rem;">3. Đường dẫn & xuất bản</div>
+                <div class="form-group">
+                    <label for="slug">Đường dẫn tạp chí (slug)</label>
+                    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:.9rem; color:#6b7280;">/magazine/</span>
+                        <input type="text" id="slug" name="slug" class="form-control" style="max-width:260px;" value="{{ magazine.slug }}" placeholder="vi-du-tap-chi">
+                        <small style="color:#6b7280;">Chỉ gồm a-z, số và dấu gạch ngang. Để trống để hệ thống tự tạo từ tên.</small>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top:1.5rem; display:flex; gap:.75rem;">
+                    <button type="submit" class="btn btn-primary">Lưu cài đặt</button>
+                    {% if magazine.slug %}
+                    <a href="/magazine/{{ magazine.slug }}" class="btn btn-link">Quay lại tạp chí</a>
+                    {% else %}
+                    <a href="/magazine/{{ magazine.id }}" class="btn btn-link">Quay lại tạp chí</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="card settings-side">
+        <div class="card-body">
+            <div class="summary-header">Tổng quan tạp chí</div>
+            <div class="summary-title">{{ magazine.title }}</div>
+            <div class="summary-slug">/magazine/{{ magazine.slug or magazine.id }}</div>
+
+            <div class="summary-meta">
+                <div class="summary-row">
+                    <span>Trạng thái</span>
+                    <span class="status-pill status-{{ magazine.status or 'active' }}">{{ magazine.status or 'active' }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Theme</span>
+                    <span class="summary-value">{{ magazine.theme or 'default' }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Số bài viết</span>
+                    <span class="summary-value">{{ magazine.article_count or 0 }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Chủ sở hữu</span>
+                    <span class="summary-value">{{ magazine.owner_name or magazine.owner_email }}</span>
+                </div>
+            </div>
+
+            <div class="summary-actions">
+                {% if magazine.slug %}
+                <a href="/magazine/{{ magazine.slug }}" class="btn btn-secondary" target="_blank">Xem tạp chí</a>
+                {% else %}
+                <a href="/magazine/{{ magazine.id }}" class="btn btn-secondary" target="_blank">Xem tạp chí</a>
+                {% endif %}
+                <a href="/dashboard" class="btn btn-link">Về Dashboard</a>
+            </div>
+        </div>
+    </aside>
+
+</div>
+
+<div class="card danger-card">
+    <div class="card-body">
+        <h2 class="danger-title">Danger zone</h2>
+        <p class="danger-text">Các thao tác dưới đây có thể ảnh hưởng lớn tới tạp chí và độc giả của bạn. Hãy cẩn thận khi sử dụng.</p>
+
+        <div class="danger-row">
+            <div>
+                <div class="danger-label">Đóng / Ẩn tạp chí</div>
+                <div class="danger-desc">Chuyển tạp chí sang trạng thái archived, không còn hiển thị trên trang chủ và thư viện, nhưng dữ liệu vẫn được giữ lại.</div>
+            </div>
+            <form method="POST" onsubmit="return confirm('Bạn chắc chắn muốn đóng tạp chí này?');">
+                <input type="hidden" name="_action" value="archive">
+                <button type="submit" class="btn btn-danger" {% if magazine.status == 'archived' %}disabled{% endif %}>Đóng tạp chí</button>
+            </form>
+        </div>
+
+        <div class="danger-row">
+            <div>
+                <div class="danger-label">Mở lại tạp chí</div>
+                <div class="danger-desc">Đưa tạp chí từ trạng thái archived về active để hiển thị lại với người đọc.</div>
+            </div>
+            <form method="POST" onsubmit="return confirm('Bạn muốn mở lại tạp chí này?');">
+                <input type="hidden" name="_action" value="activate">
+                <button type="submit" class="btn btn-secondary" {% if magazine.status == 'active' %}disabled{% endif %}>Mở lại tạp chí</button>
+            </form>
+        </div>
+
+        <hr class="danger-divider">
+
+        <div class="danger-row">
+            <div>
+                <div class="danger-label">Xóa vĩnh viễn tạp chí</div>
+                <div class="danger-desc"><strong>Không thể hoàn tác.</strong> Tạp chí sẽ bị xóa khỏi hệ thống. Hãy đảm bảo bạn đã backup dữ liệu quan trọng.</div>
+            </div>
+            <form method="POST" onsubmit="return confirm('Bạn chắc chắn muốn xóa VĨNH VIỄN tạp chí này? Hành động này không thể hoàn tác.');">
+                <input type="hidden" name="_action" value="delete">
+                <button type="submit" class="btn btn-danger">Xóa vĩnh viễn</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    margin-bottom:1.5rem;
+}
+.page-title {
+    font-size:1.6rem;
+    font-weight:700;
+    margin:0;
+}
+.page-subtitle {
+    margin:0.25rem 0 0;
+    color:#6b7280;
+    font-size:.92rem;
+}
+.card {
+    background:#ffffff;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(15,23,42,.08);
+    border:1px solid rgba(148,163,184,.25);
+}
+.card-body {
+    padding:1.5rem 1.75rem 1.75rem;
+}
+.settings-grid {
+    display:grid;
+    grid-template-columns: minmax(0,2.1fr) minmax(0,1fr);
+    gap:1.25rem;
+}
+.settings-main {
+    margin-bottom:0;
+}
+.settings-side {
+    margin-bottom:0;
+}
+.form-group {
+    margin-bottom:1rem;
+}
+.form-group label {
+    font-weight:600;
+    font-size:.9rem;
+    margin-bottom:.3rem;
+}
+.form-control {
+    width:100%;
+    border-radius:8px;
+    border:1px solid #d1d5db;
+    padding:.5rem .75rem;
+    font-size:.95rem;
+}
+.form-control:focus {
+    border-color:#6366f1;
+    outline:none;
+    box-shadow:0 0 0 1px rgba(99,102,241,.25);
+}
+.form-row {
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+}
+.form-row .form-group {
+    flex:1;
+}
+.section-label {
+    font-size:.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:#6b7280;
+    margin-bottom:.4rem;
+}
+.theme-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:.9rem;
+}
+.theme-card {
+    cursor:pointer;
+    display:block;
+}
+.theme-card input {
+    display:none;
+}
+.theme-preview {
+    border-radius:12px;
+    padding:.75rem .9rem;
+    border:2px solid transparent;
+    background:#f9fafb;
+    display:flex;
+    flex-direction:column;
+    gap:.15rem;
+}
+.theme-card input:checked + .theme-preview {
+    border-color:#4f46e5;
+    box-shadow:0 0 0 1px rgba(79,70,229,.25);
+}
+.theme-label {
+    font-weight:600;
+    font-size:.9rem;
+}
+.theme-desc {
+    font-size:.8rem;
+    color:#6b7280;
+}
+.theme-default {
+    background:linear-gradient(135deg,#6366f1,#a855f7);
+    color:white;
+}
+.theme-modern-blue {
+    background:linear-gradient(135deg,#0ea5e9,#2563eb);
+    color:white;
+}
+.theme-dark-night {
+    background:radial-gradient(circle at top left,#4b5563,#020617);
+    color:#e5e7eb;
+}
+.theme-warm-sunset {
+    background:linear-gradient(135deg,#fb923c,#e11d48);
+    color:#111827;
+}
+.theme-clean-newspaper {
+    background:#f9fafb;
+    color:#111827;
+    border-style:dashed;
+}
+.btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    padding:.5rem 1.1rem;
+    font-size:.9rem;
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+    text-decoration:none;
+}
+.btn-primary {
+    background:linear-gradient(135deg,#4f46e5,#6366f1);
+    color:white;
+}
+.btn-secondary {
+    background:#f3f4f6;
+    color:#111827;
+}
+.btn-link {
+    background:transparent;
+    color:#4b5563;
+}
+.btn-danger {
+    background:#dc2626;
+    color:white;
+}
+.btn:hover {
+    opacity:.9;
+}
+@media (max-width: 640px) {
+    .card-body { padding:1.25rem; }
+    .settings-grid { grid-template-columns: 1fr; }
+}
+.summary-header {
+    font-size:.8rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1.4px;
+    color:#6b7280;
+}
+.summary-title {
+    margin-top:.4rem;
+    font-size:1.1rem;
+    font-weight:700;
+    color:#111827;
+}
+.summary-slug {
+    margin-top:.2rem;
+    font-size:.82rem;
+    color:#6b7280;
+}
+.summary-meta {
+    margin-top:1rem;
+    border-top:1px solid #e5e7eb;
+    padding-top:.75rem;
+}
+.summary-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:.84rem;
+    margin-bottom:.45rem;
+}
+.summary-row span:first-child { color:#6b7280; }
+.summary-value { font-weight:600; color:#111827; }
+.status-pill {
+    padding:.2rem .6rem;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:600;
+    text-transform:uppercase;
+}
+.status-active { background:#dcfce7; color:#166534; }
+.status-archived { background:#fee2e2; color:#b91c1c; }
+.status-draft { background:#e0e7ff; color:#3730a3; }
+.summary-actions {
+    margin-top:1.25rem;
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+}
+.danger-card {
+    margin-top:1.25rem;
+    border-color:rgba(248,113,113,.4);
+}
+.danger-title {
+    font-size:1.1rem;
+    font-weight:700;
+    color:#b91c1c;
+    margin:0 0 .25rem;
+}
+.danger-text {
+    margin:0 0 1rem;
+    font-size:.86rem;
+    color:#6b7280;
+}
+.danger-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:1rem;
+    padding:.75rem 0;
+    border-top:1px solid #fee2e2;
+}
+.danger-row:first-of-type {
+    border-top:none;
+}
+.danger-label {
+    font-weight:600;
+    font-size:.9rem;
+}
+.danger-desc {
+    font-size:.82rem;
+    color:#6b7280;
+}
+.danger-divider {
+    border:none;
+    border-top:1px solid #fecaca;
+    margin:1rem 0;
+}
+</style>
+
+{% endblock %}
