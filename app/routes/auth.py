@@ -40,6 +40,19 @@ def _google_oauth_enabled():
     return not any(marker in cid or marker in csec for marker in placeholder_markers)
 
 
+def _get_google_redirect_uri():
+    """Quyết định redirect_uri động nếu truy cập qua ngrok để tránh lỗi mất cookie session."""
+    from urllib.parse import urlparse
+    proto = request.headers.get('X-Forwarded-Proto', request.scheme)
+    host = request.headers.get('X-Forwarded-Host', request.host)
+    if config.GOOGLE_REDIRECT_URI:
+        parsed = urlparse(config.GOOGLE_REDIRECT_URI)
+        if parsed.netloc == host:
+            return config.GOOGLE_REDIRECT_URI
+    return f"{proto}://{host}/auth/google/callback"
+
+
+
 def _redirect_after_login(user):
     """Redirect user after successful login (same flow as original)."""
     user_mags = get_magazines_by_user(user['id'])
@@ -233,7 +246,7 @@ def register_routes(app):
             return redirect(url_for('login'))
         state = secrets.token_urlsafe(32)
         session['google_oauth_state'] = state
-        redirect_uri = config.GOOGLE_REDIRECT_URI or url_for('google_callback', _external=True)
+        redirect_uri = _get_google_redirect_uri()
         params = {
             'client_id':     config.GOOGLE_CLIENT_ID,
             'redirect_uri':  redirect_uri,
@@ -265,7 +278,7 @@ def register_routes(app):
         if not code:
             flash("Không nhận được mã xác thực từ Google.", "error")
             return redirect(url_for('login'))
-        redirect_uri = config.GOOGLE_REDIRECT_URI or url_for('google_callback', _external=True)
+        redirect_uri = _get_google_redirect_uri()
         try:
             token_response = http_requests.post(
                 "https://oauth2.googleapis.com/token",

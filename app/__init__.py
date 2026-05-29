@@ -5,7 +5,7 @@ Creates and configures the Flask app, registers all routes.
 import os
 import json as _json
 from datetime import datetime
-from flask import Flask, session
+from flask import Flask, session, request
 
 from app import config
 
