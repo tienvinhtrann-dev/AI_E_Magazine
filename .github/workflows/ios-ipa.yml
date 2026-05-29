@@ -46,8 +46,7 @@ jobs:
           mkdir -p Payload
 
           cp -R build/ios/iphoneos/Runner.app Payload/
-          cd Payload
-          zip -r ../AI_E_Magazine-unsigned.ipa .
+          zip -r AI_E_Magazine-unsigned.ipa Payload
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
