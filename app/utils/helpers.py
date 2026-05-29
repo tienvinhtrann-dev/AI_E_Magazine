@@ -26,10 +26,20 @@ def fromjson_filter(value):
 # ------------------------------------------------------------------
 
 def _slugify(text: str) -> str:
-    """Convert a title into a URL-friendly slug."""
+    """Convert a title into a URL-friendly slug, with proper Vietnamese support."""
     if not text:
         return "tap-chi-ai"
-    norm = unicodedata.normalize("NFKD", str(text))
+    s = str(text)
+    # Replace Vietnamese-specific characters that don't decompose via NFKD
+    _VN_SPECIAL = {
+        'đ': 'd', 'Đ': 'd',
+        'ơ': 'o', 'Ơ': 'o',
+        'ư': 'u', 'Ư': 'u',
+    }
+    for vn_char, replacement in _VN_SPECIAL.items():
+        s = s.replace(vn_char, replacement)
+    # Now apply NFKD to remove the remaining combining accents (á→a, etc.)
+    norm = unicodedata.normalize("NFKD", s)
     without_accents = "".join(ch for ch in norm if not unicodedata.combining(ch))
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", without_accents)
     slug = slug.strip("-").lower()

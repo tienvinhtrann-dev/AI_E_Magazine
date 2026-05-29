@@ -2,7 +2,11 @@
 Payment routes: SePay token purchases, /plans pricing page.
 """
 import re
+import hashlib
+import hmac
+from datetime import datetime
 from urllib.parse import quote_plus
+from urllib.parse import urlencode
 
 from flask import session, flash, redirect, url_for, render_template, request, jsonify
 
@@ -13,6 +17,7 @@ from database.sepay_model import (
 )
 from database.plan_model import get_all_plans, get_active_subscription, get_plan_by_id
 from database.user_model_simple import add_tokens, get_user_token_balance
+from database.system_model import get_setting
 
 
 # Token packages: key -> {name, amount (VND), tokens}
@@ -56,6 +61,59 @@ def _build_vietqr_url(order):
     )
 
 
+def _resolve_active_gateway():
+    gateway = (get_setting("payment_gateway", "sepay") or "sepay").strip().lower()
+    sepay_enabled = (get_setting("payment_sepay_enabled", "1") or "1").strip() == "1"
+    vnpay_enabled = (get_setting("payment_vnpay_enabled", "0") or "0").strip() == "1"
+    if gateway == "vnpay" and not vnpay_enabled:
+        gateway = "sepay"
+    if gateway == "sepay" and not sepay_enabled and vnpay_enabled:
+        gateway = "vnpay"
+    return gateway, sepay_enabled, vnpay_enabled
+
+
+def _build_vnpay_url(order):
+    txn_ref = str(order["order_code"])
+    amount = int(order["amount"]) * 100  # VNPAY yêu cầu nhân 100
+    # Dùng nội dung thuần ASCII để tránh lỗi encoding khi ký
+    order_info = f"Thanh toan token don hang {txn_ref}"
+    create_date = datetime.now().strftime("%Y%m%d%H%M%S")
+    return_url = config.VNPAY_RETURN_URL or f"{config.APP_BASE_URL}/payment/vnpay-return"
+    params = {
+        "vnp_Version": "2.1.0",
+        "vnp_Command": "pay",
+        "vnp_TmnCode": config.VNPAY_TMN_CODE,
+        "vnp_Amount": str(amount),
+        "vnp_CurrCode": "VND",
+        "vnp_TxnRef": txn_ref,
+        "vnp_OrderInfo": order_info,
+        "vnp_OrderType": "other",
+        "vnp_Locale": "vn",
+        "vnp_ReturnUrl": return_url,
+        "vnp_IpAddr": (request.remote_addr or "127.0.0.1")[:45],
+        "vnp_CreateDate": create_date,
+    }
+    sorted_items = sorted(params.items())
+    # QUAN TRỌNG: VNPAY yêu cầu hash_data phải dùng urlencode (giống query string)
+    # Không dùng raw join — đó là nguyên nhân lỗi "Sai chữ ký" (error 70)
+    hash_data = urlencode(sorted_items)
+    secret = config.VNPAY_HASH_SECRET or ""
+    secure_hash = hmac.new(
+        secret.encode("utf-8"),
+        hash_data.encode("utf-8"),
+        hashlib.sha512,
+    ).hexdigest()
+    # DEBUG — xóa sau khi fix xong
+    print(f"[VNPAY DEBUG] TMN_CODE='{config.VNPAY_TMN_CODE}'")
+    print(f"[VNPAY DEBUG] SECRET='{secret[:6]}...{secret[-4:]}' (len={len(secret)})")
+    print(f"[VNPAY DEBUG] hash_data='{hash_data[:120]}...'")
+    print(f"[VNPAY DEBUG] secure_hash='{secure_hash}'")
+    query = urlencode(sorted_items)
+    pay_url = f"{config.VNPAY_PAYMENT_URL}?{query}&vnp_SecureHash={secure_hash}"
+    print(f"[VNPAY DEBUG] pay_url (first 200)='{pay_url[:200]}'")
+    return pay_url
+
+
 def register_routes(app):
 
     @app.route("/plans")
@@ -95,9 +153,7 @@ def register_routes(app):
             flash("Gói không hợp lệ.", "danger")
             return redirect(url_for("dashboard", tab="plans"))
 
-        if not (config.SEPAY_BANK_BIN and config.SEPAY_ACCOUNT_NO and config.SEPAY_ACCOUNT_NAME):
-            flash("Chưa cấu hình SePay. Vui lòng liên hệ admin.", "danger")
-            return redirect(url_for("dashboard", tab="plans"))
+        gateway, sepay_enabled, vnpay_enabled = _resolve_active_gateway()
 
         user_id    = session["user_id"]
         order_code = create_order(user_id, plan["name"], plan["amount"], plan["tokens"])
@@ -105,6 +161,29 @@ def register_routes(app):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({"error": "Không thể tạo đơn hàng."}), 500
             flash("Không thể tạo đơn hàng. Vui lòng thử lại.", "danger")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        if gateway == "vnpay":
+            if not vnpay_enabled:
+                return jsonify({"error": "VNPAY đang tắt trong cấu hình admin."}), 400
+            if not (config.VNPAY_TMN_CODE and config.VNPAY_HASH_SECRET and config.VNPAY_PAYMENT_URL):
+                return jsonify({"error": "Chưa cấu hình đủ VNPAY (TMN_CODE/HASH_SECRET/PAYMENT_URL)."}), 400
+            order = get_order_by_code(order_code)
+            pay_url = _build_vnpay_url(order)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    "ok": True,
+                    "mode": "redirect",
+                    "gateway": "vnpay",
+                    "redirect_url": pay_url,
+                    "order_code": order_code,
+                })
+            return redirect(pay_url)
+
+        if not sepay_enabled:
+            return jsonify({"error": "SePay đang tắt trong cấu hình admin."}), 400
+        if not (config.SEPAY_BANK_BIN and config.SEPAY_ACCOUNT_NO and config.SEPAY_ACCOUNT_NAME):
+            flash("Chưa cấu hình SePay. Vui lòng liên hệ admin.", "danger")
             return redirect(url_for("dashboard", tab="plans"))
 
         # AJAX request → trả JSON để hiển thị popup
@@ -122,6 +201,7 @@ def register_routes(app):
                 "bank_name": config.SEPAY_BANK_NAME,
                 "account_name": config.SEPAY_ACCOUNT_NAME,
                 "account_no": config.SEPAY_ACCOUNT_NO,
+                "gateway": "sepay",
             })
 
         return redirect(url_for("payment_invoice", order_code=order_code))
@@ -212,6 +292,60 @@ def register_routes(app):
         if order_code:
             mark_order_cancelled(order_code)
         flash("Bạn đã huỷ thanh toán.", "warning")
+        return redirect(url_for("dashboard", tab="plans"))
+
+    @app.route("/payment/vnpay-return")
+    def payment_vnpay_return():
+        payload = request.args.to_dict(flat=True)
+        secure_hash = payload.pop("vnp_SecureHash", "")
+        payload.pop("vnp_SecureHashType", None)
+        sorted_items = sorted(payload.items())
+        # QUAN TRỌNG: dùng urlencode để tái tạo hash_data — khớp với cách VNPAY ký
+        hash_data = urlencode(sorted_items)
+        local_hash = hmac.new(
+            (config.VNPAY_HASH_SECRET or "").encode("utf-8"),
+            hash_data.encode("utf-8"),
+            hashlib.sha512,
+        ).hexdigest()
+        if not secure_hash or secure_hash.lower() != local_hash.lower():
+            flash("Xác thực chữ ký VNPAY thất bại.", "danger")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        order_code = _to_int(payload.get("vnp_TxnRef"), 0)
+        if not order_code:
+            flash("Không tìm thấy đơn hàng VNPAY.", "danger")
+            return redirect(url_for("dashboard", tab="plans"))
+        order = get_order_by_code(order_code)
+        if not order:
+            flash("Đơn hàng không tồn tại.", "danger")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        if order.get("status") == "paid":
+            if "user_id" in session and session["user_id"] == order["user_id"]:
+                session["token_balance"] = get_user_token_balance(order["user_id"])
+            flash("Thanh toán đã được ghi nhận trước đó.", "success")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        rsp_code = str(payload.get("vnp_ResponseCode") or "")
+        txn_status = str(payload.get("vnp_TransactionStatus") or "")
+        paid_amount = _to_int(payload.get("vnp_Amount"), 0)
+        expected_amount = int(order.get("amount") or 0) * 100
+        if paid_amount < expected_amount:
+            flash("Số tiền thanh toán VNPAY không hợp lệ.", "danger")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        if rsp_code == "00" and txn_status in ("", "00"):
+            txn_no = str(payload.get("vnp_TransactionNo") or "")
+            updated = mark_order_paid(order_code, sepay_txn_id=f"VNPAY:{txn_no}")
+            if updated:
+                add_tokens(order["user_id"], order["tokens"])
+            if "user_id" in session and session["user_id"] == order["user_id"]:
+                session["token_balance"] = get_user_token_balance(order["user_id"])
+            flash("Thanh toán VNPAY thành công, token đã được cộng.", "success")
+            return redirect(url_for("dashboard", tab="plans"))
+
+        mark_order_cancelled(order_code)
+        flash(f"Thanh toán VNPAY thất bại (mã {rsp_code}).", "warning")
         return redirect(url_for("dashboard", tab="plans"))
 
     @app.route("/payment/verify/<int:order_code>", methods=["POST"])

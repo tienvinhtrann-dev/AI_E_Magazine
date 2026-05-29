@@ -30,6 +30,9 @@ def init_settings_table():
             ('maintenance_mode',    '0',   'Chế độ bảo trì (0=off, 1=on)', 'number'),
             ('site_name',  'AI E-Magazine','Tên trang web',                 'text'),
             ('contact_email', '',          'Email liên hệ admin',           'email'),
+            ('payment_gateway', 'sepay',   'Cổng thanh toán mặc định',      'text'),
+            ('payment_sepay_enabled', '1', 'Bật SePay',                     'number'),
+            ('payment_vnpay_enabled', '0', 'Bật VNPAY',                     'number'),
         ]
         cursor.executemany("""
             INSERT IGNORE INTO system_settings (`key`, `value`, `label`, `type`)

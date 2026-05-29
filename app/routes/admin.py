@@ -60,7 +60,20 @@ def register_routes(app):
     @app.route("/admin/panel")
     @admin_required
     def admin_panel_new():
-        raw_key = os.getenv('GROQ_API_KEY', '')
+        provider_key_map = {
+            'groq': 'GROQ_API_KEY',
+            'gemini': 'GEMINI_API_KEY',
+            'gpt': 'OPENAI_API_KEY',
+        }
+        current_ai_provider = (os.getenv('ACTIVE_AI_PROVIDER', 'groq') or 'groq').strip().lower()
+        if current_ai_provider not in provider_key_map:
+            current_ai_provider = 'groq'
+        current_ai_model = (
+            os.getenv('ACTIVE_AI_MODEL')
+            or ('llama-3.3-70b-versatile' if current_ai_provider == 'groq'
+                else ('gemini-2.5-flash-lite' if current_ai_provider == 'gemini' else 'gpt-4o-mini'))
+        ).strip()
+        raw_key = os.getenv(provider_key_map[current_ai_provider], '')
         if len(raw_key) > 14:
             masked_key = raw_key[:8] + '*' * (len(raw_key) - 12) + raw_key[-4:]
         else:
@@ -148,6 +161,9 @@ def register_routes(app):
             pass
 
         from datetime import date as _date
+        payment_gateway = (settings.get('payment_gateway', {}).get('value') if settings else None) or 'sepay'
+        payment_sepay_enabled = ((settings.get('payment_sepay_enabled', {}).get('value') if settings else '1') or '1') == '1'
+        payment_vnpay_enabled = ((settings.get('payment_vnpay_enabled', {}).get('value') if settings else '0') or '0') == '1'
         resp = make_response(render_template(
             'admin_panel_new.html',
             stats=stats, users=users, all_magazines=all_magazines,
@@ -157,6 +173,14 @@ def register_routes(app):
             kpi_trends=[], activity_heatmap={},
             masked_key=masked_key, new_users_week=new_users_week,
             revenue_stats=revenue_stats, sepay_summary=sepay_summary,
+            current_ai_provider=current_ai_provider,
+            current_ai_model=current_ai_model,
+            payment_gateway=payment_gateway,
+            payment_sepay_enabled=payment_sepay_enabled,
+            payment_vnpay_enabled=payment_vnpay_enabled,
+            vnpay_tmn_code=config.VNPAY_TMN_CODE,
+            vnpay_payment_url=config.VNPAY_PAYMENT_URL,
+            vnpay_return_url=config.VNPAY_RETURN_URL,
             now_date=str(_date.today()),
         ))
         resp.headers['Cache-Control'] = 'private, max-age=30, stale-while-revalidate=60'
@@ -803,36 +827,145 @@ def register_routes(app):
     @app.route("/admin/system/apikey", methods=["POST"])
     @admin_required
     def admin_save_apikey():
+        provider_key_map = {
+            'groq': 'GROQ_API_KEY',
+            'gemini': 'GEMINI_API_KEY',
+            'gpt': 'OPENAI_API_KEY',
+        }
+        provider = (request.form.get('provider', 'groq') or 'groq').strip().lower()
+        if provider not in provider_key_map:
+            return jsonify({'error': 'Provider không hợp lệ'}), 400
+        model = (request.form.get('model', '') or '').strip()
+        if not model:
+            model = (
+                'llama-3.3-70b-versatile' if provider == 'groq'
+                else ('gemini-2.5-flash-lite' if provider == 'gemini' else 'gpt-4o-mini')
+            )
         new_key = request.form.get('api_key', '').strip()
-        if not new_key:
-            return jsonify({'error': 'API key không được để trống'}), 400
         env_path = os.path.join(config.BASE_DIR, '.env')
         try:
             if os.path.exists(env_path):
                 content = open(env_path, 'r', encoding='utf-8').read()
-                if re.search(r'^GROQ_API_KEY\s*=', content, re.MULTILINE):
-                    content = re.sub(
-                        r'^(GROQ_API_KEY\s*=).*', f'\\g<1>{new_key}',
-                        content, flags=re.MULTILINE,
-                    )
+                if re.search(r'^ACTIVE_AI_PROVIDER\s*=', content, re.MULTILINE):
+                    content = re.sub(r'^(ACTIVE_AI_PROVIDER\s*=).*', f'\\g<1>{provider}', content, flags=re.MULTILINE)
                 else:
-                    content += f'\nGROQ_API_KEY={new_key}\n'
+                    content += f'\nACTIVE_AI_PROVIDER={provider}\n'
+                if re.search(r'^ACTIVE_AI_MODEL\s*=', content, re.MULTILINE):
+                    content = re.sub(r'^(ACTIVE_AI_MODEL\s*=).*', f'\\g<1>{model}', content, flags=re.MULTILINE)
+                else:
+                    content += f'ACTIVE_AI_MODEL={model}\n'
+                if new_key:
+                    key_name = provider_key_map[provider]
+                    if re.search(rf'^{key_name}\s*=', content, re.MULTILINE):
+                        content = re.sub(
+                            rf'^({key_name}\s*=).*', f'\\g<1>{new_key}',
+                            content, flags=re.MULTILINE,
+                        )
+                    else:
+                        content += f'{key_name}={new_key}\n'
             else:
-                content = f'GROQ_API_KEY={new_key}\n'
+                lines = [
+                    f'ACTIVE_AI_PROVIDER={provider}',
+                    f'ACTIVE_AI_MODEL={model}',
+                ]
+                if new_key:
+                    lines.append(f'{provider_key_map[provider]}={new_key}')
+                content = '\n'.join(lines) + '\n'
             with open(env_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             load_dotenv(dotenv_path=env_path, override=True)
-            os.environ['GROQ_API_KEY'] = new_key
-            article_generator.api_key  = new_key
-            if hasattr(article_generator, 'client') and article_generator.client:
-                try:
-                    from groq import Groq
-                    article_generator.client = Groq(api_key=new_key)
-                except Exception:
-                    pass
+            os.environ['ACTIVE_AI_PROVIDER'] = provider
+            os.environ['ACTIVE_AI_MODEL'] = model
+            if new_key:
+                os.environ[provider_key_map[provider]] = new_key
+            # Giữ nguyên tương thích runtime hiện tại (Groq) để không ảnh hưởng luồng sinh bài đang chạy.
+            if provider == 'groq' and new_key:
+                article_generator.api_key = new_key
+                if hasattr(article_generator, 'client') and article_generator.client:
+                    try:
+                        from groq import Groq
+                        article_generator.client = Groq(api_key=new_key)
+                    except Exception:
+                        pass
+                if hasattr(article_generator, 'model_name'):
+                    article_generator.model_name = model
             return jsonify({'success': True})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+    @app.route("/admin/payment/settings", methods=["POST"])
+    @admin_required
+    def admin_save_payment_settings():
+        gateway = (request.form.get("payment_gateway") or "sepay").strip().lower()
+        sepay_enabled = 1 if request.form.get("payment_sepay_enabled") else 0
+        vnpay_enabled = 1 if request.form.get("payment_vnpay_enabled") else 0
+        if gateway not in ("sepay", "vnpay"):
+            return jsonify({"success": False, "error": "Gateway không hợp lệ"}), 400
+        if not sepay_enabled and not vnpay_enabled:
+            return jsonify({"success": False, "error": "Cần bật ít nhất một cổng thanh toán"}), 400
+        if gateway == "sepay" and not sepay_enabled:
+            return jsonify({"success": False, "error": "SePay đang tắt, không thể đặt làm mặc định"}), 400
+        if gateway == "vnpay" and not vnpay_enabled:
+            return jsonify({"success": False, "error": "VNPAY đang tắt, không thể đặt làm mặc định"}), 400
+
+        vnpay_tmn_code = (request.form.get("vnpay_tmn_code") or "").strip()
+        vnpay_hash_secret = (request.form.get("vnpay_hash_secret") or "").strip()
+        vnpay_payment_url = (request.form.get("vnpay_payment_url") or "").strip()
+        vnpay_return_url = (request.form.get("vnpay_return_url") or "").strip()
+
+        if vnpay_enabled and gateway == "vnpay":
+            if not (vnpay_tmn_code or config.VNPAY_TMN_CODE):
+                return jsonify({"success": False, "error": "Thiếu VNPAY_TMN_CODE"}), 400
+            if not (vnpay_hash_secret or config.VNPAY_HASH_SECRET):
+                return jsonify({"success": False, "error": "Thiếu VNPAY_HASH_SECRET"}), 400
+
+        settings_ok = save_settings_bulk({
+            "payment_gateway": gateway,
+            "payment_sepay_enabled": str(sepay_enabled),
+            "payment_vnpay_enabled": str(vnpay_enabled),
+        })
+        if not settings_ok:
+            return jsonify({"success": False, "error": "Không thể lưu setting thanh toán"}), 500
+
+        env_updates = {}
+        if vnpay_tmn_code:
+            env_updates["VNPAY_TMN_CODE"] = vnpay_tmn_code
+        if vnpay_hash_secret:
+            env_updates["VNPAY_HASH_SECRET"] = vnpay_hash_secret
+        if vnpay_payment_url:
+            env_updates["VNPAY_PAYMENT_URL"] = vnpay_payment_url
+        if vnpay_return_url:
+            env_updates["VNPAY_RETURN_URL"] = vnpay_return_url
+
+        if env_updates:
+            env_path = os.path.join(config.BASE_DIR, ".env")
+            try:
+                content = open(env_path, "r", encoding="utf-8").read() if os.path.exists(env_path) else ""
+                for key, value in env_updates.items():
+                    if re.search(rf"^{key}\s*=", content, re.MULTILINE):
+                        content = re.sub(rf"^({key}\s*=).*", rf"\g<1>{value}", content, flags=re.MULTILINE)
+                    else:
+                        if content and not content.endswith("\n"):
+                            content += "\n"
+                        content += f"{key}={value}\n"
+                with open(env_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                load_dotenv(dotenv_path=env_path, override=True)
+                for key, value in env_updates.items():
+                    os.environ[key] = value
+                # Cập nhật config module runtime ngay — không cần restart server
+                if "VNPAY_TMN_CODE" in env_updates:
+                    config.VNPAY_TMN_CODE = env_updates["VNPAY_TMN_CODE"]
+                if "VNPAY_HASH_SECRET" in env_updates:
+                    config.VNPAY_HASH_SECRET = env_updates["VNPAY_HASH_SECRET"]
+                if "VNPAY_PAYMENT_URL" in env_updates:
+                    config.VNPAY_PAYMENT_URL = env_updates["VNPAY_PAYMENT_URL"]
+                if "VNPAY_RETURN_URL" in env_updates:
+                    config.VNPAY_RETURN_URL = env_updates["VNPAY_RETURN_URL"]
+            except Exception as exc:
+                return jsonify({"success": False, "error": f"Lưu .env thất bại: {exc}"}), 500
+
+        return jsonify({"success": True})
 
     @app.route("/admin/system/schedule/<int:sid>/toggle", methods=["POST"])
     @admin_required

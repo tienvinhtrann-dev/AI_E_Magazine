@@ -447,6 +447,63 @@ td.mh-empty-cell{display:table-cell;}
   .um-stat-chip{min-width:140px;padding:12px 14px;}
   #umDrawer{width:100vw;}
 }
+
+/* Tối ưu hóa giao diện cấu hình hệ thống (System Config) trên di động */
+@media(max-width:768px){
+  #pane-system .ap-grid-2 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  #pane-system .ap-settings-card {
+    padding: 16px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+  }
+  #pane-system .ap-form-control {
+    font-size: 0.88rem !important;
+    padding: 8px 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  #pane-system .ap-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #pane-system table {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+  }
+  #pane-system table th,
+  #pane-system table td {
+    padding: 6px 4px !important;
+    font-size: 0.74rem !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
+  #pane-system table td:nth-child(1), #pane-system table th:nth-child(1) { width: 35% !important; }
+  #pane-system table td:nth-child(2), #pane-system table th:nth-child(2) { width: 18% !important; }
+  #pane-system table td:nth-child(3), #pane-system table th:nth-child(3) { width: 12% !important; text-align: center !important; }
+  #pane-system table td:nth-child(4), #pane-system table th:nth-child(4) { width: 18% !important; }
+  #pane-system table td:nth-child(5), #pane-system table th:nth-child(5) { width: 17% !important; text-align: right !important; }
+  #pane-system table td span.ap-badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+  }
+  #pane-system table td button.ap-btn {
+    padding: 4px 6px !important;
+    font-size: 0.72rem !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -495,6 +552,10 @@ td.mh-empty-cell{display:table-cell;}
   <a class="ap-nav-item" data-tab="revenue" onclick="switchTab('revenue');return false;" href="#">
     <i data-lucide="bar-chart-2" class="nav-icon"></i>
     <span class="nav-label">DOANH THU</span>
+  </a>
+  <a class="ap-nav-item" data-tab="payment" onclick="switchTab('payment');return false;" href="#">
+    <i data-lucide="wallet" class="nav-icon"></i>
+    <span class="nav-label">THANH TOÁN</span>
   </a>
   <a class="ap-nav-item" data-tab="feedback" onclick="switchTab('feedback');return false;" href="#">
     <i data-lucide="messages-square" class="nav-icon"></i>
@@ -1156,6 +1217,59 @@ td.mh-empty-cell{display:table-cell;}
 </div>
 
 
+<!-- ════════════════ TAB: THANH TOÁN ════════════════ -->
+<div class="ap-pane" id="pane-payment">
+  <div class="ap-settings-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#111827;">💳 Cấu hình cổng thanh toán</div>
+        <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Chọn cổng mặc định và cấu hình tích hợp VNPAY cho dự án.</div>
+      </div>
+    </div>
+    <form method="POST" action="/admin/payment/settings" id="paymentConfigForm">
+      <div class="ap-form-group">
+        <label>Cổng thanh toán mặc định</label>
+        <select name="payment_gateway" class="ap-form-control">
+          <option value="sepay" {% if payment_gateway == 'sepay' %}selected{% endif %}>SePay</option>
+          <option value="vnpay" {% if payment_gateway == 'vnpay' %}selected{% endif %}>VNPAY</option>
+        </select>
+      </div>
+      <div class="ap-grid-2" style="gap:12px;">
+        <div class="ap-form-group" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="payment_sepay_enabled" id="payEnableSepay" value="1" {% if payment_sepay_enabled %}checked{% endif %}>
+          <label for="payEnableSepay" style="margin-bottom:0;cursor:pointer;">Bật SePay</label>
+        </div>
+        <div class="ap-form-group" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="payment_vnpay_enabled" id="payEnableVnpay" value="1" {% if payment_vnpay_enabled %}checked{% endif %}>
+          <label for="payEnableVnpay" style="margin-bottom:0;cursor:pointer;">Bật VNPAY</label>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+      <div style="font-size:.9rem;font-weight:700;color:#111827;margin-bottom:8px;">Tích hợp VNPAY</div>
+      <div class="ap-form-group">
+        <label>VNPAY TMN Code</label>
+        <input type="text" name="vnpay_tmn_code" class="ap-form-control" value="{{ vnpay_tmn_code or '' }}" placeholder="VD: DEMOV210">
+      </div>
+      <div class="ap-form-group">
+        <label>VNPAY Hash Secret (để trống nếu không đổi)</label>
+        <input type="password" name="vnpay_hash_secret" class="ap-form-control" placeholder="Nhập secret mới">
+      </div>
+      <div class="ap-form-group">
+        <label>VNPAY Payment URL</label>
+        <input type="text" name="vnpay_payment_url" class="ap-form-control" value="{{ vnpay_payment_url or 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html' }}">
+      </div>
+      <div class="ap-form-group">
+        <label>VNPAY Return URL</label>
+        <input type="text" name="vnpay_return_url" class="ap-form-control" value="{{ vnpay_return_url or (request.host_url ~ 'payment/vnpay-return') }}">
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+        <button type="submit" class="ap-btn ap-btn-primary">💾 Lưu cấu hình thanh toán</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 <!-- ════════════════ TAB: PHẢN HỒI ════════════════ -->
 <div class="ap-pane" id="pane-feedback">
   <div class="fb-kpi-grid">
@@ -1256,28 +1370,50 @@ td.mh-empty-cell{display:table-cell;}
 <!-- ════════════════ TAB: CẤU HÌNH HỆ THỐNG ════════════════ -->
 <div class="ap-pane" id="pane-system">
   <div class="ap-grid-2">
-    <!-- Groq API -->
+    <!-- AI Provider -->
     <div class="ap-settings-card">
-      <div class="ap-section-title">🤖 Cấu Hình AI (Groq API)</div>
+      <div class="ap-section-title">
+        <i data-lucide="bot" style="width:16px;height:16px;"></i>
+        <span>Cấu Hình AI</span>
+      </div>
       <form method="POST" action="/admin/system/apikey">
         <div class="ap-form-group">
-          <label>Groq API Key hiện tại</label>
+          <label>Nhà cung cấp AI</label>
+          <select name="provider" id="aiProviderSelect" class="ap-form-control">
+            <option value="groq" {% if current_ai_provider == 'groq' %}selected{% endif %}>Groq</option>
+            <option value="gemini" {% if current_ai_provider == 'gemini' %}selected{% endif %}>Gemini</option>
+            <option value="gpt" {% if current_ai_provider == 'gpt' %}selected{% endif %}>GPT (OpenAI)</option>
+          </select>
+        </div>
+        <div class="ap-form-group">
+          <label>Model</label>
+          <input type="text" name="model" id="aiModelInput" class="ap-form-control"
+            value="{{ current_ai_model }}" placeholder="llama-3.3-70b-versatile"/>
+        </div>
+        <div class="ap-form-group">
+          <label>API Key hiện tại</label>
           <input type="text" class="ap-form-control" value="{{ masked_key }}" readonly
             style="background:#f9fafb;color:#6b7280;font-family:monospace;font-size:.82rem;"/>
         </div>
         <div class="ap-form-group">
           <label>API Key mới</label>
-          <input type="password" name="api_key" class="ap-form-control" placeholder="gsk_..." autocomplete="new-password"/>
+          <input type="password" name="api_key" id="aiApiKeyInput" class="ap-form-control" placeholder="gsk_..." autocomplete="new-password"/>
         </div>
         <div style="text-align:right;">
-          <button type="submit" class="ap-btn ap-btn-primary">🔑 Cập Nhật API Key</button>
+          <button type="submit" class="ap-btn ap-btn-primary">
+            <i data-lucide="key-round" style="width:15px;height:15px;"></i>
+            <span>Lưu Cấu Hình AI</span>
+          </button>
         </div>
       </form>
     </div>
 
     <!-- Lịch tự động -->
     <div class="ap-settings-card">
-      <div class="ap-section-title">🕐 Lịch Đăng Tự Động</div>
+      <div class="ap-section-title">
+        <i data-lucide="clock-3" style="width:16px;height:16px;"></i>
+        <span>Lịch Đăng Tự Động</span>
+      </div>
       {% if schedules %}
       <div class="ap-table-wrap">
       <table class="ap-table" style="font-size:.8rem;">
@@ -1307,7 +1443,10 @@ td.mh-empty-cell{display:table-cell;}
 
   <!-- Thống kê hệ thống -->
   <div class="ap-settings-card">
-    <div class="ap-section-title">📊 Thông Tin Hệ Thống</div>
+    <div class="ap-section-title">
+      <i data-lucide="chart-column" style="width:16px;height:16px;"></i>
+      <span>Thông Tin Hệ Thống</span>
+    </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
       <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
         <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">Database</div>
@@ -1315,7 +1454,7 @@ td.mh-empty-cell{display:table-cell;}
       </div>
       <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
         <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">AI Model</div>
-        <div style="font-weight:700;color:#111827;margin-top:4px;">Groq – llama-3.3-70b</div>
+        <div style="font-weight:700;color:#111827;margin-top:4px;">{{ (current_ai_provider|upper) }} - {{ current_ai_model }}</div>
       </div>
       <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;">
         <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;">Framework</div>
@@ -1617,6 +1756,7 @@ function switchTab(name) {
   if (name === 'users') loadUsersTab();
   if (name === 'history') loadMagsTab();
   if (name === 'revenue') { loadRevenueTab(); if (window.lucide) lucide.createIcons(); }
+  if (name === 'payment') { if (window.lucide) lucide.createIcons(); }
   if (name === 'feedback') { loadFeedbackTab(); if (window.lucide) lucide.createIcons(); }
 }
 
@@ -2965,6 +3105,28 @@ document.addEventListener('DOMContentLoaded', function() {
   _rvChartFetchPromise  = fetch('/admin/api/revenue-filter?mode=month').then(function(r){ return r.json(); }).catch(function(){ return {}; });
   _rvOrdersFetchPromise = fetch('/admin/api/sepay-orders').then(function(r){ return r.json(); }).catch(function(){ return []; });
 
+  // AI provider quick presets (minimal UI helper).
+  var providerEl = document.getElementById('aiProviderSelect');
+  var modelEl = document.getElementById('aiModelInput');
+  var apiKeyEl = document.getElementById('aiApiKeyInput');
+  if (providerEl && modelEl && apiKeyEl) {
+    var presetMap = {
+      groq:   { model: 'llama-3.3-70b-versatile', keyPlaceholder: 'gsk_...' },
+      gemini: { model: 'gemini-2.5-flash-lite',   keyPlaceholder: 'AIza...' },
+      gpt:    { model: 'gpt-4o-mini',             keyPlaceholder: 'sk-...' }
+    };
+    providerEl.addEventListener('change', function() {
+      var preset = presetMap[this.value] || presetMap.groq;
+      if (!modelEl.value || modelEl.value === '' || modelEl.dataset.autofill === '1') {
+        modelEl.value = preset.model;
+        modelEl.dataset.autofill = '1';
+      } else {
+        modelEl.dataset.autofill = '0';
+      }
+      apiKeyEl.placeholder = preset.keyPlaceholder;
+    });
+  }
+
   // Handle SEO form with AJAX
   var seoForm = document.getElementById('seoForm');
   if (seoForm) {
@@ -2976,6 +3138,27 @@ document.addEventListener('DOMContentLoaded', function() {
           var btn = seoForm.querySelector('button[type=submit]');
           btn.textContent = data.success ? '✅ Đã lưu!' : '❌ Lỗi';
           setTimeout(() => { btn.textContent = '💾 Lưu Cấu Hình'; }, 2000);
+        });
+    });
+  }
+
+  var paymentForm = document.getElementById('paymentConfigForm');
+  if (paymentForm) {
+    paymentForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      fetch('/admin/payment/settings', { method: 'POST', body: new FormData(paymentForm) })
+        .then(r => r.json())
+        .then(data => {
+          var btn = paymentForm.querySelector('button[type=submit]');
+          if (!btn) return;
+          btn.textContent = data.success ? '✅ Đã lưu cấu hình' : ('❌ ' + (data.error || 'Lưu thất bại'));
+          setTimeout(() => { btn.textContent = '💾 Lưu cấu hình thanh toán'; }, 2200);
+        })
+        .catch(function() {
+          var btn = paymentForm.querySelector('button[type=submit]');
+          if (!btn) return;
+          btn.textContent = '❌ Lỗi kết nối';
+          setTimeout(() => { btn.textContent = '💾 Lưu cấu hình thanh toán'; }, 2200);
         });
     });
   }

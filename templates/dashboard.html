@@ -1391,6 +1391,12 @@
         background: #f1f5f9;
     }
 
+    /* VNPAY loading dots animation */
+    @keyframes vnpayDot {
+        0%, 80%, 100% { transform: scale(0.5); opacity: .4; }
+        40%            { transform: scale(1.1); opacity: 1; }
+    }
+
     .ws-domain-main a {
         color: #4f46e5;
         text-decoration: underline;
@@ -1756,6 +1762,57 @@
     .ov-stat-card { transition: transform 0.2s, box-shadow 0.2s; }
     .ov-stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(15,23,42,.1); }
 
+    /* Toggle button for dashboard menu on mobile */
+    .ws-menu-toggle {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 38px;
+        height: 38px;
+        border: none;
+        background: #f3f4f6;
+        border-radius: 8px;
+        cursor: pointer;
+        align-items: center;
+        flex-shrink: 0;
+        margin-left: 8px;
+        transition: background-color 0.2s;
+    }
+    .ws-menu-toggle:hover {
+        background-color: #e5e7eb;
+    }
+    .ws-menu-toggle span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: #374151;
+        border-radius: 2px;
+        transition: all 0.25s ease;
+    }
+    .ws-menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .ws-menu-toggle.active span:nth-child(2) { opacity: 0; }
+    .ws-menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* Overlay for mobile drawer */
+    .ws-sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 9998;
+        animation: fadeIn 0.2s ease-out;
+    }
+    .ws-sidebar-overlay.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
     @media (max-width: 960px) {
         body {
             overflow: auto;
@@ -1775,24 +1832,45 @@
             flex: none;
             height: auto;
             overflow: visible;
-            padding: 0 10px;
+            padding: 0 16px !important;
         }
-        .ws-sidebar,
-        .ws-main {
-            overflow-y: visible;
-            min-height: 0;
-            height: auto;
+        .ws-menu-toggle {
+            display: flex !important;
+        }
+        .ws-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            right: -100% !important;
+            width: min(80vw, 290px) !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            background: #ffffff !important;
+            box-shadow: -6px 0 30px rgba(15,23,42,0.15) !important;
+            transition: right 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+            overflow-y: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            border-left: 2px solid #eef2ff !important;
+            border-right: none !important;
+            border-radius: 0 !important;
+            padding: 2rem 1.2rem !important;
+        }
+        .ws-sidebar.active {
+            right: 0 !important;
         }
         .ws-topbar {
             position: sticky;
             top: 0;
             z-index: 60;
-            margin: 0 -10px .85rem;
-            padding: .72rem .95rem .85rem;
+            margin: 0 -16px .85rem !important;
+            padding: .72rem 16px .85rem !important;
             border: none;
             border-radius: 0 0 18px 18px;
             background: linear-gradient(140deg, #ffffff 0%, #f8fbff 52%, #eef4ff 100%);
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
         }
         .ws-topbar-brand-icon {
             width: 44px;
@@ -1805,6 +1883,7 @@
         }
         .ws-topbar-user {
             gap: .45rem;
+            margin-left: auto;
         }
         .ws-topbar-user-email {
             display: none;
@@ -1830,17 +1909,10 @@
             border-top: none;
             gap: .72rem;
         }
-        .ws-sidebar {
-            width: 100%;
-            flex: none;
-            background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
-            border: 1px solid #dbe5f4;
-            border-radius: 18px;
-            padding: .85rem;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
-        }
         .ws-nav {
-            gap: .5rem;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: .6rem !important;
         }
         .ws-blog-switcher {
             background: linear-gradient(140deg, #f8fbff 0%, #eef4ff 100%);
@@ -1856,17 +1928,22 @@
             background: #ffffff;
             border: 1px solid #e4eaf5;
             border-radius: 13px;
-            padding: .75rem .82rem;
+            padding: .8rem .9rem !important;
             transform: none !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: .75rem !important;
+            min-height: auto !important;
         }
         .ws-nav-link:hover {
             background: #f8fbff;
             border-color: #d2dff5;
         }
         .ws-nav-link.active {
-            border-left: 1px solid #ffcfad;
+            border-left: 3px solid #e65100 !important;
             border-radius: 13px;
-            padding-left: .82rem;
+            padding-left: .9rem !important;
             box-shadow: inset 0 0 0 1px #ffd8be;
         }
         .ws-main {
@@ -1875,7 +1952,7 @@
             background: #ffffff;
             border: 1px solid #e4eaf5;
             border-radius: 18px;
-            padding: 1rem .95rem 1.2rem;
+            padding: 1.2rem 1.1rem !important;
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
         }
         .stats-duo-grid {
@@ -1920,7 +1997,7 @@
 
     @media (max-width: 640px) {
         .ws-topbar {
-            padding: .62rem .78rem .76rem;
+            padding: .62rem 16px .76rem !important;
             margin-bottom: .7rem;
         }
         .ws-topbar-brand {
@@ -1941,35 +2018,31 @@
             gap: .25rem;
         }
         .ws-shell {
-            padding: 0 8px;
-        }
-        .ws-sidebar {
-            padding: .7rem;
-            border-radius: 16px;
+            padding: 0 16px !important;
         }
         .ws-nav {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: .55rem;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: .55rem !important;
         }
         .ws-blog-switcher-wrap {
-            grid-column: 1 / -1;
+            grid-column: auto;
         }
         .ws-blog-switcher {
             margin-bottom: 0;
-            min-height: 54px;
+            min-height: auto;
             align-items: center;
         }
         .ws-nav-link {
-            min-height: 62px;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: .42rem;
-            padding: .65rem .62rem;
+            min-height: auto !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: .62rem;
+            padding: .75rem .82rem !important;
         }
         .ws-nav-link > span:not(.icon) {
-            font-size: .79rem;
-            line-height: 1.16;
+            font-size: .9rem !important;
+            line-height: 1.2 !important;
         }
         .ws-nav-link .nav-icon,
         .ws-nav-link .nav-icon svg {
@@ -1979,16 +2052,16 @@
         .ws-nav-link.ws-view-blog,
         .ws-nav-link[href="/logout"],
         .ws-nav-link[onclick*="openAdminPanel"] {
-            grid-column: 1 / -1;
+            grid-column: auto;
             min-height: auto;
             flex-direction: row;
             align-items: center;
             gap: .62rem;
-            padding: .7rem .74rem;
+            padding: .75rem .82rem !important;
         }
         .ws-main {
             border-radius: 16px;
-            padding: .9rem .72rem 1rem;
+            padding: .9rem .72rem 1rem !important;
         }
         #tab-settings {
             max-width: 100%;
@@ -2093,6 +2166,7 @@
 {% set display_name = session.full_name or session.user_email %}
 {% set avatar_url = session.avatar_url or '' %}
 <div class="ws-shell">
+    <div class="ws-sidebar-overlay" id="wsSidebarOverlay"></div>
     <div class="ws-topbar">
         <a class="ws-topbar-brand" href="{{ url_for('dashboard') }}">
             <div class="ws-topbar-brand-icon">
@@ -2117,6 +2191,9 @@
                 <div class="ws-topbar-avatar-fallback">{{ display_name[0]|upper }}</div>
             {% endif %}
         </div>
+        <button class="ws-menu-toggle" id="wsMenuToggle" aria-label="Toggle Menu">
+            <span></span><span></span><span></span>
+        </button>
     </div>
     <div class="ws-layout">
         <aside class="ws-sidebar">
@@ -2699,11 +2776,12 @@
                 <div class="plan-pay-overlay" id="planPaymentOverlay">
                     <div class="plan-pay-modal" role="dialog" aria-modal="true" aria-labelledby="planPaymentTitle">
                         <div class="plan-pay-head" id="planPaymentTitle" style="display:flex;justify-content:space-between;align-items:center">
-                            <span>💳 Thanh toán SePay</span>
+                            <span id="payModalTitleText">💳 Thanh toán</span>
                             <button id="dashPayCloseBtn" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1;padding:0 .3rem">×</button>
                         </div>
 
-                        <div class="plan-pay-grid">
+                        <!-- Panel SePay (QR chuyển khoản) -->
+                        <div class="plan-pay-grid" id="paySePayPanel">
                             <div class="plan-pay-qr-wrap">
                                 <img class="plan-pay-qr" id="payQRImg" src="" alt="VietQR thanh toán" style="max-width:220px;border-radius:10px">
                             </div>
@@ -2749,6 +2827,28 @@
                                     <button type="button" class="plan-pay-cancel" id="planPaymentCancel" style="flex:1">Đóng</button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Panel VNPAY (chuyển hướng) -->
+                        <div id="payVNPayPanel" style="display:none;text-align:center;padding:2rem 1rem">
+                            <div style="font-size:3rem;margin-bottom:1rem">🏦</div>
+                            <div style="font-size:1.1rem;font-weight:700;color:#111827;margin-bottom:.5rem" id="payVNPayPlanLabel">—</div>
+                            <div style="font-size:1.5rem;font-weight:800;color:#d97706;margin-bottom:1.2rem" id="payVNPayAmountLabel">—</div>
+                            <div style="background:linear-gradient(135deg,#e8f4fd,#dbeafe);border:2px solid #93c5fd;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1.5rem">
+                                <div style="font-size:.9rem;color:#1e40af;font-weight:600;margin-bottom:.4rem">🔄 Đang chuyển hướng đến VNPAY...</div>
+                                <div style="font-size:.82rem;color:#3b82f6">Bạn sẽ được chuyển sang cổng thanh toán VNPAY an toàn.<br>Sau khi thanh toán xong, hệ thống sẽ tự động cộng token.</div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.85rem;color:#6b7280;margin-bottom:1.5rem">
+                                <svg style="width:16px;height:16px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                Kết nối bảo mật SSL — dữ liệu thẻ được mã hóa
+                            </div>
+                            <div class="vnpay-redirect-spinner" style="display:flex;justify-content:center;gap:6px;margin-bottom:1rem">
+                                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;animation:vnpayDot 1.2s infinite ease-in-out;animation-delay:0s"></span>
+                                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;animation:vnpayDot 1.2s infinite ease-in-out;animation-delay:.2s"></span>
+                                <span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;animation:vnpayDot 1.2s infinite ease-in-out;animation-delay:.4s"></span>
+                            </div>
+                            <button type="button" id="payVNPayManualBtn" style="background:#2563eb;color:#fff;border:none;border-radius:9px;padding:.7rem 1.8rem;font-weight:700;font-size:.95rem;cursor:pointer;margin-right:.5rem" onclick="window.location.href=window._vnpayRedirectUrl">Mở cổng thanh toán →</button>
+                            <button type="button" class="plan-pay-cancel" id="payVNPayCancelBtn" style="padding:.7rem 1.2rem">Huỷ</button>
                         </div>
                     </div>
                 </div>
@@ -3026,6 +3126,57 @@
                                     <span class="settings-toggle-thumb"></span>
                                 </span>
                             </label>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Thông tin tài khoản -->
+                    <div class="settings-section">
+                        <div class="settings-section-header">
+                            <h3>Thông tin tài khoản</h3>
+                            <p class="settings-section-desc">Cập nhật tên hiển thị và đổi mật khẩu đăng nhập.</p>
+                        </div>
+
+                        <div class="settings-field-row">
+                            <label class="settings-label" for="set-account-email">Email tài khoản</label>
+                            <div class="settings-control">
+                                <input type="text" id="set-account-email" value="{{ session.user_email }}" class="settings-input" readonly>
+                                <span class="settings-hint">Email dùng để đăng nhập (không thể chỉnh sửa tại đây).</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-field-row">
+                            <label class="settings-label" for="set-display-name">Tên hiển thị</label>
+                            <div class="settings-control">
+                                <input type="text" id="set-display-name" name="display_name"
+                                       value="{{ session.full_name or '' }}"
+                                       class="settings-input" placeholder="Nhập tên hiển thị của bạn...">
+                                <span class="settings-hint">Tên này sẽ hiển thị ở góc tài khoản và các khu vực liên quan.</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-field-row">
+                            <label class="settings-label" for="set-current-password">Mật khẩu hiện tại</label>
+                            <div class="settings-control">
+                                <input type="password" id="set-current-password" name="current_password"
+                                       class="settings-input" placeholder="Nhập mật khẩu hiện tại">
+                            </div>
+                        </div>
+
+                        <div class="settings-field-row">
+                            <label class="settings-label" for="set-new-password">Mật khẩu mới</label>
+                            <div class="settings-control">
+                                <input type="password" id="set-new-password" name="new_password"
+                                       class="settings-input" placeholder="Tối thiểu 6 ký tự">
+                            </div>
+                        </div>
+
+                        <div class="settings-field-row">
+                            <label class="settings-label" for="set-confirm-password">Xác nhận mật khẩu mới</label>
+                            <div class="settings-control">
+                                <input type="password" id="set-confirm-password" name="confirm_password"
+                                       class="settings-input" placeholder="Nhập lại mật khẩu mới">
+                                <span class="settings-hint">Để trống cả 3 ô mật khẩu nếu bạn không muốn đổi mật khẩu.</span>
+                            </div>
                         </div>
                     </div>
 
@@ -3819,17 +3970,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   };
 
+  /* ── Hàm helper: ẩn/hiện panel trong modal ── */
+  function _showSePayPanel(){
+    var sp = dg('paySePayPanel'), vp = dg('payVNPayPanel');
+    if(sp) sp.style.display = 'grid';
+    if(vp) vp.style.display = 'none';
+  }
+  function _showVNPayPanel(d){
+    var sp = dg('paySePayPanel'), vp = dg('payVNPayPanel');
+    if(sp) sp.style.display = 'none';
+    if(vp) vp.style.display = 'block';
+    // Ghi nhớ URL để nút manual có thể dùng
+    window._vnpayRedirectUrl = d.redirect_url;
+    // Hiện thông tin gói
+    var lbl = dg('payVNPayPlanLabel');
+    var amt = dg('payVNPayAmountLabel');
+    if(lbl) lbl.textContent = d.plan_name ? d.plan_name + ' (+' + (d.tokens||'') + ' token)' : 'Đang chuyển hướng...';
+    if(amt) amt.textContent = d.amount ? Number(d.amount).toLocaleString('vi-VN') + ' đ' : '';
+    // Update tiêu đề modal
+    var titleEl = dg('payModalTitleText');
+    if(titleEl) titleEl.textContent = '🏦 Thanh toán VNPAY';
+    // Tự động redirect sau 1.8 giây
+    setTimeout(function(){ window.location.href = d.redirect_url; }, 1800);
+  }
+
   window.buySepayPlan = function(planId){
-    // Hiện modal ngay lập tức với trạng thái loading
+    // Reset & hiện modal ngay lập tức với trạng thái loading
     _done = false;
     _dc = null;
     _dtokens = 0;
+    _showSePayPanel();
     dg('payQRImg').src = '';
     dg('payPlanName').textContent = '...';
     dg('payAmountValue').textContent = '...';
     dg('payAccountName').textContent = '...';
     dg('payAccountNumber').textContent = '...';
     dg('payTransferContent').textContent = '...';
+    // Reset tiêu đề về mặc định
+    var titleEl = dg('payModalTitleText');
+    if(titleEl) titleEl.textContent = '💳 Thanh toán';
     dashSetStatus('⏳', 'Đang tạo đơn hàng...', 'checking');
     var vBtn = dg('dashVerifyBtn');
     if(vBtn){ vBtn.disabled = true; vBtn.textContent = '⚡ Tôi đã chuyển khoản'; }
@@ -3845,12 +4024,21 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d.ok){
+        _showSePayPanel();
         dashSetStatus('❌', d.error || 'Lỗi tạo đơn hàng. Vui lòng thử lại.', 'error');
         return;
       }
+      // Gateway VNPAY → hiện panel chuyển hướng rồi redirect
+      if (d.mode === 'redirect' && d.redirect_url) {
+        _showVNPayPanel(d);
+        return;
+      }
+      // Gateway SePay → hiện panel QR như cũ
+      _showSePayPanel();
       window.openDashPayModal(d);
     })
     .catch(function(){
+      _showSePayPanel();
       dashSetStatus('❌', 'Không kết nối được server. Vui lòng thử lại.', 'error');
     });
   };
@@ -3859,12 +4047,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('DOMContentLoaded', function(){
     var closeBtn = dg('dashPayCloseBtn');
     var cancelBtn = dg('planPaymentCancel');
+    var vnpayCancelBtn = dg('payVNPayCancelBtn');
     var overlay = dg('planPaymentOverlay');
     var copyAccNo = dg('dashCopyAccNo');
     var copyContent = dg('dashCopyContent');
 
     if(closeBtn) closeBtn.addEventListener('click', window.closePlanPaymentModal);
     if(cancelBtn) cancelBtn.addEventListener('click', window.closePlanPaymentModal);
+    if(vnpayCancelBtn) vnpayCancelBtn.addEventListener('click', window.closePlanPaymentModal);
     if(overlay) overlay.addEventListener('click', function(e){ if(e.target===this) window.closePlanPaymentModal(); });
     if(copyAccNo) copyAccNo.addEventListener('click', function(){ dashCopyText('payAccountNumber', this); });
     if(copyContent) copyContent.addEventListener('click', function(){ dashCopyText('payTransferContent', this); });
@@ -4755,6 +4945,50 @@ window.addEventListener('message', function(e) {
     });
 }());
 </script>
+
+<script>
+// Toggle menu sidebar trên mobile
+(function() {
+    var toggleBtn = document.getElementById('wsMenuToggle');
+    var sidebar   = document.querySelector('.ws-sidebar');
+    var overlay   = document.getElementById('wsSidebarOverlay');
+    if (!toggleBtn || !sidebar || !overlay) return;
+
+    function openSidebar() {
+        sidebar.classList.add('active');
+        toggleBtn.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+        toggleBtn.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (sidebar.classList.contains('active')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // Đóng sidebar khi chọn tab hoặc liên kết
+    sidebar.querySelectorAll('.ws-nav-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            // Không đóng nếu là switcher tạp chí
+            if (link.classList.contains('ws-blog-switcher')) return;
+            closeSidebar();
+        });
+    });
+})();
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>document.addEventListener('DOMContentLoaded', function() { if (window.lucide) lucide.createIcons(); });</script>
 {% endblock %}

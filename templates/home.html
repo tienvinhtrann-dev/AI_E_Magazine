@@ -577,6 +577,12 @@
     transition: transform 0.3s;
   }
   .service-card:hover .service-icon { transform: scale(1.1) rotate(-4deg); }
+  .service-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #e6f3ff;
+    stroke-width: 2.2;
+  }
   .service-title {
     font-weight: 700;
     font-size: 1rem;
@@ -738,6 +744,12 @@
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
+  }
+  .why-card-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: #e6f3ff;
+    stroke-width: 2.2;
   }
   .why-card-text h4 {
     font-size: 0.95rem;
@@ -1292,42 +1304,42 @@
     <div class="services-grid">
       <div class="service-card" style="--card-a:#00b375;--card-b:#00d4c8;--card-icon:rgba(0,179,117,0.15);">
         <span class="service-num">01</span>
-        <div class="service-icon">⚡</div>
+        <div class="service-icon"><i data-lucide="zap" style="width:18px;height:18px;"></i></div>
         <div class="service-title">Website tự động chỉ trong vài phút</div>
         <div class="service-desc">Khởi tạo website tạp chí với cấu trúc chuẩn, sẵn sàng đăng nội dung ngay lập tức.</div>
         <div class="service-arrow">Khám phá →</div>
       </div>
       <div class="service-card" style="--card-a:#3b82f6;--card-b:#6366f1;--card-icon:rgba(59,130,246,0.15);">
         <span class="service-num">02</span>
-        <div class="service-icon">📰</div>
+        <div class="service-icon"><i data-lucide="newspaper" style="width:18px;height:18px;"></i></div>
         <div class="service-title">Đăng bài tự động mỗi ngày</div>
         <div class="service-desc">Thiết lập chủ đề và lịch đăng, hệ thống AI sẽ tự động tạo bài và xuất bản.</div>
         <div class="service-arrow">Khám phá →</div>
       </div>
       <div class="service-card" style="--card-a:#8b5cf6;--card-b:#a78bfa;--card-icon:rgba(139,92,246,0.15);">
         <span class="service-num">03</span>
-        <div class="service-icon">📈</div>
+        <div class="service-icon"><i data-lucide="bar-chart-3"></i></div>
         <div class="service-title">Tối ưu SEO mạnh mẽ</div>
         <div class="service-desc">Tiêu đề, mô tả và cấu trúc bài viết được tối ưu để tăng khả năng xuất hiện trên công cụ tìm kiếm.</div>
         <div class="service-arrow">Khám phá →</div>
       </div>
       <div class="service-card" style="--card-a:#f59e0b;--card-b:#fbbf24;--card-icon:rgba(245,158,11,0.15);">
         <span class="service-num">04</span>
-        <div class="service-icon">🛠️</div>
+        <div class="service-icon"><i data-lucide="wrench" style="width:18px;height:18px;"></i></div>
         <div class="service-title">Quản lý dễ dàng, không cần kỹ thuật</div>
         <div class="service-desc">Giao diện trực quan, chỉ cần kéo - chọn - bấm, không yêu cầu lập trình.</div>
         <div class="service-arrow">Khám phá →</div>
       </div>
       <div class="service-card" style="--card-a:#10b981;--card-b:#34d399;--card-icon:rgba(16,185,129,0.15);">
         <span class="service-num">05</span>
-        <div class="service-icon">💰</div>
+        <div class="service-icon"><i data-lucide="wallet"></i></div>
         <div class="service-title">Tiết kiệm chi phí, tăng hiệu quả</div>
         <div class="service-desc">Tự động hoá khâu sản xuất nội dung, giảm chi phí nhân sự viết bài.</div>
         <div class="service-arrow">Khám phá →</div>
       </div>
       <div class="service-card" style="--card-a:#00d4c8;--card-b:#06b6d4;--card-icon:rgba(0,212,200,0.15);">
         <span class="service-num">06</span>
-        <div class="service-icon">📞</div>
+        <div class="service-icon"><i data-lucide="phone" style="width:18px;height:18px;"></i></div>
         <div class="service-title">Hỗ trợ 24/7</div>
         <div class="service-desc">Đội ngũ kỹ thuật và AI luôn sẵn sàng hỗ trợ bạn trong suốt quá trình vận hành.</div>
         <div class="service-arrow">Khám phá →</div>
@@ -1371,28 +1383,28 @@
     <!-- Benefits grid -->
     <div class="why-benefits">
       <div class="why-card" style="--wci:rgba(0,179,117,0.15);">
-        <div class="why-card-icon">⚡</div>
+        <div class="why-card-icon"><i data-lucide="zap" style="width:18px;height:18px;"></i></div>
         <div class="why-card-text">
           <h4>Tạo website tức thì</h4>
           <p>Chỉ với vài cú click là có ngay hệ thống tạp chí hoàn chỉnh, sẵn sàng hoạt động.</p>
         </div>
       </div>
       <div class="why-card" style="--wci:rgba(59,130,246,0.15);">
-        <div class="why-card-icon">🤖</div>
+        <div class="why-card-icon"><i data-lucide="bot" style="width:18px;height:18px;"></i></div>
         <div class="why-card-text">
           <h4>Đăng bài hoàn toàn tự động</h4>
           <p>AI tự viết và xuất bản nội dung mỗi ngày, luôn giữ website mới mẻ.</p>
         </div>
       </div>
       <div class="why-card" style="--wci:rgba(139,92,246,0.15);">
-        <div class="why-card-icon">📈</div>
+        <div class="why-card-icon"><i data-lucide="bar-chart-3"></i></div>
         <div class="why-card-text">
           <h4>Tối ưu SEO toàn diện</h4>
           <p>Từ cấu trúc website đến từng bài viết, tất cả đều được tối ưu cho Google.</p>
         </div>
       </div>
       <div class="why-card" style="--wci:rgba(245,158,11,0.15);">
-        <div class="why-card-icon">🛡️</div>
+        <div class="why-card-icon"><i data-lucide="shield-check" style="width:18px;height:18px;"></i></div>
         <div class="why-card-text">
           <h4>Hỗ trợ 24/7 tận tâm</h4>
           <p>Đội ngũ và hệ thống AI luôn đồng hành trong suốt quá trình triển khai.</p>
@@ -1508,8 +1520,12 @@
 <script type="speculationrules">
 {"prerender":[{"urls":["/dashboard"]}]}
 </script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
 (function() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
   var btn = document.getElementById('goToDashboardBtn');
   if (!btn) return;
 

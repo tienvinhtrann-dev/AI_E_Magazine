@@ -527,6 +527,92 @@ def update_user_display_name(user_id, display_name):
 
 
 # ----------------------------------
+# Cập nhật mật khẩu theo email
+# ----------------------------------
+def update_password_by_email(email, new_password):
+    """Cập nhật password hash cho user theo email."""
+    if not email or not new_password:
+        return False
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        cursor = conn.cursor()
+        hashed_password = generate_password_hash(new_password)
+        cursor.execute(
+            "UPDATE users SET password = %s WHERE email = %s",
+            (hashed_password, email),
+        )
+        conn.commit()
+        ok = cursor.rowcount > 0
+        cursor.close()
+        conn.close()
+        return ok
+    except Exception as e:
+        print(f"❌ Error update_password_by_email: {e}")
+        if conn:
+            conn.close()
+        return False
+
+
+# ----------------------------------
+# Cập nhật mật khẩu theo user_id
+# ----------------------------------
+def update_password_by_user_id(user_id, new_password):
+    """Cập nhật password hash cho user theo id."""
+    if not user_id or not new_password:
+        return False
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        cursor = conn.cursor()
+        hashed_password = generate_password_hash(new_password)
+        cursor.execute(
+            "UPDATE users SET password = %s WHERE id = %s",
+            (hashed_password, user_id),
+        )
+        conn.commit()
+        ok = cursor.rowcount > 0
+        cursor.close()
+        conn.close()
+        return ok
+    except Exception as e:
+        print(f"❌ Error update_password_by_user_id: {e}")
+        if conn:
+            conn.close()
+        return False
+
+
+# ----------------------------------
+# Cập nhật trực tiếp password hash theo email
+# ----------------------------------
+def update_password_hash_by_email(email, password_hash):
+    """Dùng để rollback khi reset password thất bại lúc gửi email."""
+    if not email or not password_hash:
+        return False
+    conn = get_connection()
+    if not conn:
+        return False
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET password = %s WHERE email = %s",
+            (password_hash, email),
+        )
+        conn.commit()
+        ok = cursor.rowcount > 0
+        cursor.close()
+        conn.close()
+        return ok
+    except Exception as e:
+        print(f"❌ Error update_password_hash_by_email: {e}")
+        if conn:
+            conn.close()
+        return False
+
+
+# ----------------------------------
 # Toggle khóa/mở tài khoản
 # ----------------------------------
 def toggle_user_active(user_id):

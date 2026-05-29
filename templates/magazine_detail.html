@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% set _mag_theme = magazine.theme or 'newsmatic' %}
 
 {% block title %}{{ magazine.title }} - AI E-Magazine{% endblock %}
@@ -1132,12 +1132,12 @@
             {% endif %}
             <div class="mg-hero-body">
                 <div class="mg-hero-cat">{{ art0.topic or magazine.topic }}</div>
-                <a href="/article/{{ art0.id }}" class="mg-hero-title">{{ art0.title }}</a>
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art0.id }}-{{ art0.title | slugify }}" class="mg-hero-title">{{ art0.title }}</a>
                 {% if art0.summary %}<p class="mg-hero-summary">{{ art0.summary }}</p>{% endif %}
                 <div class="mg-hero-meta">
                     <span>✍️ AI Writer</span>
                     <span>{% if art0.created_at %}{% if art0.created_at.strftime is defined %}{{ art0.created_at.strftime('%d/%m/%Y') }}{% else %}{{ art0.created_at }}{% endif %}{% endif %}</span>
-                    <a href="/article/{{ art0.id }}" class="mg-read-link">Đọc tiếp →</a>
+                    <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art0.id }}-{{ art0.title | slugify }}" class="mg-read-link">Đọc tiếp →</a>
                 </div>
             </div>
         </div>
@@ -1149,7 +1149,7 @@
             {% for art in articles[1:7] %}
             {% set card_img = None %}
             {% if art.image_urls %}{% if art.image_urls is string %}{% if art.image_urls.startswith('http') %}{% set card_img = art.image_urls %}{% elif '[' in art.image_urls %}{% set parsed = art.image_urls|replace("'",'"')|fromjson %}{% if parsed and parsed[0] %}{% set card_img = parsed[0] %}{% endif %}{% endif %}{% else %}{% if art.image_urls|length > 0 and art.image_urls[0] %}{% set card_img = art.image_urls[0] %}{% endif %}{% endif %}{% endif %}
-            <a href="/article/{{ art.id }}" class="mg-card">
+            <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="mg-card">
                 {% if card_img %}
                 <img class="mg-card-img" src="{{ card_img }}" alt="{{ art.title }}" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/{{ art.id }}/600/300';">
                 {% else %}
@@ -1171,7 +1171,7 @@
         <div class="mg-section-label">Xem thêm</div>
         <div class="mg-list">
             {% for art in articles[7:] %}
-            <a href="/article/{{ art.id }}" class="mg-list-item">
+            <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="mg-list-item">
                 <div class="mg-list-num">{{ "%02d"|format(loop.index) }}</div>
                 <div class="mg-list-body">
                     <div class="mg-list-title">{{ art.title }}</div>
@@ -1202,7 +1202,7 @@
 
         <div class="au-section-label">Bài viết nổi bật</div>
         <div class="au-hero">
-            <a href="/article/{{ art0.id }}" class="au-hero-main">
+            <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art0.id }}-{{ art0.title | slugify }}" class="au-hero-main">
                 {% if hero_img %}
                 <img class="au-hero-img" src="{{ hero_img }}" alt="{{ art0.title }}" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/{{ art0.id }}/1200/500';">
                 {% else %}
@@ -1223,7 +1223,7 @@
                 {% for art in articles[1:5] %}
                 {% set side_img = None %}
                 {% if art.image_urls %}{% if art.image_urls is string %}{% if art.image_urls.startswith('http') %}{% set side_img = art.image_urls %}{% elif '[' in art.image_urls %}{% set parsed = art.image_urls|replace("'",'"')|fromjson %}{% if parsed and parsed[0] %}{% set side_img = parsed[0] %}{% endif %}{% endif %}{% else %}{% if art.image_urls|length > 0 and art.image_urls[0] %}{% set side_img = art.image_urls[0] %}{% endif %}{% endif %}{% endif %}
-                <a href="/article/{{ art.id }}" class="au-side-card">
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="au-side-card">
                     {% if side_img %}
                     <img class="au-side-img" src="{{ side_img }}" alt="{{ art.title }}" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/{{ art.id }}/200/200';">
                     {% else %}
@@ -1245,7 +1245,7 @@
             {% for art in articles[5:] %}
             {% set card_img = None %}
             {% if art.image_urls %}{% if art.image_urls is string %}{% if art.image_urls.startswith('http') %}{% set card_img = art.image_urls %}{% elif '[' in art.image_urls %}{% set parsed = art.image_urls|replace("'",'"')|fromjson %}{% if parsed and parsed[0] %}{% set card_img = parsed[0] %}{% endif %}{% endif %}{% else %}{% if art.image_urls|length > 0 and art.image_urls[0] %}{% set card_img = art.image_urls[0] %}{% endif %}{% endif %}{% endif %}
-            <a href="/article/{{ art.id }}" class="au-card">
+            <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="au-card">
                 {% if card_img %}
                 <img class="au-card-img" src="{{ card_img }}" alt="{{ art.title }}" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/{{ art.id }}/600/300';">
                 {% else %}
@@ -1313,14 +1313,14 @@
             </div>
             <div class="nyt-hero-body">
                 <div class="nyt-hero-category">{{ art0.topic or magazine.topic }}</div>
-                <a href="/article/{{ art0.id }}" class="nyt-hero-title">{{ art0.title }}</a>
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art0.id }}-{{ art0.title | slugify }}" class="nyt-hero-title">{{ art0.title }}</a>
                 {% if art0.summary %}
                 <p class="nyt-hero-summary">{{ art0.summary }}</p>
                 {% endif %}
                 <div class="nyt-hero-meta">
                     <span>✍️ AI Writer</span>
                     <span>{% if art0.created_at %}{% if art0.created_at.strftime is defined %}{{ art0.created_at.strftime('%d/%m/%Y') }}{% else %}{{ art0.created_at }}{% endif %}{% endif %}</span>
-                    <span style="margin-left:auto;"><a href="/article/{{ art0.id }}" class="nyt-read-link">Đọc tiếp &rarr;</a></span>
+                    <span style="margin-left:auto;"><a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art0.id }}-{{ art0.title | slugify }}" class="nyt-read-link">Đọc tiếp &rarr;</a></span>
                 </div>
             </div>
         </div>
@@ -1350,7 +1350,7 @@
                 {% endif %}
             {% endif %}
 
-            <a href="/article/{{ art.id }}" class="nyt-col-card">
+            <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="nyt-col-card">
                 {% if card_img %}
                  <img class="nyt-col-img" src="{{ card_img }}" alt="{{ art.title }}" loading="lazy"
                      onerror="this.onerror=null; this.src='https://picsum.photos/seed/{{ art.id }}/600/360';">
@@ -1377,7 +1377,7 @@
             {% set col_size = ((rest|length + 2) // 3) %}
             <div class="nyt-list-col">
                 {% for art in rest[0:col_size] %}
-                <a href="/article/{{ art.id }}" class="nyt-list-item">
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="nyt-list-item">
                     <div class="nyt-list-num">{{ "%02d" | format(loop.index) }}</div>
                     <div class="nyt-list-title">{{ art.title }}</div>
                     <div class="nyt-list-meta">{% if art.created_at %}{% if art.created_at.strftime is defined %}{{ art.created_at.strftime('%d/%m/%Y') }}{% else %}{{ art.created_at }}{% endif %}{% endif %}</div>
@@ -1386,7 +1386,7 @@
             </div>
             <div class="nyt-list-col">
                 {% for art in rest[col_size:col_size*2] %}
-                <a href="/article/{{ art.id }}" class="nyt-list-item">
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="nyt-list-item">
                     <div class="nyt-list-num">{{ "%02d" | format(col_size + loop.index) }}</div>
                     <div class="nyt-list-title">{{ art.title }}</div>
                     <div class="nyt-list-meta">{% if art.created_at %}{% if art.created_at.strftime is defined %}{{ art.created_at.strftime('%d/%m/%Y') }}{% else %}{{ art.created_at }}{% endif %}{% endif %}</div>
@@ -1395,7 +1395,7 @@
             </div>
             <div class="nyt-list-col">
                 {% for art in rest[col_size*2:] %}
-                <a href="/article/{{ art.id }}" class="nyt-list-item">
+                <a href="/magazine/{{ magazine.slug or magazine.id }}/{{ art.id }}-{{ art.title | slugify }}" class="nyt-list-item">
                     <div class="nyt-list-num">{{ "%02d" | format(col_size*2 + loop.index) }}</div>
                     <div class="nyt-list-title">{{ art.title }}</div>
                     <div class="nyt-list-meta">{% if art.created_at %}{% if art.created_at.strftime is defined %}{{ art.created_at.strftime('%d/%m/%Y') }}{% else %}{{ art.created_at }}{% endif %}{% endif %}</div>
@@ -1539,11 +1539,25 @@ window.ARTICLE_CACHE = {};
             + ' data-date="' + escHtml(item.created_at || '') + '"></div>';
     }
 
+    function slugify(text) {
+        if (!text) return 'tap-chi-ai';
+        return text.toString()
+            .replace(/[đĐ]/g, 'd')
+            .replace(/[ơƠ]/g, 'o')
+            .replace(/[ưƯ]/g, 'u')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            || 'tap-chi-ai';
+    }
+
     function buildPreviewCard(item) {
         var imgHtml = item.image_url
             ? '<img class="mag-more-card-media" src="' + escHtml(item.image_url) + '" alt="' + escHtml(item.title || '') + '" loading="lazy" onerror="this.onerror=null;this.src=\'https://picsum.photos/seed/' + item.id + '/700/420\';">'
             : '<div class="mag-more-card-media placeholder">AI</div>';
-        return '<a href="/article/' + item.id + '" class="mag-more-card">'
+        var articleSlug = item.id + '-' + slugify(item.title || '');
+        return '<a href="/magazine/{{ magazine.slug or magazine.id }}/' + articleSlug + '" class="mag-more-card">'
             + imgHtml
             + '<div class="mag-more-card-body">'
             + '<div class="mag-more-card-cat">' + escHtml(item.category || item.topic || '') + '</div>'
@@ -1711,124 +1725,6 @@ window.ARTICLE_CACHE = {};
     }
 })();
 </script>
-
-<!-- ===== ARTICLE POPUP MODAL ===== -->
-<div id="articleModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); overflow-y:auto;">
-    <div id="articleModalBox" style="background:#fff; max-width:860px; width:calc(100% - 32px); margin:2.5rem auto 3rem; border-radius:14px; box-shadow:0 8px 48px rgba(0,0,0,.22); position:relative; overflow:hidden;">
-        <!-- Close button -->
-        <button id="articleModalClose" style="position:absolute; top:14px; right:16px; z-index:10; background:rgba(0,0,0,.06); border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:1.3rem; color:#555; display:flex; align-items:center; justify-content:center; transition:background .2s;" onmouseover="this.style.background='rgba(0,0,0,.15)'" onmouseout="this.style.background='rgba(0,0,0,.06)'">&times;</button>
-        <!-- Spinner -->
-        <div id="articleModalSpinner" style="text-align:center; padding:4rem 2rem;">
-            <div style="display:inline-block; width:44px; height:44px; border:4px solid #e5e7eb; border-top-color:#667eea; border-radius:50%; animation:modalSpin .8s linear infinite;"></div>
-            <p style="margin-top:1rem; color:#888;">Đang tải bài viết...</p>
-        </div>
-        <!-- Content -->
-        <div id="articleModalContent" style="display:none; padding:2.5rem 2.8rem 2rem;"></div>
-    </div>
-</div>
-<style>
-@keyframes modalSpin { to { transform: rotate(360deg); } }
-body.modal-open { overflow: hidden; }
-#articleModalContent .modal-summary {
-    background: #f0f4ff;
-    border-left: 4px solid #667eea;
-    padding: 1rem 1.4rem;
-    margin: 1.2rem 0;
-    border-radius: 4px;
-    font-style: italic;
-    color: #444;
-    font-size: 1rem;
-    line-height: 1.75;
-}
-#articleModalContent .modal-article-body p { margin-bottom: 1.3rem; line-height: 1.9; text-align: justify; font-size: 1.03rem; color: #222; }
-#articleModalContent .modal-article-body h2 { font-size: 1.45rem; font-weight: 700; color: #111; margin: 2rem 0 .8rem; border-bottom: 2px solid #667eea; padding-bottom:.4rem; }
-#articleModalContent .modal-article-body h3 { font-size: 1.15rem; font-weight: 700; color: #333; margin: 1.5rem 0 .6rem; }
-#articleModalContent .modal-article-body strong { font-weight: 700; }
-#articleModalContent .modal-article-body em { font-style: italic; color: #555; }
-#articleModalContent .modal-article-body img { max-width:100%; border-radius:8px; margin:1.2rem 0; box-shadow:0 4px 12px rgba(0,0,0,.1); }
-#articleModalContent .modal-sources { background:#f8f9fa; border-radius:8px; padding:1.2rem 1.5rem; margin-top:1.8rem; }
-#articleModalContent .modal-sources h4 { font-size:.95rem; font-weight:700; color:#555; margin-bottom:.6rem; }
-#articleModalContent .modal-sources a { color:#667eea; font-size:.88rem; word-break:break-all; }
-#articleModalContent .modal-comments { margin-top:2rem; }
-#articleModalContent .modal-comments h4 { font-size:1.05rem; font-weight:700; color:#333; margin-bottom:1rem; border-top:1px solid #eee; padding-top:1rem; }
-#articleModalContent .modal-comment-item { display:flex; gap:.9rem; margin-bottom:1.1rem; }
-#articleModalContent .modal-comment-avatar { width:38px; height:38px; border-radius:50%; background:#e3e7fa; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#667eea; font-weight:700; flex-shrink:0; }
-#articleModalContent .modal-comment-body .author { font-weight:700; font-size:.88rem; color:#333; }
-#articleModalContent .modal-comment-body .text { font-size:.93rem; color:#444; margin-top:.2rem; }
-#articleModalContent .modal-comment-body .time { font-size:.78rem; color:#aaa; margin-top:.15rem; }
-#articleModalContent .modal-comment-form { display:flex; gap:.8rem; align-items:flex-start; margin-bottom:1.2rem; }
-#articleModalContent .modal-comment-form textarea { flex:1; border:1.5px solid #ddd; border-radius:8px; padding:.7rem 1rem; font-size:.97rem; resize:vertical; font-family:inherit; }
-#articleModalContent .modal-comment-form textarea:focus { outline:none; border-color:#667eea; }
-#articleModalContent .modal-comment-form button { padding:.65rem 1.3rem; background:linear-gradient(135deg,#0ea5e9,#2563eb); color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:.95rem; white-space:nowrap; box-shadow:0 6px 14px rgba(37,99,235,.25); transition:transform .18s ease, box-shadow .18s ease; }
-#articleModalContent .modal-comment-form button:hover { transform:translateY(-1px); box-shadow:0 10px 18px rgba(37,99,235,.32); }
-.modal-action-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.45rem 1.1rem; border-radius:8px; border:1.5px solid #ddd; background:#fff; color:#333; font-size:.88rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background .15s; }
-.modal-action-btn:hover { background:#f3f3f3; }
-.modal-action-btn.danger { border-color:#dc3545; color:#dc3545; }
-.modal-action-btn.danger:hover { background:#fff5f5; }
-.modal-layout-split {
-    display: grid;
-    grid-template-columns: 36% 64%;
-    min-height: 400px;
-}
-.modal-layout-split .modal-split-left {
-    background: linear-gradient(160deg, #0f172a, #1e293b);
-    padding: 2.2rem 1.6rem 2.5rem 2rem;
-    color: #f8fafc;
-    border-radius: 14px 0 0 14px;
-}
-.modal-layout-split .modal-split-kicker {
-    font-size: .7rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #fcd34d;
-    margin-bottom: .45rem;
-}
-.modal-layout-split .modal-split-title {
-    font-size: 1.35rem;
-    line-height: 1.35;
-    margin: 0 0 .75rem;
-    color: #fff;
-}
-.modal-layout-split .modal-split-meta {
-    display: flex;
-    flex-direction: column;
-    gap: .32rem;
-    font-size: .8rem;
-    color: rgba(248,250,252,.82);
-    margin-bottom: .85rem;
-}
-.modal-layout-split .modal-split-image {
-    width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 10px 26px rgba(0,0,0,.35);
-}
-.modal-layout-split .modal-split-image-note {
-    font-size: .75rem;
-    color: rgba(248,250,252,.72);
-    margin-top: .5rem;
-    word-break: break-word;
-}
-.modal-layout-split .modal-split-right {
-    min-width: 0;
-    padding: 2.2rem 2rem 2.5rem 1.5rem;
-    overflow-y: auto;
-}
-.modal-layout-split .modal-sources {
-    margin-top: 1.4rem;
-}
-@media (max-width: 980px) {
-    .modal-layout-split {
-        grid-template-columns: 1fr;
-    }
-    .modal-layout-split .modal-split-left {
-        border-radius: 14px 14px 0 0;
-    }
-    .modal-layout-split .modal-split-right {
-        padding: 1.5rem;
-    }
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -1849,337 +1745,5 @@ if (genForm) {
     });
 }
 
-// ===== ARTICLE POPUP LOGIC =====
-(function() {
-    var modal = document.getElementById('articleModal');
-    var modalBox = document.getElementById('articleModalBox');
-    var spinner = document.getElementById('articleModalSpinner');
-    var contentDiv = document.getElementById('articleModalContent');
-    var closeBtn = document.getElementById('articleModalClose');
-    var currentArticleId = null;
-    var articleTheme = '{{ (magazine.article_theme or "default")|e }}';
-    console.log('[magazine_detail] articleTheme =', articleTheme);
 
-    function openModal() {
-        modal.style.display = 'block';
-        document.body.classList.add('modal-open');
-        if (articleTheme === 'splitview') {
-            modalBox.style.maxWidth = '1100px';
-            contentDiv.style.padding = '0';
-        } else {
-            modalBox.style.maxWidth = '860px';
-            contentDiv.style.padding = '2.5rem 2.8rem 2rem';
-        }
-    }
-    function closeModal() {
-        modal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-        contentDiv.style.display = 'none';
-        spinner.style.display = 'block';
-        contentDiv.innerHTML = '';
-        currentArticleId = null;
-    }
-
-    closeBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
-    });
-
-    function renderContent(data) {
-        var html = '';
-
-        var bodyHtml = '';
-        var paragraphs = data.content.split(/\n\n+/);
-        paragraphs.forEach(function(para) {
-            var p = para.trim();
-            if (!p) return;
-            if (p.startsWith('---')) return;
-            if (p.startsWith('**Nguồn tham khảo')) return;
-            if (/^- https?:\/\//.test(p)) return;
-            if (p.startsWith('<img')) {
-                bodyHtml += p;
-            } else if (p.startsWith('## ')) {
-                bodyHtml += '<h2>' + escHtml(p.slice(3)) + '</h2>';
-            } else if (p.startsWith('### ')) {
-                bodyHtml += '<h3>' + escHtml(p.slice(4)) + '</h3>';
-            } else {
-                // Handle inline bold/italic markdown
-                var line = p.replace(/\n/g, '<br>');
-                line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-                line = line.replace(/\*(.+?)\*/g, '<em>$1</em>');
-                bodyHtml += '<p>' + line + '</p>';
-            }
-        });
-
-        var sourceHtml = '';
-        if (data.source_urls && data.source_urls.length > 0) {
-            sourceHtml += '<div class="modal-sources"><h4>📚 Nguồn tham khảo</h4>';
-            data.source_urls.forEach(function(url) {
-                sourceHtml += '<div>🔗 <a href="' + escHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escHtml(url) + '</a></div>';
-            });
-            sourceHtml += '</div>';
-        }
-
-        if (articleTheme === 'splitview') {
-            html += '<div class="modal-layout-split">';
-            html += '<aside class="modal-split-left">';
-            html += '<div class="modal-split-kicker">' + escHtml(data.topic || 'Bài viết') + '</div>';
-            html += '<h2 class="modal-split-title">' + escHtml(data.title) + '</h2>';
-            html += '<div class="modal-split-meta">';
-            html += '<span>✍️ ' + escHtml(data.author_name || 'AI Writer') + '</span>';
-            html += '<span>📅 ' + escHtml(data.created_at || '') + '</span>';
-            html += '<span>👁️ ' + (data.view_count || 0) + ' lượt xem</span>';
-            html += '</div>';
-
-            if (data.image_urls && data.image_urls.length > 0 && data.image_urls[0]) {
-                html += '<img class="modal-split-image" src="' + escHtml(data.image_urls[0]) + '" alt="' + escHtml(data.title) + '" onerror="this.onerror=null;this.src=\'https://picsum.photos/seed/' + data.id + '/740/520\';">';
-                if (data.source_urls && data.source_urls.length > 0) {
-                    html += '<div class="modal-split-image-note">Nguồn ảnh: <a href="' + escHtml(data.source_urls[0]) + '" target="_blank" rel="noopener noreferrer" style="color:#fcd34d;">' + escHtml(data.source_urls[0]) + '</a></div>';
-                }
-            }
-            html += '</aside>';
-
-            html += '<section class="modal-split-right">';
-            if (data.summary) {
-                html += '<div class="modal-summary">' + escHtml(data.summary) + '</div>';
-            }
-            html += '<div class="modal-article-body">' + bodyHtml + '</div>';
-            html += sourceHtml;
-            html += '</section>';
-            html += '</div>';
-        } else {
-            // Meta (category, edit/delete)
-            html += '<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.6rem; margin-bottom:.4rem;">';
-            html += '<span style="font-size:.72rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#cc0000;">' + escHtml(data.topic || '') + '</span>';
-            html += '</div>';
-
-            // Title
-            html += '<h2 style="font-family:\'Times New Roman\',Times,serif; font-size:1.8rem; font-weight:800; color:#111; line-height:1.25; margin:0.5rem 0 0.8rem;">' + escHtml(data.title) + '</h2>';
-
-            // Meta row
-            html += '<div style="display:flex; gap:1.4rem; flex-wrap:wrap; color:#888; font-size:.83rem; border-bottom:1px solid #eee; padding-bottom:.8rem; margin-bottom:.9rem;">';
-            html += '<span>✍️ ' + escHtml(data.author_name || 'AI Writer') + '</span>';
-            html += '<span>📅 ' + escHtml(data.created_at || '') + '</span>';
-            html += '<span>👁️ ' + (data.view_count || 0) + ' lượt xem</span>';
-            html += '</div>';
-
-            // Summary
-            if (data.summary) {
-                html += '<div class="modal-summary">' + escHtml(data.summary) + '</div>';
-            }
-
-            // Featured image
-            if (data.image_urls && data.image_urls.length > 0 && data.image_urls[0]) {
-                html += '<div style="margin:1.2rem 0;">';
-                html += '<img src="' + escHtml(data.image_urls[0]) + '" alt="' + escHtml(data.title) + '" style="width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.1);" onerror="this.onerror=null;this.src=\'https://picsum.photos/seed/' + data.id + '/800/420\';">';
-                if (data.source_urls && data.source_urls.length > 0) {
-                    html += '<div style="margin-top:.5rem; font-size:.85rem; color:#888;">Nguồn ảnh: <a href="' + escHtml(data.source_urls[0]) + '" target="_blank" rel="noopener noreferrer" style="color:#667eea;">' + escHtml(data.source_urls[0]) + '</a></div>';
-                }
-                html += '</div>';
-            }
-
-            html += '<div class="modal-article-body">' + bodyHtml + '</div>';
-            html += sourceHtml;
-        }
-
-        // Comments
-        html += '<div class="modal-comments">';
-        html += '<h4 class="modal-comments-count">Nhận xét (' + (data.comments ? data.comments.length : 0) + ')</h4>';
-
-        // Comment form
-        var userEmail = '{{ session.get("user_email") or "" }}';
-        if (userEmail) {
-            html += '<form class="modal-comment-form" onsubmit="submitModalComment(event, ' + data.id + ')">';
-            html += '<textarea name="comment_content" rows="2" placeholder="Viết nhận xét của bạn..." required></textarea>';
-            html += '<button type="submit">Gửi</button>';
-            html += '</form>';
-        } else {
-            html += '<p style="color:#888; font-size:.9rem; margin-bottom:1rem;">Bạn cần <a href="/login" style="color:#1976d2; font-weight:bold;">đăng nhập</a> để nhận xét.</p>';
-        }
-
-        html += '<div class="modal-comments-list">';
-        if (data.comments && data.comments.length > 0) {
-            data.comments.forEach(function(c) {
-                var initial = c.user_name ? c.user_name.charAt(0).toUpperCase() : '?';
-                html += '<div class="modal-comment-item">';
-                html += '<div class="modal-comment-avatar">' + escHtml(initial) + '</div>';
-                html += '<div class="modal-comment-body">';
-                html += '<div class="author">' + escHtml(c.user_name || '') + '</div>';
-                html += '<div class="text">' + escHtml(c.content || '') + '</div>';
-                html += '<div class="time">' + escHtml(c.created_at || '') + '</div>';
-                html += '</div></div>';
-            });
-        } else {
-            html += '<p style="color:#aaa; font-size:.9rem;">Đang tải nhận xét...</p>';
-        }
-        html += '</div>';
-        html += '</div>';
-
-        return html;
-    }
-
-    function escHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function loadArticle(articleId) {
-        currentArticleId = articleId;
-        openModal();
-        modalBox.scrollTop = 0;
-        modal.scrollTop = 0;
-
-        // Kiểm tra cache trước - nội dung đã có sẵn, không cần API call
-        var cached = window.ARTICLE_CACHE && window.ARTICLE_CACHE[articleId];
-        if (cached) {
-            contentDiv.innerHTML = renderContent(cached);
-            spinner.style.display = 'none';
-            contentDiv.style.display = 'block';
-            // Fetch comments riêng ở background (nhẹ và nhanh)
-            _loadCommentsInto(articleId);
-            return;
-        }
-
-        // Fallback: hiện thông tin cơ bản từ DOM rồi fetch API
-        var dataEl = document.querySelector('[data-id="' + articleId + '"][data-title]');
-        if (dataEl) {
-            var ph = '';
-            ph += '<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.6rem; margin-bottom:.4rem;">';
-            ph += '<span style="font-size:.72rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#cc0000;">' + escHtml(dataEl.getAttribute('data-cat') || '') + '</span>';
-            ph += '</div>';
-            ph += '<h2 style="font-family:\'Times New Roman\',Times,serif; font-size:1.8rem; font-weight:800; color:#111; line-height:1.25; margin:.5rem 0 .8rem;">' + escHtml(dataEl.getAttribute('data-title') || '') + '</h2>';
-            ph += '<div style="display:flex; gap:1.4rem; flex-wrap:wrap; color:#888; font-size:.83rem; border-bottom:1px solid #eee; padding-bottom:.8rem; margin-bottom:.9rem;">';
-            ph += '<span>✍️ AI Writer</span>';
-            ph += '<span>📅 ' + escHtml(dataEl.getAttribute('data-date') || '') + '</span>';
-            ph += '</div>';
-            var sum = dataEl.getAttribute('data-summary') || '';
-            if (sum) ph += '<div class="modal-summary">' + escHtml(sum) + '</div>';
-            var img = dataEl.getAttribute('data-img') || '';
-            if (img) ph += '<div style="margin:1.2rem 0;"><img src="' + escHtml(img) + '" alt="" style="width:100%; height:auto; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.1);" onerror="this.style.display=\'none\'"></div>';
-            ph += '<div style="text-align:center; padding:1.5rem 0;">'
-                + '<div style="display:inline-block; width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#667eea; border-radius:50%; animation:modalSpin .8s linear infinite;"></div>'
-                + '<p style="color:#9ca3af; font-size:.85rem; margin-top:.6rem;">Đang tải nội dung...</p></div>';
-            contentDiv.innerHTML = ph;
-            spinner.style.display = 'none';
-            contentDiv.style.display = 'block';
-        } else {
-            spinner.style.display = 'block';
-            contentDiv.style.display = 'none';
-            contentDiv.innerHTML = '';
-        }
-
-        fetch('/api/article/' + articleId + '?no_comments=1')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.error) {
-                    contentDiv.innerHTML = '<p style="color:#dc3545; padding:2rem;">' + escHtml(data.error) + '</p>';
-                } else {
-                    if (window.ARTICLE_CACHE) window.ARTICLE_CACHE[articleId] = data;
-                    contentDiv.innerHTML = renderContent(data);
-                    _loadCommentsInto(articleId);
-                }
-                spinner.style.display = 'none';
-                contentDiv.style.display = 'block';
-            })
-            .catch(function() {
-                contentDiv.innerHTML = '<p style="color:#dc3545; padding:2rem;">Không thể tải bài viết. Vui lòng thử lại.</p>';
-                spinner.style.display = 'none';
-                contentDiv.style.display = 'block';
-            });
-    }
-
-    function _loadCommentsInto(articleId) {
-        var targetDiv = contentDiv; // capture reference at call time
-        fetch('/api/article/' + articleId + '/comments')
-            .then(function(r) {
-                if (r.status === 404) {
-                    // Fallback: nếu route mới chưa có, dùng API article đầy đủ
-                    return fetch('/api/article/' + articleId).then(function(r2) {
-                        return r2.json().then(function(d) { return {comments: d.comments || []}; });
-                    });
-                }
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            })
-            .then(function(data) {
-                var comments = data.comments || [];
-                var countEl = targetDiv.querySelector('.modal-comments-count');
-                var listEl  = targetDiv.querySelector('.modal-comments-list');
-                if (countEl) countEl.textContent = 'Nhận xét (' + comments.length + ')';
-                if (!listEl) return;
-                if (comments.length === 0) {
-                    listEl.innerHTML = '<p style="color:#aaa; font-size:.9rem;">Chưa có nhận xét nào.</p>';
-                    return;
-                }
-                var html = '';
-                comments.forEach(function(c) {
-                    var initial = c.user_name ? c.user_name.charAt(0).toUpperCase() : '?';
-                    html += '<div class="modal-comment-item">';
-                    html += '<div class="modal-comment-avatar">' + escHtml(initial) + '</div>';
-                    html += '<div class="modal-comment-body">';
-                    html += '<div class="author">' + escHtml(c.user_name || '') + '</div>';
-                    html += '<div class="text">' + escHtml(c.content || '') + '</div>';
-                    html += '<div class="time">' + escHtml(c.created_at || '') + '</div>';
-                    html += '</div></div>';
-                });
-                listEl.innerHTML = html;
-            })
-            .catch(function(err) {
-                console.error('_loadCommentsInto error for article ' + articleId + ':', err);
-                var listEl = targetDiv.querySelector('.modal-comments-list');
-                if (listEl) listEl.innerHTML = '<p style="color:#aaa; font-size:.9rem;">Chưa có nhận xét nào.</p>';
-            });
-    }
-
-    // Intercept all article links on this page
-    document.addEventListener('click', function(e) {
-        var el = e.target.closest('a[href]');
-        if (!el) return;
-        var href = el.getAttribute('href');
-        if (!href) return;
-        var match = href.match(/^\/article\/(\d+)$/);
-        if (!match) return;
-        e.preventDefault();
-        loadArticle(parseInt(match[1], 10));
-    });
-
-    // Global helpers
-    window.confirmDeleteArticle = function(articleId) {
-        if (confirm('Bạn có chắc muốn xóa bài viết này?')) {
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/delete/' + articleId;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    };
-
-    window.submitModalComment = function(e, articleId) {
-        e.preventDefault();
-        var form = e.target;
-        var textarea = form.querySelector('textarea[name="comment_content"]');
-        var content = textarea.value.trim();
-        if (!content) return;
-        var btn = form.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Đang gửi...'; }
-        fetch('/article/' + articleId, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'comment_content=' + encodeURIComponent(content),
-            redirect: 'manual'
-        }).then(function() {
-            textarea.value = '';
-            if (btn) { btn.disabled = false; btn.textContent = 'Gửi'; }
-            // Chỉ reload comments, không reload toàn bộ nội dung
-            _loadCommentsInto(articleId);
-        }).catch(function() {
-            if (btn) { btn.disabled = false; btn.textContent = 'Gửi'; }
-            alert('Không thể gửi nhận xét. Vui lòng thử lại.');
-        });
-    };
-})();
-</script>
 {% endblock %}

@@ -79,6 +79,11 @@ def create_app():
         except Exception:
             return []
 
+    @app.template_filter('slugify')
+    def slugify_filter(value):
+        from app.utils.helpers import _slugify
+        return _slugify(value)
+
     # ------------------------------------------------------------------
     # Register all route modules
     # ------------------------------------------------------------------

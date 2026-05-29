@@ -349,6 +349,109 @@ def register_routes(app):
             return redirect("/dashboard")
         return view_magazine(magazine['id'])
 
+    @app.route("/magazine/<magazine_slug>/<article_slug>", methods=["GET", "POST"])
+    def view_magazine_article(magazine_slug, article_slug):
+        # 1. Look up magazine by slug or ID
+        magazine = get_magazine_by_slug(magazine_slug)
+        if not magazine and magazine_slug.isdigit():
+            try:
+                magazine = get_magazine_by_id(int(magazine_slug))
+            except Exception:
+                magazine = None
+        if not magazine:
+            flash("Tạp chí không tồn tại!", "error")
+            return redirect("/dashboard")
+
+        # 2. Get all articles of the magazine
+        articles = get_articles_by_magazine(magazine['id'])
+        
+        # 3. Find the target article
+        target_article = None
+        
+        # Try finding by ID if article_slug is a digit or starts with ID-
+        article_id = None
+        if article_slug.isdigit():
+            article_id = int(article_slug)
+        elif '-' in article_slug:
+            parts = article_slug.split('-', 1)
+            if parts[0].isdigit():
+                article_id = int(parts[0])
+                
+        if article_id is not None:
+            # check if this article exists in the magazine
+            for art in articles:
+                if art['id'] == article_id:
+                    target_article = art
+                    break
+        
+        # Fallback: search by title slug
+        if not target_article:
+            for art in articles:
+                if _slugify(art['title']) == article_slug:
+                    target_article = art
+                    break
+                    
+        if not target_article:
+            flash("Bài viết không tồn tại!", "error")
+            if magazine.get('slug'):
+                return redirect(url_for('view_magazine_by_slug', slug=magazine['slug']))
+            return redirect(url_for('view_magazine', magazine_id=magazine['id']))
+            
+        # Get full article details (to trigger view count increase, fetch comments and author/meta info)
+        from database.article_model_simple import get_article_by_id
+        article = get_article_by_id(target_article['id'])
+        if not article:
+            flash("Không thể tải chi tiết bài viết!", "error")
+            if magazine.get('slug'):
+                return redirect(url_for('view_magazine_by_slug', slug=magazine['slug']))
+            return redirect(url_for('view_magazine', magazine_id=magazine['id']))
+
+        # Deduplicate and limit sections for display
+        from app.utils.helpers import _dedupe_article_content_for_display, _limit_article_sections_for_display
+        article['content'] = _dedupe_article_content_for_display(article.get('content', ''))
+        article['content'] = _limit_article_sections_for_display(article.get('content', ''), max_sections=5)
+
+        # Handle comment posting (POST method)
+        if request.method == "POST":
+            if 'user_id' not in session:
+                flash('Bạn cần đăng nhập để bình luận.', 'error')
+                return redirect(url_for('login'))
+            content = request.form.get('comment_content', '').strip()
+            if content:
+                from database.comment_model_simple import add_comment
+                add_comment(article['id'], session['user_id'], content)
+                return redirect(request.url)
+
+        # Get comments
+        from database.comment_model_simple import get_comments_by_article
+        comments = get_comments_by_article(article['id'], user_id=session.get('user_id'))
+        
+        # Multi-language configuration check
+        _is_en = session.get('language') == 'en' or (
+            magazine.get('language') == 'en'
+        )
+
+        # Build categories menu (same as magazine_detail)
+        topic_counts = get_article_topic_counts_by_magazine(magazine['id'])
+        categories_menu, configured_categories = _build_categories_menu(magazine, topic_counts)
+
+        # Build other articles for sidebar
+        other_articles = [art for art in articles if art['id'] != article['id']]
+        other_articles = other_articles[:6]
+        _decorate_preview_articles(other_articles, configured_categories)
+
+        return render_template(
+            "magazine_article_detail.html",
+            magazine=magazine,
+            article=article,
+            comments=comments,
+            categories_menu=categories_menu,
+            other_articles=other_articles,
+            _is_en=_is_en,
+            user_email=session.get('user_email'),
+            user_role=session.get('user_role'),
+        )
+
     # ------------------------------------------------------------------
     # Magazine settings
     # ------------------------------------------------------------------
@@ -430,7 +533,6 @@ def register_routes(app):
             if not ok:
                 flash("Không thể lưu cài đặt. Có thể slug đã trùng với tạp chí khác.", "error")
             else:
-                flash("Đã lưu cài đặt tạp chí.", "success")
                 if slug_input:
                     magazine = get_magazine_by_slug(slug_input) or get_magazine_by_id(magazine['id'])
                 else:

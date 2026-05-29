@@ -9,6 +9,11 @@ from app.utils.decorators import login_required
 from database.db_simple import get_connection
 from database.magazine_model_simple import get_magazine_by_id, update_magazine_settings
 from database.schedule_model_simple import get_schedules_by_user
+from database.user_model_simple import (
+    update_user_display_name,
+    verify_user,
+    update_password_by_user_id,
+)
 
 
 def register_routes(app):
@@ -335,8 +340,6 @@ def register_routes(app):
 
         if not ok:
             flash("Không thể lưu cài đặt. Có thể slug đã trùng với tạp chí khác.", "error")
-        else:
-            flash("Đã cập nhật cài đặt tạp chí.", "success")
         return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
 
     @app.route("/dashboard/settings/save", methods=["POST"])
@@ -361,12 +364,33 @@ def register_routes(app):
         language       = request.form.get("language", "vi")
         comments_locked = 1 if request.form.get("comments_locked") else 0
         timezone       = request.form.get("timezone", "Asia/Ho_Chi_Minh")
+        display_name   = (request.form.get("display_name") or "").strip()
+        current_password = (request.form.get("current_password") or "").strip()
+        new_password     = (request.form.get("new_password") or "").strip()
+        confirm_password = (request.form.get("confirm_password") or "").strip()
 
         if not title:
             flash("Tên tạp chí không được để trống!", "error")
             return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
         if not slug:
             slug = _slugify(title)
+
+        # Validate account updates first (to avoid saving partial changes on invalid password input)
+        password_change_requested = bool(current_password or new_password or confirm_password)
+        if password_change_requested:
+            if not current_password or not new_password or not confirm_password:
+                flash("Để đổi mật khẩu, vui lòng nhập đủ mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+            if len(new_password) < 6:
+                flash("Mật khẩu mới cần ít nhất 6 ký tự.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+            if new_password != confirm_password:
+                flash("Xác nhận mật khẩu mới không khớp.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+            current_user = verify_user(session.get("user_email"), current_password)
+            if not current_user:
+                flash("Mật khẩu hiện tại không đúng.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
 
         ok, err = update_magazine_settings(
             magazine_id=mag_id, user_id=user_id,
@@ -378,8 +402,22 @@ def register_routes(app):
         )
         if not ok:
             flash(err or "Không thể lưu cài đặt. Có thể slug đã trùng.", "error")
-        else:
-            flash("Đã lưu cài đặt tạp chí.", "success")
+            return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+
+        # Update display name (optional)
+        if display_name and display_name != (session.get("full_name") or "").strip():
+            if update_user_display_name(user_id, display_name):
+                session["full_name"] = display_name
+            else:
+                flash("Không thể cập nhật tên hiển thị. Vui lòng thử lại.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+
+        # Update password (optional)
+        if password_change_requested:
+            if not update_password_by_user_id(user_id, new_password):
+                flash("Không thể cập nhật mật khẩu mới. Vui lòng thử lại.", "error")
+                return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
+
         return redirect(url_for("dashboard", tab="settings", mag_id=mag_id))
 
     @app.route("/dashboard/comments/fragment")
