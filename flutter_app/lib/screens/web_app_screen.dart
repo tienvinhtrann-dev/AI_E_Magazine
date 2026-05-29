@@ -53,7 +53,10 @@ class _WebAppScreenState extends State<WebAppScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(AppConfig.baseUrl));
+      ..loadRequest(
+        Uri.parse(AppConfig.baseUrl),
+        headers: const {'ngrok-skip-browser-warning': 'true'},
+      );
   }
 
   bool _isGoogleAuthUrl(Uri uri) {
@@ -115,7 +118,10 @@ class _WebAppScreenState extends State<WebAppScreen> {
 
     if (ok) {
       await _syncCookiesToWebView();
-      await _controller.loadRequest(Uri.parse(AppConfig.baseUrl));
+      await _controller.loadRequest(
+        Uri.parse(AppConfig.baseUrl),
+        headers: const {'ngrok-skip-browser-warning': 'true'},
+      );
     } else if (mounted && auth.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(auth.error!), backgroundColor: Colors.redAccent),
