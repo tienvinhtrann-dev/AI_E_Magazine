@@ -87,13 +87,40 @@ html, body { margin-top: 0 !important; padding-top: 0 !important; background: #0
     </div>
 
     <div style="margin-top: 1.5rem;">
-      <h3 style="font-size:1rem;color:#f1f5f9;margin-bottom:.5rem;">Cách 2: Gửi email yêu cầu</h3>
-      <p>Nếu bạn không thể đăng nhập hoặc muốn chúng tôi xử lý thủ công:</p>
-      <ul>
-        <li>Gửi email từ chính email đã đăng ký tài khoản của bạn tới: <a href="mailto:vinh222160@student.nctu.edu.vn" style="color:#00d4a0;">vinh222160@student.nctu.edu.vn</a></li>
-        <li>Tiêu đề email ghi rõ: <strong>"Yêu cầu xóa tài khoản và dữ liệu AI E-Magazine"</strong>.</li>
-        <li>Chúng tôi sẽ xử lý yêu cầu của bạn trong vòng tối đa 3 ngày làm việc.</li>
-      </ul>
+      <h3 style="font-size:1rem;color:#f1f5f9;margin-bottom:.5rem;">Cách 2: Điền form gửi yêu cầu trực tuyến</h3>
+      <p>Nếu bạn không thể đăng nhập hoặc muốn gửi yêu cầu xử lý thủ công, vui lòng điền thông tin bên dưới:</p>
+      
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); max-width: 540px; margin: 1.5rem 0 0; color: #e2e8f0; text-align: left;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: #f1f5f9; margin-top: 0; margin-bottom: 1.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 0.75rem;">Điền thông tin để gửi yêu cầu</h3>
+        
+        <form id="dataDeletionRequestForm" onsubmit="submitDeletionRequest(event)">
+          <div style="margin-bottom: 1.25rem;">
+            <label for="delEmail" style="display: block; font-size: 0.88rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.5rem;">Gmail đăng ký *</label>
+            <input type="email" id="delEmail" required placeholder="Nhập địa chỉ Gmail" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; font-size: 0.95rem; outline: none; background: rgba(6, 13, 24, 0.6); color: #f1f5f9; box-sizing: border-box; transition: all 0.2s;" onfocus="this.style.borderColor='#00b375'; this.style.boxShadow='0 0 0 3px rgba(0, 179, 117, 0.15)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.boxShadow='none';">
+          </div>
+          
+          <div style="margin-bottom: 1.25rem;">
+            <label for="delReason" style="display: block; font-size: 0.88rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.5rem;">Lý do xóa tài khoản</label>
+            <select id="delReason" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; font-size: 0.95rem; outline: none; background: #0c1322; color: #f1f5f9; box-sizing: border-box; transition: all 0.2s; cursor: pointer;" onfocus="this.style.borderColor='#00b375'; this.style.boxShadow='0 0 0 3px rgba(0, 179, 117, 0.15)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.boxShadow='none';">
+              <option value="" style="background: #0c1322; color: #f1f5f9;">Chọn lý do (không bắt buộc)</option>
+              <option value="Không còn nhu cầu sử dụng" style="background: #0c1322; color: #f1f5f9;">Không còn nhu cầu sử dụng</option>
+              <option value="Gặp khó khăn khi sử dụng" style="background: #0c1322; color: #f1f5f9;">Gặp khó khăn khi sử dụng</option>
+              <option value="Lo ngại về bảo mật thông tin" style="background: #0c1322; color: #f1f5f9;">Lo ngại về bảo mật thông tin</option>
+              <option value="Lý do khác" style="background: #0c1322; color: #f1f5f9;">Lý do khác</option>
+            </select>
+          </div>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <label for="delNotes" style="display: block; font-size: 0.88rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.5rem;">Ghi chú thêm</label>
+            <textarea id="delNotes" placeholder="Mô tả thêm (không bắt buộc)" style="width: 100%; height: 100px; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; font-size: 0.95rem; outline: none; background: rgba(6, 13, 24, 0.6); color: #f1f5f9; box-sizing: border-box; resize: vertical; transition: all 0.2s;" onfocus="this.style.borderColor='#00b375'; this.style.boxShadow='0 0 0 3px rgba(0, 179, 117, 0.15)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.12)'; this.style.boxShadow='none';"></textarea>
+          </div>
+          
+          <button type="submit" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(239, 68, 68, 0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.35)';">
+            Gửi yêu cầu xóa tài khoản
+          </button>
+        </form>
+        <div id="delFormStatus" style="margin-top: 1rem; font-size: 0.9rem; font-weight: 600; text-align: center; display: none;"></div>
+      </div>
     </div>
   </div>
 
@@ -105,4 +132,46 @@ html, body { margin-top: 0 !important; padding-top: 0 !important; background: #0
     <p>Trong thời gian 30 ngày này, dữ liệu của bạn sẽ ở trạng thái đóng băng (vô hiệu hóa) và hoàn toàn không thể truy cập bởi bất kỳ ai hoặc dịch vụ bên thứ ba nào.</p>
   </div>
 </div>
+
+<script>
+function submitDeletionRequest(event) {
+  event.preventDefault();
+  
+  var email = document.getElementById('delEmail').value;
+  var reason = document.getElementById('delReason').value || 'Không có';
+  var notes = document.getElementById('delNotes').value || 'Không có';
+  var statusDiv = document.getElementById('delFormStatus');
+  
+  statusDiv.style.display = 'block';
+  statusDiv.style.color = '#4f46e5';
+  statusDiv.textContent = '⏳ Đang gửi yêu cầu...';
+  
+  fetch('/api/data-deletion-request', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: email,
+      reason: reason,
+      notes: notes
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      statusDiv.style.color = '#16a34a';
+      statusDiv.textContent = '✅ Đã gửi yêu cầu thành công! Chúng tôi sẽ xử lý yêu cầu của bạn.';
+      document.getElementById('dataDeletionRequestForm').reset();
+    } else {
+      statusDiv.style.color = '#dc2626';
+      statusDiv.textContent = '❌ Lỗi: ' + (data.error || 'Gửi yêu cầu thất bại.');
+    }
+  })
+  .catch(err => {
+    statusDiv.style.color = '#dc2626';
+    statusDiv.textContent = '❌ Lỗi kết nối mạng.';
+  });
+}
+</script>
 {% endblock %}

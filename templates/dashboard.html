@@ -3257,13 +3257,23 @@
                         <span>Khu vực nguy hiểm</span>
                     </div>
                     <div class="settings-danger-row">
-                        <div>
+                        <div style="flex: 1; min-width: 250px;">
                             <div class="settings-danger-label">Xóa tạp chí</div>
                             <div class="settings-danger-desc">Xóa vĩnh viễn tạp chí <strong>{{ mag.title }}</strong> và toàn bộ bài viết. Hành động này không thể hoàn tác.</div>
                         </div>
                         <button type="button" class="settings-danger-btn"
                                 onclick='openDeleteMagModal({{ mag.id }}, {{ mag.title | tojson }})'>
                             Xóa tạp chí
+                        </button>
+                    </div>
+                    <div class="settings-danger-row" style="border-top: 1px dashed rgba(220, 38, 38, 0.15); margin-top: 1rem; padding-top: 1rem;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <div class="settings-danger-label">Xóa tài khoản</div>
+                            <div class="settings-danger-desc">Xóa vĩnh viễn tài khoản của bạn (<strong>{{ session.user_email }}</strong>) và tất cả tạp chí, dữ liệu bài viết liên quan. Hành động này không thể hoàn tác.</div>
+                        </div>
+                        <button type="button" class="settings-danger-btn"
+                                onclick='openDeleteAccountModal()'>
+                            Xóa tài khoản
                         </button>
                     </div>
                 </div>
@@ -3289,6 +3299,29 @@
                         <button type="button" class="settings-modal-btn-cancel" onclick="closeDeleteMagModal()">Hủy</button>
                         <form id="deleteMagForm" method="POST" action="" style="display:inline;">
                             <button type="submit" id="deleteMagSubmitBtn" class="settings-modal-btn-delete" disabled>Xóa vĩnh viễn</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal xác nhận xóa tài khoản -->
+            <div id="deleteAccountModal" class="settings-modal-overlay" onclick="if(event.target===this)closeDeleteAccountModal()">
+                <div class="settings-modal settings-modal-danger">
+                    <div class="settings-modal-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </div>
+                    <h3>Xóa tài khoản vĩnh viễn?</h3>
+                    <p>Hành động này sẽ xóa vĩnh viễn tài khoản <strong>{{ session.user_email }}</strong> và toàn bộ tạp chí, dữ liệu bài viết của bạn. Không thể hoàn tác.</p>
+                    <div class="settings-confirm-input-wrap">
+                        <label for="deleteAccountConfirmInput">Nhập email của bạn để xác nhận:</label>
+                        <input type="text" id="deleteAccountConfirmInput" class="settings-modal-input" placeholder="Nhập {{ session.user_email }}"
+                               oninput="onDeleteAccountConfirmInput()">
+                        <span id="deleteAccountConfirmError" class="settings-confirm-error" style="display:none">Email không khớp!</span>
+                    </div>
+                    <div class="settings-modal-actions">
+                        <button type="button" class="settings-modal-btn-cancel" onclick="closeDeleteAccountModal()">Hủy</button>
+                        <form id="deleteAccountForm" method="POST" action="/delete_account" style="display:inline;">
+                            <button type="submit" id="deleteAccountSubmitBtn" class="settings-modal-btn-delete" disabled>Xóa vĩnh viễn</button>
                         </form>
                     </div>
                 </div>
@@ -3637,6 +3670,37 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openDeleteMagModal = openDeleteMagModal;
     window.closeDeleteMagModal = closeDeleteMagModal;
     window.onDeleteConfirmInput = onDeleteConfirmInput;
+
+    // ══ Modal xóa tài khoản (tab Cài đặt) ══
+    var _userEmailToMatch = '{{ session.user_email }}';
+    function openDeleteAccountModal() {
+        var modal = document.getElementById('deleteAccountModal');
+        var inp   = document.getElementById('deleteAccountConfirmInput');
+        var btn   = document.getElementById('deleteAccountSubmitBtn');
+        if (!modal) return;
+        if (inp) inp.value = '';
+        if (btn) btn.disabled = true;
+        var err = document.getElementById('deleteAccountConfirmError');
+        if (err) err.style.display = 'none';
+        modal.style.display = 'flex';
+        setTimeout(function(){ if (inp) inp.focus(); }, 50);
+    }
+    function closeDeleteAccountModal() {
+        var modal = document.getElementById('deleteAccountModal');
+        if (modal) modal.style.display = 'none';
+    }
+    function onDeleteAccountConfirmInput() {
+        var inp = document.getElementById('deleteAccountConfirmInput');
+        var btn = document.getElementById('deleteAccountSubmitBtn');
+        var err = document.getElementById('deleteAccountConfirmError');
+        if (!inp || !btn) return;
+        var match = inp.value.trim() === _userEmailToMatch.trim();
+        btn.disabled = !match;
+        if (err) err.style.display = (inp.value.length > 0 && !match) ? 'block' : 'none';
+    }
+    window.openDeleteAccountModal = openDeleteAccountModal;
+    window.closeDeleteAccountModal = closeDeleteAccountModal;
+    window.onDeleteAccountConfirmInput = onDeleteAccountConfirmInput;
 
 
     // ══ Modal chỉnh sửa lịch tự động (tab Tự động tạo bài) ══

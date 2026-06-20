@@ -384,6 +384,86 @@ def register_routes(app):
             print(f"[ERR] admin_api_feedback: {e}")
             return jsonify({'stats': {'total': 0, 'new': 0, 'today': 0}, 'items': []})
 
+    def _extract_editable_content(file_content):
+        start_tag = '<div class="legal-wrap">'
+        idx = file_content.find(start_tag)
+        if idx == -1:
+            return "", file_content, ""
+            
+        prefix = file_content[:idx + len(start_tag)]
+        rest = file_content[idx + len(start_tag):]
+        
+        end_block_idx = rest.rfind('{% endblock %}')
+        if end_block_idx == -1:
+            return "", file_content, ""
+            
+        before_end_block = rest[:end_block_idx]
+        last_div_idx = before_end_block.rfind('</div>')
+        if last_div_idx == -1:
+            return "", file_content, ""
+            
+        editable = before_end_block[:last_div_idx]
+        suffix = before_end_block[last_div_idx:] + rest[end_block_idx:]
+        return prefix, editable, suffix
+
+    @app.route("/admin/api/terms/<page_name>", methods=["GET"])
+    @admin_required
+    def admin_get_terms(page_name):
+        valid_pages = ['privacy_policy', 'terms_of_service', 'support', 'data_deletion']
+        if page_name not in valid_pages:
+            return jsonify({'success': False, 'error': 'Trang không hợp lệ'}), 400
+        
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        file_path = os.path.join(project_root, 'templates', f'{page_name}.html')
+        
+        if not os.path.exists(file_path):
+            return jsonify({'success': False, 'error': 'Tệp không tồn tại'}), 404
+            
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            prefix, editable, suffix = _extract_editable_content(content)
+            if prefix and suffix:
+                content = editable.strip()
+                
+            return jsonify({'success': True, 'content': content})
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+    @app.route("/admin/api/terms/<page_name>", methods=["POST"])
+    @admin_required
+    def admin_save_terms(page_name):
+        valid_pages = ['privacy_policy', 'terms_of_service', 'support', 'data_deletion']
+        if page_name not in valid_pages:
+            return jsonify({'success': False, 'error': 'Trang không hợp lệ'}), 400
+            
+        data = request.get_json(silent=True) or {}
+        content = data.get('content')
+        if content is None:
+            return jsonify({'success': False, 'error': 'Nội dung không được để trống'}), 400
+            
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        file_path = os.path.join(project_root, 'templates', f'{page_name}.html')
+        
+        try:
+            if not os.path.exists(file_path):
+                return jsonify({'success': False, 'error': 'Tệp không tồn tại'}), 404
+                
+            with open(file_path, 'r', encoding='utf-8') as f:
+                original_content = f.read()
+                
+            prefix, editable, suffix = _extract_editable_content(original_content)
+            if prefix and suffix:
+                full_content = prefix + "\n" + content.strip() + "\n" + suffix
+            else:
+                full_content = content
+                
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(full_content)
+            return jsonify({'success': True, 'message': 'Lưu điều khoản thành công'})
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     @app.route("/admin/api/users")
     @admin_required

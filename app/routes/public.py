@@ -80,6 +80,32 @@ def register_routes(app):
             flash('Không thể gửi phản hồi lúc này. Vui lòng thử lại sau.', 'error')
         return redirect('/#lien-he')
 
+    @app.route("/api/data-deletion-request", methods=["POST"])
+    def api_data_deletion_request():
+        data = request.get_json(silent=True) or {}
+        email = (data.get('email') or '').strip()
+        reason = (data.get('reason') or '').strip()
+        notes = (data.get('notes') or '').strip()
+        
+        if not email:
+            return jsonify({'success': False, 'error': 'Vui lòng cung cấp Gmail đăng ký'}), 400
+            
+        message = f"Lý do xóa tài khoản: {reason}\nGhi chú thêm: {notes}"
+        
+        saved = create_feedback(
+            name="Yêu cầu xóa tài khoản",
+            email=email,
+            subject="Yêu cầu xóa tài khoản & dữ liệu",
+            message=message,
+            source_page='data_deletion',
+            ip_address=(request.headers.get('X-Forwarded-For') or request.remote_addr or '')[:45],
+            user_agent=(request.headers.get('User-Agent') or '')[:255],
+        )
+        if saved:
+            return jsonify({'success': True, 'message': 'Gửi yêu cầu xóa tài khoản thành công'})
+        else:
+            return jsonify({'success': False, 'error': 'Lỗi lưu dữ liệu yêu cầu'})
+
     @app.route("/article/<int:article_id>", methods=["GET", "POST"])
     def article_detail(article_id):
         article = get_article_by_id(article_id)

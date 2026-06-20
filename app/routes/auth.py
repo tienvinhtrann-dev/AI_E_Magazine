@@ -340,3 +340,22 @@ def register_routes(app):
     def logout():
         session.clear()
         return redirect("/")
+
+    @app.route("/delete_account", methods=["POST"])
+    @login_required
+    def delete_account_route():
+        from database.user_model_simple import delete_user_by_id, is_admin
+        user_id = session.get("user_id")
+        
+        if is_admin(user_id):
+            flash("Tài khoản Quản trị viên (Admin) không thể tự xóa từ giao diện cài đặt.", "error")
+            return redirect("/dashboard?tab=settings")
+            
+        success = delete_user_by_id(user_id)
+        if success:
+            session.clear()
+            flash("Tài khoản của bạn đã được xóa vĩnh viễn thành công.", "success")
+            return redirect("/")
+        else:
+            flash("Không thể xóa tài khoản. Vui lòng thử lại sau.", "error")
+            return redirect("/dashboard?tab=settings")

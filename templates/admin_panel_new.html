@@ -504,6 +504,12 @@ td.mh-empty-cell{display:table-cell;}
     font-size: 0.72rem !important;
   }
 }
+.ck-editor__editable_inline {
+  min-height: 480px;
+  max-height: 700px;
+  background: #ffffff !important;
+  color: #111827 !important;
+}
 </style>
 </head>
 <body>
@@ -568,6 +574,10 @@ td.mh-empty-cell{display:table-cell;}
   <a class="ap-nav-item" data-tab="system" onclick="switchTab('system');return false;" href="#">
     <i data-lucide="settings-2" class="nav-icon"></i>
     <span class="nav-label">CẤU HÌNH HỆ THỐNG</span>
+  </a>
+  <a class="ap-nav-item" data-tab="terms" onclick="switchTab('terms');return false;" href="#">
+    <i data-lucide="file-signature" class="nav-icon"></i>
+    <span class="nav-label">CÀI ĐẶT ĐIỀU KHOẢN</span>
   </a>
 </nav>
 
@@ -1468,12 +1478,49 @@ td.mh-empty-cell{display:table-cell;}
   </div>
 </div>
 
+<!-- ════════════════ TAB: CÀI ĐẶT ĐIỀU KHOẢN ════════════════ -->
+<div class="ap-pane" id="pane-terms">
+  <div class="ap-card">
+    <div class="ap-card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <span class="ap-card-title">📝 Cài đặt Điều khoản & Chính sách (Footer)</span>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <label for="termsSelect" style="font-size:0.85rem; font-weight:600; color:#374151;">Chọn trang cần sửa:</label>
+        <select id="termsSelect" class="ap-form-control" style="width:250px;" onchange="loadTermsContent()">
+          <option value="privacy_policy">Chính sách Quyền riêng tư</option>
+          <option value="terms_of_service">Điều khoản sử dụng</option>
+          <option value="support">Trung tâm hỗ trợ / Liên hệ</option>
+          <option value="data_deletion">Yêu cầu xóa dữ liệu</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="ap-card-body" style="padding:20px;">
+      <div style="margin-bottom:12px; font-size:0.83rem; color:#6b7280;">
+        💡 Chỉnh sửa nội dung văn bản một cách trực quan dưới đây. Giao diện soạn thảo sẽ tự động cập nhật định dạng hiển thị.
+      </div>
+      
+      <div class="ap-form-group">
+        <textarea id="termsEditor" class="ap-form-control"></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+        <span id="termsStatusMsg" style="font-size:0.88rem; font-weight:600;"></span>
+        <button type="button" class="ap-btn ap-btn-primary" onclick="saveTermsContent()">
+          <i data-lucide="save" style="width:16px; height:16px;"></i>
+          <span>💾 Lưu Điều Khoản</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /ap-body -->
 </div><!-- /ap-layout -->
 </div><!-- /ap-shell -->
 
 <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 <script>
 var _overviewPagerInited = false;
 var _overviewInsightsInited = false;
@@ -1758,6 +1805,7 @@ function switchTab(name) {
   if (name === 'revenue') { loadRevenueTab(); if (window.lucide) lucide.createIcons(); }
   if (name === 'payment') { if (window.lucide) lucide.createIcons(); }
   if (name === 'feedback') { loadFeedbackTab(); if (window.lucide) lucide.createIcons(); }
+  if (name === 'terms') { loadTermsContent(); if (window.lucide) lucide.createIcons(); }
 }
 
 // ── Lazy loaders ──
@@ -3162,7 +3210,98 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
   }
+
+  // Initialize CKEditor 5
+  var editorEl = document.getElementById('termsEditor');
+  if (editorEl) {
+    ClassicEditor
+      .create(editorEl, {
+        toolbar: {
+          items: [
+            'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo'
+          ]
+        }
+      })
+      .then(editor => {
+        termsEditorInstance = editor;
+      })
+      .catch(error => {
+        console.error('Error initializing CKEditor:', error);
+      });
+  }
 });
+
+var termsEditorInstance = null;
+
+function loadTermsContent() {
+  var page = document.getElementById('termsSelect').value;
+  var status = document.getElementById('termsStatusMsg');
+  
+  if (!page) return;
+  
+  if (!termsEditorInstance) {
+    // If CKEditor is not ready yet, retry in 100ms
+    setTimeout(loadTermsContent, 100);
+    return;
+  }
+  
+  termsEditorInstance.enableReadOnlyMode('loading-terms');
+  termsEditorInstance.setData('<p>⏳ Đang tải nội dung...</p>');
+  status.textContent = '';
+  
+  fetch('/admin/api/terms/' + page)
+    .then(r => r.json())
+    .then(data => {
+      termsEditorInstance.disableReadOnlyMode('loading-terms');
+      if (data.success) {
+        termsEditorInstance.setData(data.content);
+      } else {
+        termsEditorInstance.setData('');
+        status.textContent = '❌ Lỗi: ' + (data.error || 'Không tải được nội dung');
+        status.style.color = '#dc2626';
+      }
+    })
+    .catch(err => {
+      termsEditorInstance.disableReadOnlyMode('loading-terms');
+      termsEditorInstance.setData('');
+      status.textContent = '❌ Lỗi kết nối máy chủ';
+      status.style.color = '#dc2626';
+    });
+}
+
+function saveTermsContent() {
+  var page = document.getElementById('termsSelect').value;
+  var content = termsEditorInstance ? termsEditorInstance.getData() : '';
+  var status = document.getElementById('termsStatusMsg');
+  
+  if (!page || !status) return;
+  
+  status.textContent = '⏳ Đang lưu...';
+  status.style.color = '#4f46e5';
+  
+  fetch('/admin/api/terms/' + page, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ content: content })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        status.textContent = '✅ Đã lưu thành công!';
+        status.style.color = '#16a34a';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } else {
+        status.textContent = '❌ Lỗi: ' + (data.error || 'Lưu thất bại');
+        status.style.color = '#dc2626';
+      }
+    })
+    .catch(err => {
+      status.textContent = '❌ Lỗi kết nối khi lưu';
+      status.style.color = '#dc2626';
+    });
+}
 </script>
 </body>
 </html>
