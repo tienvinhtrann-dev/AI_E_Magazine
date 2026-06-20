@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Hỗ trợ & Hướng dẫn sử dụng — AI E-Magazine{% endblock %}
+
+{% block extra_css %}
+<style>
+body > header { display: none !important; }
+html, body { margin-top: 0 !important; padding-top: 0 !important; background: #060d18; color: #e2e8f0; }
+.legal-wrap { max-width: 820px; margin: 0 auto; padding: 5rem 2rem 5rem; font-family: 'Inter','Roboto',sans-serif; }
+.legal-topbar { position: fixed; top: 0; left: 0; width: 100vw; z-index: 999; background: rgba(6,13,24,.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,179,117,.15); display: flex; align-items: center; justify-content: space-between; padding: .9rem 2rem; }
+.legal-topbar-logo { font-size: 1.15rem; font-weight: 800; color: #f1f5f9; text-decoration: none; display: flex; align-items: center; gap: .5rem; }
+.legal-topbar-back { font-size: .85rem; color: #64748b; text-decoration: none; display: flex; align-items: center; gap: .35rem; transition: color .18s; }
+.legal-topbar-back:hover { color: #00d4a0; }
+.legal-eyebrow { display: inline-flex; align-items: center; gap: .4rem; background: rgba(0,179,117,.12); border: 1px solid rgba(0,179,117,.25); color: #00d4a0; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: .35rem 1rem; border-radius: 999px; margin-bottom: 1.2rem; }
+.legal-title { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 800; color: #f1f5f9; line-height: 1.2; margin-bottom: .6rem; }
+.legal-subtitle { font-size: .95rem; color: #64748b; margin-bottom: 2.5rem; display: flex; align-items: center; gap: .5rem; }
+.legal-divider { border: none; border-top: 1px solid rgba(255,255,255,.07); margin: 2rem 0; }
+.legal-section { margin-bottom: 2.2rem; }
+.legal-section h2 { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; margin-bottom: .8rem; display: flex; align-items: center; gap: .5rem; }
+.legal-section h2 svg { color: #00b375; flex-shrink: 0; }
+.legal-section p, .legal-section li { font-size: .93rem; color: #94a3b8; line-height: 1.85; }
+.legal-section ul, .legal-section ol { padding-left: 1.4rem; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .35rem; }
+.legal-highlight { background: rgba(0,179,117,.08); border: 1px solid rgba(0,179,117,.2); border-left: 3px solid #00b375; border-radius: 0 10px 10px 0; padding: 1rem 1.2rem; margin: 1rem 0; }
+.legal-highlight p { color: #cbd5e1; }
+.legal-contact-box { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 1.4rem 1.6rem; display: flex; align-items: flex-start; gap: 1rem; margin-top: 1rem; }
+.legal-contact-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(0,179,117,.12); border: 1px solid rgba(0,179,117,.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.legal-contact-label { font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .2rem; }
+.legal-contact-val { font-size: .95rem; font-weight: 600; color: #e2e8f0; }
+.legal-contact-val a { color: #00d4a0; text-decoration: none; }
+.faq-item { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 1.2rem; margin-bottom: .8rem; }
+.faq-question { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: .4rem; display: flex; align-items: center; gap: .5rem; }
+.faq-answer { font-size: .92rem; color: #94a3b8; line-height: 1.7; margin: 0; }
+@media (max-width: 640px) { .legal-wrap { padding: 4.5rem 1.2rem 3rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Topbar -->
+<div class="legal-topbar">
+  <a href="/" class="legal-topbar-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00b375" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    AI E-Magazine
+  </a>
+  <a href="/" class="legal-topbar-back">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Về trang chủ
+  </a>
+</div>
+
+<div class="legal-wrap">
+  <div class="legal-eyebrow">
+    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Trung tâm hỗ trợ
+  </div>
+  <h1 class="legal-title">Hỗ trợ &amp; Hướng dẫn</h1>
+  <div class="legal-subtitle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Chào mừng bạn đến với kênh hỗ trợ chính thức của AI E-Magazine
+  </div>
+
+  <p>Chúng tôi luôn nỗ lực mang lại trải nghiệm vận hành tạp chí tự động mượt mà nhất. Dưới đây là hướng dẫn sử dụng nhanh cùng các câu hỏi thường gặp FAQ.</p>
+
+  <hr class="legal-divider">
+
+  <div class="legal-section">
+    <h2>1. Hướng dẫn sử dụng nhanh (Quick Start)</h2>
+    <ol>
+      <li><strong>Tạo tạp chí mới:</strong> Đăng nhập -> Bảng điều khiển -> Nhấn "Tạo tạp chí" -> Nhập tên tạp chí, chủ đề và chọn theme layout yêu thích.</li>
+      <li><strong>Cấu hình bài viết tự động:</strong> Vào cấu hình tạp chí -> Thiết lập từ khóa và danh mục nguồn tin -> Đặt lịch hẹn giờ (hằng ngày, hằng tuần).</li>
+      <li><strong>Cấp phát Token:</strong> Mỗi bài viết tạo tự động bởi AI tiêu tốn một số lượng Token nhất định. Bạn có thể nạp Token qua cổng thanh toán tự động QR ở màn hình ví tài khoản.</li>
+    </ol>
+  </div>
+
+  <div class="legal-section" id="faq">
+    <h2>2. Câu hỏi thường gặp (FAQ)</h2>
+
+    <div class="faq-item">
+      <div class="faq-question">❓ Làm thế nào để sửa bài viết do AI tự sinh?</div>
+      <p class="faq-answer">Bạn chỉ cần đăng nhập, vào Bảng điều khiển, chọn tạp chí và nhấn nút "Sửa" trực tiếp trên bài viết để thay đổi tiêu đề, mô tả hoặc nội dung chi tiết theo ý muốn.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">❓ AI lấy nguồn tin từ đâu?</div>
+      <p class="faq-answer">Hệ thống tìm kiếm thông tin mới nhất trên Google News, VnExpress và các nguồn RSS chính thống theo từ khóa và danh mục bạn đã thiết lập để tổng hợp bài viết mới.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">❓ Tôi có thể đổi giao diện (Theme) sau khi tạo tạp chí không?</div>
+      <p class="faq-answer">Có. Bạn có thể vào phần Cài đặt của tạp chí đó và chuyển đổi giữa 3 layout (Newsmatic, Aurora, ModernGrid) bất cứ lúc nào.</p>
+    </div>
+  </div>
+
+  <div class="legal-section">
+    <h2>3. Kênh liên hệ hỗ trợ</h2>
+    <p>Nếu bạn gặp sự cố kỹ thuật hoặc lỗi trong quá trình thanh toán, vui lòng liên hệ:</p>
+    <div class="legal-contact-box">
+      <div class="legal-contact-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00b375" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <div class="legal-contact-label">Email hỗ trợ</div>
+        <div class="legal-contact-val"><a href="mailto:vinh222160@student.nctu.edu.vn">vinh222160@student.nctu.edu.vn</a></div>
+        <div class="legal-contact-label" style="margin-top:.5rem;">Hotline 24/7</div>
+        <div class="legal-contact-val"><a href="tel:+84818883882" style="color:#00d4a0;">+84 818 883 882</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

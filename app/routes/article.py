@@ -43,6 +43,127 @@ def register_routes(app):
             user_role=session.get('user_role'),
         )
 
+    # ── Job store đơn giản (in-memory, đủ cho 1 server process) ──────────────
+    import threading, uuid as _uuid, time as _time
+    _gen_jobs: dict = {}   # job_id → {status, created, total, error, mag_id, user_id}
+    _gen_jobs_lock = threading.Lock()
+
+    def _bg_generate(app_ctx, job_id, user_id, mag_id, magazine,
+                     names, counts_raw, keywords_list,
+                     desc_base, kw_base):
+        """Background thread: tạo bài theo từng danh mục rồi cập nhật job store."""
+        with app_ctx:
+            # Reset cache crawl của generator trước khi bắt đầu phiên mới
+            try:
+                article_generator.clear_crawled_cache()
+            except Exception:
+                pass
+
+            last_job_err = None
+
+            MAX_TOTAL = 8
+            total_requested = 0
+            created_count   = 0
+            global_used_source_urls = set()
+
+
+            # Thu thập URL nguồn đã dùng
+            try:
+                existing_articles = get_articles_by_magazine(mag_id)
+                for art in existing_articles:
+                    for url in art.get("source_urls") or []:
+                        if isinstance(url, str) and url.strip().startswith("http"):
+                            global_used_source_urls.add(url.strip())
+            except Exception:
+                pass
+
+            for idx, name in enumerate(names):
+                name = (name or "").strip()
+                if not name:
+                    continue
+                try:
+                    count = int(counts_raw[idx]) if idx < len(counts_raw) else 0
+                except Exception:
+                    count = 0
+                if count <= 0:
+                    continue
+
+                try:
+                    article_generator._used_single_category_urls = set(global_used_source_urls)
+                except Exception:
+                    pass
+
+                kw_specific = (keywords_list[idx] or "").strip() if idx < len(keywords_list) else ""
+                cat_keywords = kw_specific or kw_base or name
+                extra = f"; Từ khóa: {cat_keywords}" if cat_keywords else ""
+                cat_description = (
+                    f"{desc_base} (Danh mục: {name}{extra})" if desc_base
+                    else f"{name}{extra}"
+                )
+
+                for _ in range(count):
+                    if total_requested >= MAX_TOTAL:
+                        break
+                    total_requested += 1
+
+                    try:
+                        art = article_generator.generate_single_article_for_category(
+                            topic=name,
+                            magazine_title=magazine["title"],
+                            description=cat_description,
+                            keywords=cat_keywords,
+                        )
+                    except Exception as e_art:
+                        print(f"[BG-WARN] generate error (category='{name}'): {e_art}")
+                        art = None
+
+                    if not art:
+                        err_msg = getattr(article_generator, 'last_error', None)
+                        if err_msg:
+                            last_job_err = err_msg
+                        continue
+
+                    for url in art.get("source_urls") or []:
+                        if isinstance(url, str) and url.strip().startswith("http"):
+                            global_used_source_urls.add(url.strip())
+                    try:
+                        aid = save_article_to_magazine(
+                            magazine_id=mag_id, user_id=user_id,
+                            title=art.get("title"), content=art.get("content"),
+                            summary=art.get("summary"), keywords=art.get("keywords"),
+                            topic=art.get("topic"), image_url=art.get("image_url", ""),
+                            image_urls=art.get("all_images") or art.get("image_urls"),
+                            source_urls=art.get("source_urls"),
+                        )
+                        if aid:
+                            created_count += 1
+                            # Cập nhật job store sau mỗi bài tạo xong
+                            with _gen_jobs_lock:
+                                _gen_jobs[job_id]["created"] = created_count
+                    except Exception as e_save:
+                        print(f"[BG-WARN] save error: {e_save}")
+
+                if total_requested >= MAX_TOTAL:
+                    break
+
+            # Trừ token sau khi hoàn thành
+            if created_count > 0:
+                try:
+                    deduct_tokens(user_id, created_count)
+                    _refresh_magazine_category_counts(mag_id)
+                except Exception:
+                    pass
+
+            with _gen_jobs_lock:
+                if created_count == 0:
+                    _gen_jobs[job_id]["status"] = "failed"
+                    _gen_jobs[job_id]["error"] = last_job_err or "Không tìm thấy bài viết phù hợp với từ khóa/danh mục đã nhập. Vui lòng thử lại với từ khóa khác hoặc đổi danh mục."
+                else:
+                    _gen_jobs[job_id]["status"] = "done"
+                _gen_jobs[job_id]["created"] = created_count
+
+            print(f"[BG] Job {job_id} done: {created_count}/{total_requested} articles created.")
+
     @app.route("/dashboard/posts/generate-by-category", methods=["POST"])
     @login_required
     def dashboard_generate_by_category():
@@ -69,6 +190,7 @@ def register_routes(app):
         counts_raw    = request.form.getlist("category_count")
         keywords_list = request.form.getlist("category_keywords")
 
+        # Tính tổng bài cần tạo để kiểm tra token
         total_needed = 0
         for idx, name in enumerate(names):
             if not (name or "").strip():
@@ -81,110 +203,71 @@ def register_routes(app):
                 total_needed += cnt
         total_needed = min(total_needed, 8)
 
-        if total_needed > 0:
-            current_balance = get_user_token_balance(user_id)
-            if current_balance < total_needed:
-                err_msg = (f"Bạn cần {total_needed} Token để tạo {total_needed} bài viết, "
-                           f"nhưng chỉ còn {current_balance} Token. "
-                           "Vui lòng mua thêm Token tại mục Gói dịch vụ.")
-                if is_ajax: return jsonify({"ok": False, "error": err_msg, "redirect_tab": "plans"})
-                flash(err_msg, "error")
-                return redirect(url_for("dashboard", tab="plans"))
+        if total_needed == 0:
+            if is_ajax: return jsonify({"ok": False, "error": "Bạn chưa chọn số bài cho bất kỳ danh mục nào."})
+            flash("Bạn chưa chọn số bài cho bất kỳ danh mục nào.", "warning")
+            return redirect(url_for("dashboard", tab="posts", mag_id=mag_id))
 
-        total_requested = 0
-        created_count   = 0
-        error_any       = False
-        desc_base       = (magazine.get("description") or "").strip()
-        kw_base         = (magazine.get("keywords") or "").strip()
-        MAX_TOTAL       = 8
+        current_balance = get_user_token_balance(user_id)
+        if current_balance < total_needed:
+            err_msg = (f"Bạn cần {total_needed} Token để tạo {total_needed} bài viết, "
+                       f"nhưng chỉ còn {current_balance} Token. "
+                       "Vui lòng mua thêm Token tại mục Gói dịch vụ.")
+            if is_ajax: return jsonify({"ok": False, "error": err_msg, "redirect_tab": "plans"})
+            flash(err_msg, "error")
+            return redirect(url_for("dashboard", tab="plans"))
 
-        existing_articles = get_articles_by_magazine(mag_id)
-        global_used_source_urls = set()
-        for art in existing_articles:
-            for url in art.get("source_urls") or []:
-                if isinstance(url, str) and url.strip().startswith("http"):
-                    global_used_source_urls.add(url.strip())
+        desc_base = (magazine.get("description") or "").strip()
+        kw_base   = (magazine.get("keywords") or "").strip()
 
-        try:
-            for idx, name in enumerate(names):
-                name = (name or "").strip()
-                if not name:
-                    continue
-                try:
-                    count = int(counts_raw[idx]) if idx < len(counts_raw) else 0
-                except Exception:
-                    count = 0
-                if count <= 0:
-                    continue
+        # Tạo job ID và khởi động background thread
+        job_id = str(_uuid.uuid4())[:12]
+        with _gen_jobs_lock:
+            _gen_jobs[job_id] = {
+                "status": "running",
+                "created": 0,
+                "total": total_needed,
+                "mag_id": mag_id,
+                "user_id": user_id,
+                "started": _time.time(),
+            }
 
-                try:
-                    article_generator._used_single_category_urls = set(global_used_source_urls)
-                except Exception:
-                    pass
+        # Push application context vào thread
+        app_ctx = app.app_context()
+        t = threading.Thread(
+            target=_bg_generate,
+            args=(app_ctx, job_id, user_id, mag_id, magazine,
+                  list(names), list(counts_raw), list(keywords_list),
+                  desc_base, kw_base),
+            daemon=True,
+        )
+        t.start()
 
-                kw_specific = ""
-                if idx < len(keywords_list):
-                    kw_specific = (keywords_list[idx] or "").strip()
-                cat_keywords = kw_specific or kw_base or name
+        if is_ajax:
+            return jsonify({"ok": True, "job_id": job_id, "total": total_needed,
+                            "message": f"Đang tạo {total_needed} bài viết trong nền..."})
 
-                base_desc = desc_base or ""
-                extra     = f"; Từ khóa: {cat_keywords}" if cat_keywords else ""
-                cat_description = (
-                    f"{base_desc} (Danh mục: {name}{extra})" if base_desc
-                    else f"{name}{extra}"
-                )
-
-                for _ in range(count):
-                    if total_requested >= MAX_TOTAL:
-                        break
-                    total_requested += 1
-                    art = article_generator.generate_single_article_for_category(
-                        topic=name,
-                        magazine_title=magazine["title"],
-                        description=cat_description,
-                        keywords=cat_keywords,
-                    )
-                    if not art:
-                        error_any = True
-                        continue
-                    for url in art.get("source_urls") or []:
-                        if isinstance(url, str) and url.strip().startswith("http"):
-                            global_used_source_urls.add(url.strip())
-                    aid = save_article_to_magazine(
-                        magazine_id=mag_id, user_id=user_id,
-                        title=art.get("title"), content=art.get("content"),
-                        summary=art.get("summary"), keywords=art.get("keywords"),
-                        topic=art.get("topic"), image_url=art.get("image_url", ""),
-                        image_urls=art.get("all_images") or art.get("image_urls"),
-                        source_urls=art.get("source_urls"),
-                    )
-                    if aid:
-                        created_count += 1
-                if total_requested >= MAX_TOTAL:
-                    break
-        except Exception as e:
-            print(f"[ERR] dashboard_generate_by_category: {e}")
-            error_any = True
-
-        try:
-            _refresh_magazine_category_counts(mag_id)
-        except Exception:
-            pass
-
-        new_balance = None
-        if created_count == 0:
-            msg = "Không tạo được bài viết nào từ danh mục. Vui lòng thử lại." if error_any else "Bạn chưa chọn số bài cho bất kỳ danh mục nào."
-            if is_ajax: return jsonify({"ok": False, "created": 0, "error": msg})
-            flash(msg, "error" if error_any else "warning")
-        else:
-            new_balance = deduct_tokens(user_id, created_count)
-            if new_balance is not None:
-                session['token_balance'] = new_balance
-                session.modified = True
-            if is_ajax:
-                return jsonify({"ok": True, "created": created_count, "new_balance": new_balance})
-
+        flash(f"✅ Đang tạo {total_needed} bài viết trong nền. Trang sẽ tự động cập nhật sau vài phút.", "success")
         return redirect(url_for("dashboard", tab="posts", mag_id=mag_id))
+
+    @app.route("/dashboard/posts/generate-status/<job_id>")
+    @login_required
+    def dashboard_generate_status(job_id):
+        """Polling endpoint: trả về trạng thái job tạo bài."""
+        with _gen_jobs_lock:
+            job = _gen_jobs.get(job_id)
+        if not job:
+            return jsonify({"ok": False, "error": "Job not found"}), 404
+        if job.get("user_id") != session.get("user_id"):
+            return jsonify({"ok": False, "error": "Forbidden"}), 403
+        return jsonify({
+            "ok": True,
+            "status": job.get("status"),
+            "created": job.get("created", 0),
+            "total": job.get("total", 0),
+            "error": job.get("error", "")
+        })
+
 
     @app.route("/generate")
     @login_required
@@ -208,9 +291,16 @@ def register_routes(app):
         if not topic or not keywords:
             return jsonify({'success': False, 'error': 'Missing required fields'}), 400
 
+        # Reset cache crawl của generator trước khi bắt đầu phiên mới
+        try:
+            article_generator.clear_crawled_cache()
+        except Exception:
+            pass
+
         user_id = session['user_id']
         current_balance = get_user_token_balance(user_id)
         if current_balance < 1:
+
             return jsonify({
                 'success': False,
                 'error': 'Bạn không còn Token. Vui lòng mua thêm Token tại mục Gói dịch vụ.',

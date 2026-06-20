@@ -645,8 +645,13 @@ def register_routes(app):
             new_balance = deduct_tokens(user_id, saved)
             if new_balance is not None:
                 session['token_balance'] = new_balance
-
-        flash(f"✅ Đã tạo thêm {saved} bài viết cho danh mục '{selected_category}'!", "success")
+            flash(f"✅ Đã tạo thêm {saved} bài viết cho danh mục '{selected_category}'!", "success")
+        else:
+            source_error = getattr(article_generator, 'last_error', None)
+            flash(
+                source_error or "Không tìm thấy nội dung phù hợp theo danh mục và từ khóa. Vui lòng nhập lại.",
+                "error",
+            )
         return redirect(url_for('view_magazine', magazine_id=magazine_id))
 
     # ------------------------------------------------------------------

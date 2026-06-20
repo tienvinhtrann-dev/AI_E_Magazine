@@ -14,5 +14,5 @@ load_dotenv(override=True)
 groq_api_key = os.getenv('GROQ_API_KEY')
 article_generator = SimpleArticleGenerator(api_key=groq_api_key)
 
-# APScheduler singleton (started by app_simple.py at launch)
+# APScheduler singleton (started by app.py at launch)
 scheduler = BackgroundScheduler(daemon=True)

@@ -247,7 +247,7 @@ def register_routes(app):
             article_theme_input = (request.form.get("article_theme") or "").strip()
 
             allowed_themes = {"newsmatic", "default", "moderngrid", "aurora"}
-            allowed_article_themes = {"default", "splitview"}
+            allowed_article_themes = {"default", "splitview", "editorial"}
 
             if theme_input and theme_input not in allowed_themes:
                 return jsonify({"ok": False, "message": "Giao diện tạp chí không hợp lệ"})

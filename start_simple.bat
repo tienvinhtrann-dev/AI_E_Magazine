@@ -53,6 +53,6 @@ echo.
 echo ========================================
 echo.
 
-"%~dp0.venv\Scripts\python.exe" app_simple.py
+"%~dp0.venv\Scripts\python.exe" app.py
 
 pause

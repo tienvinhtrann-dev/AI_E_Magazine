@@ -368,18 +368,18 @@
     .article-box .modal-sources { background:#f8f9fa; border-radius:8px; padding:1.2rem 1.5rem; margin-top:1.8rem; }
     .article-box .modal-sources h4 { font-size:.95rem; font-weight:700; color:#555; margin-bottom:.6rem; }
     .article-box .modal-sources a { color:#667eea; font-size:.88rem; word-break:break-all; }
-    .article-box .modal-comments { margin-top:2rem; }
-    .article-box .modal-comments h4 { font-size:1.05rem; font-weight:700; color:#333; margin-bottom:1rem; border-top:1px solid #eee; padding-top:1rem; }
-    .article-box .modal-comment-item { display:flex; gap:.9rem; margin-bottom:1.1rem; }
-    .article-box .modal-comment-avatar { width:38px; height:38px; border-radius:50%; background:#e3e7fa; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#667eea; font-weight:700; flex-shrink:0; }
-    .article-box .modal-comment-body .author { font-weight:700; font-size:.88rem; color:#333; }
-    .article-box .modal-comment-body .text { font-size:.93rem; color:#444; margin-top:.2rem; }
-    .article-box .modal-comment-body .time { font-size:.78rem; color:#aaa; margin-top:.15rem; }
-    .article-box .modal-comment-form { display:flex; gap:.8rem; align-items:flex-start; margin-bottom:1.2rem; }
-    .article-box .modal-comment-form textarea { flex:1; border:1.5px solid #ddd; border-radius:8px; padding:.7rem 1rem; font-size:.97rem; resize:vertical; font-family:inherit; }
-    .article-box .modal-comment-form textarea:focus { outline:none; border-color:#667eea; }
-    .article-box .modal-comment-form button { padding:.65rem 1.3rem; background:linear-gradient(135deg,#0ea5e9,#2563eb); color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:.95rem; white-space:nowrap; box-shadow:0 6px 14px rgba(37,99,235,.25); transition:transform .18s ease, box-shadow .18s ease; }
-    .article-box .modal-comment-form button:hover { transform:translateY(-1px); box-shadow:0 10px 18px rgba(37,99,235,.32); }
+    .modal-comments { margin-top:2rem; }
+    .modal-comments h4 { font-size:1.05rem; font-weight:700; color:#333; margin-bottom:1rem; border-top:1px solid #eee; padding-top:1rem; }
+    .modal-comment-item { display:flex; gap:.9rem; margin-bottom:1.1rem; }
+    .modal-comment-avatar { width:38px; height:38px; border-radius:50%; background:#e3e7fa; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:#667eea; font-weight:700; flex-shrink:0; }
+    .modal-comment-body .author { font-weight:700; font-size:.88rem; color:#333; }
+    .modal-comment-body .text { font-size:.93rem; color:#444; margin-top:.2rem; }
+    .modal-comment-body .time { font-size:.78rem; color:#aaa; margin-top:.15rem; }
+    .modal-comment-form { display:flex; gap:.8rem; align-items:flex-start; margin-bottom:1.2rem; }
+    .modal-comment-form textarea { flex:1; border:1.5px solid #ddd; border-radius:8px; padding:.7rem 1rem; font-size:.97rem; resize:vertical; font-family:inherit; }
+    .modal-comment-form textarea:focus { outline:none; border-color:#667eea; }
+    .modal-comment-form button { padding:.65rem 1.3rem; background:linear-gradient(135deg,#0ea5e9,#2563eb); color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:.95rem; white-space:nowrap; box-shadow:0 6px 14px rgba(37,99,235,.25); transition:transform .18s ease, box-shadow .18s ease; }
+    .modal-comment-form button:hover { transform:translateY(-1px); box-shadow:0 10px 18px rgba(37,99,235,.32); }
 
     .modal-action-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.45rem 1.1rem; border-radius:8px; border:1.5px solid #ddd; background:#fff; color:#333; font-size:.88rem; font-weight:600; cursor:pointer; text-decoration:none; transition:background .15s; }
     .modal-action-btn:hover { background:#f3f3f3; }
@@ -466,6 +466,360 @@
     .back-btn:hover {
         color: #2563eb;
     }
+
+    /* ── Editorial Theme Styles ── */
+    .editorial-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
+        border: 1px solid #eaeaea;
+        overflow: hidden;
+        margin-top: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .editorial-hero {
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        min-height: 480px;
+        display: flex;
+        align-items: flex-end;
+        padding: 3.5rem 2.8rem;
+    }
+    
+    .editorial-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.85) 100%);
+        z-index: 1;
+    }
+    
+    .editorial-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 900px;
+        color: #fff;
+    }
+    
+    .editorial-topic {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #fcd34d; /* Golden accent */
+        margin-bottom: 0.8rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    .editorial-title {
+        font-family: 'Roboto', sans-serif;
+        font-size: 2.8rem;
+        font-weight: 800;
+        line-height: 1.25;
+        margin-bottom: 1.2rem;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+    
+    .editorial-meta {
+        display: flex;
+        gap: 1.8rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    .editorial-content-wrapper {
+        padding: 3rem 2.8rem;
+        display: flex;
+        justify-content: center;
+        background: #fff;
+    }
+    
+    .editorial-main-content {
+        max-width: 800px;
+        width: 100%;
+    }
+    
+    .editorial-summary-box {
+        background: #f8fafc;
+        border-left: 4px solid #f59e0b; /* Golden border */
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        border-radius: 4px;
+    }
+    
+    .editorial-summary-box .summary-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #d97706;
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+    
+    .editorial-summary-box .summary-text {
+        font-family: 'Roboto', sans-serif;
+        font-style: italic;
+        font-size: 1.12rem;
+        line-height: 1.7;
+        color: #475569;
+        margin: 0;
+    }
+    
+    .editorial-body {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1.15rem;
+        line-height: 1.85;
+        color: #1e293b;
+    }
+    
+    .editorial-paragraph {
+        margin-bottom: 1.8rem;
+        text-align: justify;
+    }
+    
+    /* First paragraph Drop Cap */
+    .first-paragraph::first-letter {
+        font-size: 3.5rem;
+        font-weight: bold;
+        float: left;
+        line-height: 0.85;
+        margin-right: 0.5rem;
+        margin-top: 0.2rem;
+        color: #0f172a;
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .editorial-h2 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 2.5rem 0 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 0.6rem;
+    }
+    
+    .editorial-h3 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 2rem 0 0.8rem;
+    }
+    
+    .editorial-sources {
+        margin-top: 3rem;
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 1.8rem 2.2rem;
+        border: 1px solid #edf2f7;
+    }
+    
+    .editorial-sources h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.8rem;
+    }
+    
+    .editorial-sources a {
+        color: #2563eb;
+        font-size: 0.92rem;
+        text-decoration: none;
+        word-break: break-all;
+    }
+    
+    .editorial-sources a:hover {
+        text-decoration: underline;
+    }
+    
+    .editorial-comments-section {
+        margin-top: 3.5rem;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 2rem;
+    }
+    
+    /* Bottom Widgets */
+    .editorial-bottom-widgets {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        padding: 2.8rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .editorial-widget-ad {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 12px;
+        padding: 1.8rem;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .editorial-widget-ad .ad-badge {
+        display: inline-block;
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+    
+    .editorial-widget-ad h4 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin: 0 0 0.6rem;
+    }
+    
+    .editorial-widget-ad p {
+        font-size: 0.88rem;
+        color: #94a3b8;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+    }
+    
+    .editorial-widget-ad .ad-link-btn {
+        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        color: #fff !important;
+        font-weight: 700;
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 8px;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        transition: transform 0.2s;
+    }
+    
+    .editorial-widget-ad .ad-link-btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .editorial-widget-trending {
+        min-width: 0;
+    }
+    
+    .editorial-widget-trending h3 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .editorial-trending-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+    }
+    
+    .editorial-trending-card {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .editorial-trending-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .card-img-wrap {
+        height: 120px;
+        overflow: hidden;
+        background: #edf2f7;
+    }
+    
+    .card-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .card-placeholder {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #a0aec0;
+    }
+    
+    .card-info {
+        padding: 0.8rem 1rem 1rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    
+    .card-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #d97706;
+        margin-bottom: 0.3rem;
+    }
+    
+    .card-info h4 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.4;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Responsive Editorial */
+    @media (max-width: 900px) {
+        .editorial-hero {
+            min-height: 380px;
+            padding: 2.5rem 1.8rem;
+        }
+        .editorial-title {
+            font-size: 2.2rem;
+        }
+        .editorial-content-wrapper {
+            padding: 2.5rem 1.8rem;
+        }
+        .editorial-bottom-widgets {
+            grid-template-columns: 1fr;
+            padding: 2rem 1.8rem;
+        }
+        .editorial-trending-grid {
+            grid-template-columns: 1fr;
+        }
+        .editorial-trending-card {
+            flex-direction: row;
+            height: auto;
+        }
+        .card-img-wrap {
+            width: 120px;
+            height: 90px;
+            flex-shrink: 0;
+        }
+        .card-info {
+            padding: 0.8rem;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -494,6 +848,103 @@
         </a>
     </div>
 
+    {% set article_theme = magazine.article_theme or 'default' %}
+    {% if article_theme == 'editorial' %}
+        <!-- Editorial Layout -->
+        <div class="editorial-container">
+            <!-- Hero Header -->
+            <div class="editorial-hero" style="{% if article.image_urls and article.image_urls|length > 0 and article.image_urls[0] %}background-image: linear-gradient(180deg, rgba(15,23,42,0.3) 0%, rgba(15,23,42,0.85) 100%), url('{{ article.image_urls[0] }}');{% else %}background-image: linear-gradient(135deg, #1e293b, #0f172a);{% endif %}">
+                <div class="editorial-hero-content">
+                    <span class="editorial-topic">{{ article.topic or ('Article' if _is_en else 'Bài viết') }}</span>
+                    <h1 class="editorial-title">{{ article.title }}</h1>
+                    <div class="editorial-meta">
+                        <span>✍️ {{ article.author_name or 'AI Writer' }}</span>
+                        <span>📅 {% if article.created_at %}{% if article.created_at.strftime is defined %}{{ article.created_at.strftime('%d/%m/%Y') }}{% else %}{{ article.created_at }}{% endif %}{% endif %}</span>
+                        <span>👁️ {{ article.view_count or 0 }} {{ 'views' if _is_en else 'lượt xem' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="editorial-content-wrapper">
+                <div class="editorial-main-content">
+                    {% if article.summary %}
+                        <div class="editorial-summary-box">
+                            <span class="summary-label">{{ 'SUMMARY' if _is_en else 'TÓM TẮT' }}</span>
+                            <p class="summary-text">{{ article.summary }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="editorial-body">
+                        {% set paragraphs = article.content.split('\n\n') %}
+                        {% set ns = namespace(first=true) %}
+                        {% for para in paragraphs %}
+                            {% set p = para.strip() %}
+                            {% if p and not p.startswith('---') and not p.startswith('**Nguồn tham khảo') and not p.startswith('**Sources') and not p.startswith('- https://') %}
+                                {% if p.startswith('<img') %}
+                                    <div class="editorial-embedded-img" style="margin: 1.8rem 0;">{{ p|safe }}</div>
+                                {% elif p.startswith('## ') %}
+                                    <h2 class="editorial-h2">{{ p[3:] }}</h2>
+                                {% elif p.startswith('### ') %}
+                                    <h3 class="editorial-h3">{{ p[4:] }}</h3>
+                                {% else %}
+                                    {% set line = p|replace('\n', '<br>') %}
+                                    {% if ns.first %}
+                                        <!-- Dropcap for the first paragraph -->
+                                        <p class="editorial-paragraph first-paragraph">{{ line|safe }}</p>
+                                        {% set ns.first = false %}
+                                    {% else %}
+                                        <p class="editorial-paragraph">{{ line|safe }}</p>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+
+
+                    <!-- Comments block -->
+                    <div class="editorial-comments-section">
+                        {{ comments_markup(article, comments, _is_en, user_email) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Widgets Area (Ad & Trending Articles) -->
+            <div class="editorial-bottom-widgets">
+                <div class="editorial-widget-ad">
+                    <span class="ad-badge">{{ 'RECOMMENDED' if _is_en else 'ĐỀ XUẤT' }}</span>
+                    <h4>AI E-Magazine Pro</h4>
+                    <p>{{ 'Unlock advanced AI article creation, automatic image generation & scheduling. Get 100 free tokens!' if _is_en else 'Khám phá tính năng đặt lịch đăng bài, tự động sinh ảnh & viết bài bằng AI không giới hạn. Tặng ngay 100 Tokens trải nghiệm!' }}</p>
+                    <a href="/dashboard?tab=plans" class="ad-link-btn">{{ 'Upgrade Now' if _is_en else 'Nâng Cấp Premium' }}</a>
+                </div>
+
+                {% if other_articles %}
+                <div class="editorial-widget-trending">
+                    <h3>{{ 'Trending' if _is_en else 'Đọc nhiều' }}</h3>
+                    <div class="editorial-trending-grid">
+                        {% for art in other_articles[:3] %}
+                            {% set art_url = '/magazine/' ~ (magazine.slug or magazine.id) ~ '/' ~ art.id ~ '-' ~ (art.title | slugify) %}
+                            <a href="{{ art_url }}" class="editorial-trending-card">
+                                <div class="card-img-wrap">
+                                    {% if art._img %}
+                                        <img src="{{ art._img }}" alt="{{ art.title }}" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/{{ art.id }}/150/110';">
+                                    {% else %}
+                                        <div class="card-placeholder">📰</div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-info">
+                                    <span class="card-tag">{{ art._cat or magazine.topic }}</span>
+                                    <h4>{{ art.title }}</h4>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
     <!-- Bắt đầu Grid Layout 2 Cột -->
     <div class="article-main-grid">
         <!-- Cột Trái: Nội dung bài viết -->
@@ -545,14 +996,7 @@
                                 {% endfor %}
                             </div>
 
-                            {% if article.source_urls and article.source_urls|length > 0 %}
-                                <div class="modal-sources">
-                                    <h4>📚 {{ 'Sources' if _is_en else 'Nguồn tham khảo' }}</h4>
-                                    {% for url in article.source_urls %}
-                                        <div>🔗 <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ url }}</a></div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+
 
                             <!-- Comments block in split layout -->
                             {{ comments_markup(article, comments, _is_en, user_email) }}
@@ -611,15 +1055,7 @@
                             {% endfor %}
                         </div>
 
-                        <!-- Sources -->
-                        {% if article.source_urls and article.source_urls|length > 0 %}
-                            <div class="modal-sources">
-                                <h4>📚 {{ 'Sources' if _is_en else 'Nguồn tham khảo' }}</h4>
-                                {% for url in article.source_urls %}
-                                    <div>🔗 <a href="{{ url }}" target="_blank" rel="noopener noreferrer">{{ url }}</a></div>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+
 
                         <!-- Comments block in default layout -->
                         {{ comments_markup(article, comments, _is_en, user_email) }}
@@ -669,6 +1105,7 @@
             {% endif %}
         </aside>
     </div><!-- /.article-main-grid -->
+    {% endif %}
 </div><!-- /.article-page-wrap -->
 
 {% endblock %}

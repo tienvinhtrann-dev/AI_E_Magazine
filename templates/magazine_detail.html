@@ -1479,6 +1479,285 @@
 
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     MAGAZINE FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer class="mag-footer" id="mag-footer">
+    <div class="mag-footer-inner">
+
+        <!-- Col 1: Brand -->
+        <div class="mag-footer-col mag-footer-brand">
+            <div class="mag-footer-logo">{{ magazine.title }}</div>
+            <p class="mag-footer-tagline">
+                {{ (magazine.description or '')[:160] or 'Tạp chí điện tử chất lượng cao — cập nhật tin tức mới nhất mỗi ngày.' }}
+            </p>
+            <div class="mag-footer-owner-info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                {{ magazine.owner_name or magazine.owner_email }}
+            </div>
+            <div class="mag-footer-powered">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Vận hành bởi <strong>AI E-Magazine</strong>
+            </div>
+        </div>
+
+        <!-- Col 2: Categories -->
+        <div class="mag-footer-col">
+            <h4 class="mag-footer-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Danh mục
+            </h4>
+            <ul class="mag-footer-links">
+                <li>
+                    <a href="#" onclick="magFilterCat(''); window.scrollTo({top:0,behavior:'smooth'}); return false;" class="mag-footer-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        Trang chủ
+                    </a>
+                </li>
+                {% set _fc = (categories_menu if (categories_menu is defined and categories_menu) else (magazine.categories_config | fromjson if magazine.categories_config else [])) %}
+                {% for cat in _fc %}
+                <li>
+                    <a href="#" onclick='magFilterCat({{ cat.name | tojson }}); window.scrollTo({top:0,behavior:"smooth"}); return false;' class="mag-footer-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        {{ cat.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Col 3: Stats & Info -->
+        <div class="mag-footer-col">
+            <h4 class="mag-footer-heading">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Thông tin
+            </h4>
+            <ul class="mag-footer-links">
+                <li>
+                    <a href="/" class="mag-footer-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        AI E-Magazine Platform
+                    </a>
+                </li>
+                <li>
+                    <a href="/login" class="mag-footer-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        Tạo tạp chí của bạn
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mag-footer-stats-grid">
+                <div class="mag-footer-stat">
+                    <span class="mag-footer-stat-num">{{ articles|length }}</span>
+                    <span class="mag-footer-stat-label">Bài viết</span>
+                </div>
+                <div class="mag-footer-stat">
+                    {% set _fcc = (categories_menu if (categories_menu is defined and categories_menu) else (magazine.categories_config | fromjson if magazine.categories_config else [])) %}
+                    <span class="mag-footer-stat-num">{{ _fcc|length }}</span>
+                    <span class="mag-footer-stat-label">Danh mục</span>
+                </div>
+                <div class="mag-footer-stat">
+                    <span class="mag-footer-stat-num">AI</span>
+                    <span class="mag-footer-stat-label">Powered</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mag-footer-divider"></div>
+
+    <div class="mag-footer-bottom">
+        <span class="mag-footer-copy">
+            &copy; {{ current_date_str.split('/')[-1] if current_date_str and '/' in current_date_str else '2026' }}
+            <strong>{{ magazine.title }}</strong>. Mọi quyền được bảo lưu.
+        </span>
+        <span class="mag-footer-updated">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Cập nhật: {{ current_date_str }}
+        </span>
+        <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;" class="mag-footer-totop" title="Lên đầu trang">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        </a>
+    </div>
+</footer>
+
+<style>
+/* ══════════════════════════════════════════════
+   MAGAZINE FOOTER STYLES
+══════════════════════════════════════════════ */
+.mag-footer {
+    background: #111827;
+    color: #d1d5db;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    margin-top: 3.5rem;
+    margin-bottom: -2rem !important; /* Offset parent main padding-bottom to stick to edge */
+    padding: 0;
+    border-top: 3px solid #e11d48;
+}
+.mag-footer-inner {
+    max-width: 1360px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr;
+    gap: 3rem;
+    padding: 3rem 2.5rem 2rem;
+}
+.mag-footer-logo {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #e11d48;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    line-height: 1.1;
+}
+.mag-footer-tagline {
+    font-size: .88rem;
+    color: #9ca3af;
+    line-height: 1.75;
+    margin: 0 0 1.1rem;
+    max-width: 320px;
+}
+.mag-footer-owner-info {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .85rem;
+    color: #6b7280;
+    margin-bottom: .55rem;
+}
+.mag-footer-powered {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .78rem;
+    color: #4b5563;
+}
+.mag-footer-powered strong { color: #6366f1; }
+.mag-footer-heading {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #f9fafb;
+    margin: 0 0 1.1rem;
+    padding-bottom: .55rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.mag-footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+.mag-footer-link {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    color: #9ca3af;
+    text-decoration: none;
+    font-size: .88rem;
+    padding: .3rem 0;
+    transition: color .18s, gap .18s;
+}
+.mag-footer-link:hover { color: #e11d48; gap: .65rem; }
+.mag-footer-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .8rem;
+    margin-top: 1.4rem;
+}
+.mag-footer-stat {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 10px;
+    padding: .75rem .5rem;
+    text-align: center;
+    transition: background .2s;
+}
+.mag-footer-stat:hover { background: rgba(255,255,255,.07); }
+.mag-footer-stat-num {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #f9fafb;
+    line-height: 1.1;
+    margin-bottom: .2rem;
+}
+.mag-footer-stat-label {
+    font-size: .7rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 600;
+}
+.mag-footer-divider {
+    max-width: 1360px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(255,255,255,.07);
+}
+.mag-footer-bottom {
+    max-width: 1360px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.1rem 2.5rem 1.4rem;
+    flex-wrap: wrap;
+}
+.mag-footer-copy { font-size: .82rem; color: #6b7280; }
+.mag-footer-copy strong { color: #9ca3af; }
+.mag-footer-updated {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .79rem;
+    color: #4b5563;
+    margin-left: auto;
+}
+.mag-footer-totop {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    color: #9ca3af; text-decoration: none;
+    transition: background .2s, color .2s, transform .2s;
+    flex-shrink: 0;
+}
+.mag-footer-totop:hover {
+    background: #e11d48; color: #fff; border-color: #e11d48;
+    transform: translateY(-2px);
+}
+/* Aurora theme */
+body.theme-aurora .mag-footer { background: #0f172a; border-top-color: #10b981; }
+body.theme-aurora .mag-footer-logo { color: #10b981; }
+body.theme-aurora .mag-footer-link:hover { color: #10b981; }
+body.theme-aurora .mag-footer-totop:hover { background: #10b981; border-color: #10b981; }
+/* ModernGrid theme */
+body.theme-moderngrid .mag-footer { background: #0b1120; border-top: 2px solid #6366f1; }
+body.theme-moderngrid .mag-footer-logo { color: #a5b4fc; font-family: 'Roboto Slab', serif; }
+body.theme-moderngrid .mag-footer-link:hover { color: #818cf8; }
+body.theme-moderngrid .mag-footer-totop:hover { background: #6366f1; border-color: #6366f1; }
+/* Responsive */
+@media (max-width: 900px) {
+    .mag-footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2.5rem 1.5rem 1.5rem; }
+    .mag-footer-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+    .mag-footer-inner { grid-template-columns: 1fr; gap: 1.8rem; padding: 2rem 1.2rem 1.2rem; }
+    .mag-footer-bottom { padding: 1rem 1.2rem 1.2rem; gap: .8rem; }
+    .mag-footer-updated { margin-left: 0; }
+}
+</style>
+
 <script>
 // Start with empty cache, fill on-demand when a user opens an article
 window.ARTICLE_CACHE = {};

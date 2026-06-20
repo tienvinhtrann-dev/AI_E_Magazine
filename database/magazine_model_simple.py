@@ -694,10 +694,9 @@ def update_magazine_settings(magazine_id, user_id, title, slug,
                language, int(bool(comments_locked)),
                timezone, magazine_id, user_id))
         conn.commit()
-        ok = cursor.rowcount > 0
         cursor.close()
         conn.close()
-        return ok, None
+        return True, None
     except Exception as e:
         print(f"[ERR] update_magazine_settings: {e}")
         if conn:

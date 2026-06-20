@@ -38,6 +38,22 @@ def register_routes(app):
         resp.headers['Cache-Control'] = 'private, max-age=10'
         return resp
 
+    @app.route("/privacy-policy")
+    def privacy_policy():
+        return render_template("privacy_policy.html")
+
+    @app.route("/terms-of-service")
+    def terms_of_service():
+        return render_template("terms_of_service.html")
+
+    @app.route("/data-deletion")
+    def data_deletion():
+        return render_template("data_deletion.html")
+
+    @app.route("/support")
+    def support_page():
+        return render_template("support.html")
+
     @app.route('/contact-feedback', methods=['POST'])
     def contact_feedback_submit():
         name = (request.form.get('name') or '').strip()

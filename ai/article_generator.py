@@ -6,7 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
+import json
 import os
 import re
 try:
@@ -27,7 +29,7 @@ class SimpleArticleGenerator:
         self.api_key = api_key or os.getenv('GROQ_API_KEY')
         if self.api_key and AI_AVAILABLE:
             self.client = Groq(api_key=self.api_key)
-            self.model_name = 'llama-3.3-70b-versatile'  # Model tốt nhất cho tiếng Việt
+            self.model_name = 'llama-3.1-8b-instant'  # Model tối ưu tránh Rate Limit
             self.use_ai_rewrite = True
             print(f"✅ Groq API đã được kích hoạt - Model: {self.model_name}")
         else:
@@ -58,11 +60,128 @@ class SimpleArticleGenerator:
 
         # Cache URL toàn cục để không crawl/dùng lại bài đã lấy
         self._crawled_urls_cache = set()
+        self.last_error = None
+        self.max_source_age_hours = None  # Không giới hạn thời gian - lấy bài mới nhất tìm được
+
+    def clear_crawled_cache(self):
+        """Xóa cache URL crawl toàn cục để chuẩn bị cho lượt tạo bài mới."""
+        self._crawled_urls_cache = set()
+
+
+    def _clear_last_error(self):
+        self.last_error = None
+
+    def _set_last_error(self, message):
+        self.last_error = message
+
+    def _parse_datetime_value(self, raw_value):
+        if not raw_value:
+            return None
+
+        value = str(raw_value).strip()
+        if not value:
+            return None
+
+        normalized = value.replace('Z', '+00:00')
+        try:
+            parsed = datetime.fromisoformat(normalized)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc)
+        except ValueError:
+            pass
+
+        try:
+            parsed = parsedate_to_datetime(value)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc)
+        except (TypeError, ValueError):
+            pass
+
+        for fmt in (
+            '%Y-%m-%d %H:%M:%S',
+            '%Y-%m-%d %H:%M',
+            '%d/%m/%Y %H:%M',
+            '%Y-%m-%d',
+        ):
+            try:
+                parsed = datetime.strptime(value, fmt)
+                return parsed.replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+
+        return None
+
+    def _extract_datetime_from_jsonld(self, payload):
+        if isinstance(payload, list):
+            for item in payload:
+                parsed = self._extract_datetime_from_jsonld(item)
+                if parsed:
+                    return parsed
+            return None
+
+        if not isinstance(payload, dict):
+            return None
+
+        for key in ('datePublished', 'dateCreated', 'dateModified', 'uploadDate'):
+            parsed = self._parse_datetime_value(payload.get(key))
+            if parsed:
+                return parsed
+
+        for nested_key in ('@graph', 'mainEntity', 'itemListElement'):
+            parsed = self._extract_datetime_from_jsonld(payload.get(nested_key))
+            if parsed:
+                return parsed
+
+        return None
+
+    def _extract_published_at(self, soup):
+        meta_candidates = [
+            ('property', 'article:published_time'),
+            ('property', 'article:modified_time'),
+            ('property', 'og:updated_time'),
+            ('name', 'pubdate'),
+            ('name', 'publishdate'),
+            ('name', 'date'),
+            ('itemprop', 'datePublished'),
+            ('itemprop', 'dateModified'),
+        ]
+
+        for attr_name, attr_value in meta_candidates:
+            tag = soup.find('meta', attrs={attr_name: attr_value})
+            if not tag:
+                continue
+            parsed = self._parse_datetime_value(tag.get('content'))
+            if parsed:
+                return parsed
+
+        for script in soup.find_all('script', attrs={'type': 'application/ld+json'}):
+            raw_json = (script.string or script.get_text() or '').strip()
+            if not raw_json:
+                continue
+            try:
+                payload = json.loads(raw_json)
+            except json.JSONDecodeError:
+                continue
+            parsed = self._extract_datetime_from_jsonld(payload)
+            if parsed:
+                return parsed
+
+        return None
+
+    def _is_recent_enough(self, published_at):
+        """Không còn giới hạn 72h - chấp nhận mọi bài có thời gian xuất bản hợp lệ."""
+        if not published_at:
+            return False
+        # Chấp nhận mọi bài miễn là có published_at hợp lệ (không giới hạn tuổi bài)
+        return True
     
     
     def search_google_news(self, keywords, description='', max_results=15):
         """
-        Tìm kiếm bài báo trên Google trong 24h qua
+        Tìm kiếm bài báo trên Google News để lấy candidate mới nhất.
+        Không giới hạn thời gian - lấy bài đầu tiên tìm được phù hợp với từ khóa.
         
         Args:
             keywords: Từ khóa tìm kiếm
@@ -80,9 +199,9 @@ class SimpleArticleGenerator:
         try:
             from urllib.parse import quote_plus, unquote, urlparse, parse_qs
 
-            # Google News search — ưu tiên tin 24h gần nhất
+            # Google News search — lấy pool đủ rộng, ưu tiên bài mới nhất.
             encoded_query = quote_plus(search_query)
-            search_url = f"https://www.google.com/search?q={encoded_query}&tbm=nws&num=30&tbs=qdr:d"
+            search_url = f"https://www.google.com/search?q={encoded_query}&tbm=nws&num=30&tbs=qdr:w"
             print(f"📡 URL: {search_url}")
             
             # Giảm timeout để tránh treo lâu nếu mạng yếu / bị chặn Google
@@ -135,36 +254,7 @@ class SimpleArticleGenerator:
                 except Exception:
                     continue
             
-            print(f"✅ Found {len(urls)} unique news URLs (last 24h)")
-
-            # Nếu 24h không đủ, thử lại với 7 ngày gần nhất
-            if len(urls) < 3:
-                print("⚠️ Not enough URLs from 24h, retrying with past 7 days...")
-                search_url_week = f"https://www.google.com/search?q={encoded_query}&tbm=nws&num=30&tbs=qdr:w"
-                try:
-                    resp_week = requests.get(search_url_week, headers=self.headers, timeout=7)
-                    resp_week.encoding = 'utf-8'
-                    soup_week = BeautifulSoup(resp_week.text, 'html.parser')
-                    for link in soup_week.find_all('a'):
-                        href = link.get('href', '')
-                        try:
-                            if href.startswith('/url?'):
-                                parsed_w = urlparse(href)
-                                query_map_w = parse_qs(parsed_w.query)
-                                candidate_w = ''
-                                if 'q' in query_map_w and query_map_w['q']:
-                                    candidate_w = unquote(query_map_w['q'][0])
-                                elif 'url' in query_map_w and query_map_w['url']:
-                                    candidate_w = unquote(query_map_w['url'][0])
-                                _add_url(candidate_w)
-                            elif href.startswith('http'):
-                                _add_url(href)
-                            if len(urls) >= max_results:
-                                break
-                        except Exception:
-                            continue
-                except Exception as e_week:
-                    print(f"⚠️ Fallback week search failed: {e_week}")
+            print(f"✅ Found {len(urls)} unique news URLs (lấy bài mới nhất tìm được)")
 
             # Nếu không đủ, thử thêm từ direct links
             if len(urls) < 5:
@@ -260,6 +350,13 @@ class SimpleArticleGenerator:
             response = requests.get(url, headers=self.headers, timeout=7)
             response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
+
+            published_at = self._extract_published_at(soup)
+            if not published_at:
+                # Nếu không parse được thời gian, vẫn cho qua (không bỏ bài)
+                print("  ⚠ Missing published time metadata, but continuing (no time filter)...")
+            else:
+                print(f"  → Published at: {published_at.isoformat()}")
             
             # Xác định source
             # Chỉ crawl từ 6 nguồn báo lớn được chấp nhận
@@ -395,6 +492,7 @@ class SimpleArticleGenerator:
                     'title': title,
                     'url': url,
                     'source': source,
+                    'published_at': published_at.isoformat(),
                     'content': content,
                     'description': description,
                     'image_url': images[0]['url'] if images else None,
@@ -636,29 +734,11 @@ class SimpleArticleGenerator:
                     print(f"   [SKIP] Already used URL: {link[:80]}")
                     continue
                 try:
-                    # Tạo article tối thiểu từ dữ liệu ngay trên trang search
-                    stub_content = (item["title"] + ". " + item["description"]).strip()
-                    if not stub_content:
-                        stub_content = item["title"]
-
-                    base_article = {
-                        "title": item["title"] or "Bài viết VnExpress",
-                        "url": link,
-                        "source": "VnExpress",
-                        "description": item["description"] or "",
-                        "content": stub_content,
-                        "image_url": None,
-                        "images": [],
-                    }
-
-                    # Thử crawl trang chi tiết; nếu thất bại thì vẫn dùng stub
+                    # Crawl bài chi tiết thành công (không còn giới hạn 72h).
                     art = self._crawl_article_content(link)
                     if art:
                         articles.append(art)
                         print(f"   [+SEARCH] {art['title'][:70]}")
-                    else:
-                        articles.append(base_article)
-                        print(f"   [+SEARCH-STUB] {base_article['title'][:70]}")
                 except Exception as e:
                     print(f"   [VNEXP-SEARCH] Error crawling article: {str(e)[:80]}")
                     continue
@@ -761,6 +841,233 @@ class SimpleArticleGenerator:
             )
 
         return "\n\n".join(lines)
+
+    def _keyword_list(self, keywords):
+        raw = str(keywords or '').strip().lower()
+        if not raw:
+            return []
+
+        parts = [p.strip() for p in re.split(r'[,;\n]+', raw) if p.strip()]
+        if len(parts) == 1:
+            parts = [p.strip() for p in re.split(r'\s{2,}|\s*,\s*', raw) if p.strip()]
+            if not parts:
+                parts = [raw]
+
+        uniq = []
+        seen = set()
+        for p in parts:
+            p = re.sub(r'\s+', ' ', p).strip()
+            if len(p) < 2:
+                continue
+            if p in seen:
+                continue
+            seen.add(p)
+            uniq.append(p)
+        return uniq[:12]
+
+    def _topic_tokens(self, topic):
+        tokens = []
+        for tk in re.split(r'[\s,;:/|\\-]+', str(topic or '').lower()):
+            tk = tk.strip()
+            if len(tk) >= 3:
+                tokens.append(tk)
+        return list(dict.fromkeys(tokens))
+
+    def _heuristic_alignment_agent(self, topic, keywords, article, agent_name='heuristic-core', min_keyword_ratio=0.35):
+        title = str(article.get('title') or '')
+        summary = str(article.get('summary') or '')
+        content = str(article.get('content') or '')
+        text = f"{title}\n{summary}\n{content[:8000]}".lower()
+
+        topic_tokens = self._topic_tokens(topic)
+        topic_hit = any(t in text for t in topic_tokens) if topic_tokens else True
+
+        keyword_list = self._keyword_list(keywords)
+        if keyword_list:
+            keyword_hits = [kw for kw in keyword_list if kw in text]
+            kw_ratio = len(keyword_hits) / max(len(keyword_list), 1)
+        else:
+            keyword_hits = []
+            kw_ratio = 1.0
+
+        score = 0
+        score += 45 if topic_hit else 0
+        score += min(45, int(kw_ratio * 45))
+        if len(content) >= 800:
+            score += 10
+
+        passed = topic_hit and (kw_ratio >= min_keyword_ratio)
+        if not keyword_list:
+            passed = topic_hit
+
+        rationale = (
+            f"topic_hit={topic_hit}, keyword_hits={len(keyword_hits)}/{len(keyword_list) if keyword_list else 0}, "
+            f"keyword_ratio={kw_ratio:.2f}"
+        )
+        return {
+            'agent': agent_name,
+            'score': max(0, min(100, int(score))),
+            'pass': bool(passed),
+            'rationale': rationale,
+            'missing_keywords': [kw for kw in keyword_list if kw not in keyword_hits][:5],
+        }
+
+    def _llm_alignment_agent(self, agent_name, agent_focus, topic, keywords, article):
+        if not self.use_ai_rewrite or not hasattr(self, 'client') or self.client is None:
+            return None
+
+        title = str(article.get('title') or '')
+        summary = str(article.get('summary') or '')
+        content = str(article.get('content') or '')
+
+        prompt = f"""Bạn là agent kiểm duyệt nội dung: {agent_name}.
+Mục tiêu: {agent_focus}.
+
+Hãy kiểm tra bài viết AI có bám đúng danh mục và từ khóa không.
+
+Danh mục: {topic}
+Từ khóa người dùng: {keywords}
+
+Tiêu đề: {title}
+Tóm tắt: {summary}
+Nội dung (rút gọn): {content[:3500]}
+
+Trả về DUY NHẤT 1 JSON hợp lệ theo schema:
+{{
+  "score": 0-100,
+  "pass": true/false,
+  "rationale": "<toi da 180 ky tu>",
+  "missing_keywords": ["..."]
+}}
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        'role': 'system',
+                        'content': 'Bạn là agent kiểm duyệt chất lượng nội dung. Luôn trả về JSON hợp lệ, không thêm văn bản ngoài JSON.'
+                    },
+                    {'role': 'user', 'content': prompt}
+                ],
+                temperature=0.1,
+                max_tokens=260,
+                top_p=0.9,
+            )
+            raw = (response.choices[0].message.content or '').strip()
+            m = re.search(r'\{[\s\S]*\}', raw)
+            payload = json.loads(m.group(0) if m else raw)
+            score = int(payload.get('score', 0))
+            passed = payload.get('pass', score >= 70)
+            if isinstance(passed, str):
+                passed = passed.strip().lower() == 'true'
+            rationale = str(payload.get('rationale', '')).strip()[:180]
+            missing = payload.get('missing_keywords', [])
+            if not isinstance(missing, list):
+                missing = []
+            return {
+                'agent': agent_name,
+                'score': max(0, min(100, score)),
+                'pass': bool(passed),
+                'rationale': rationale or 'No rationale',
+                'missing_keywords': [str(x).strip() for x in missing if str(x).strip()][:5],
+            }
+        except Exception as e:
+            print(f"[REVIEW-WARN] {agent_name} failed: {e}")
+            return {
+                'agent': agent_name,
+                'score': 0,
+                'pass': False,
+                'rationale': 'AI reviewer error',
+                'missing_keywords': [],
+            }
+
+    def _run_multi_agent_alignment_review(self, topic, keywords, article):
+        agents = []
+
+        agents.append(
+            self._heuristic_alignment_agent(
+                topic=topic,
+                keywords=keywords,
+                article=article,
+                agent_name='heuristic-core',
+                min_keyword_ratio=0.35,
+            )
+        )
+
+        if self.use_ai_rewrite and hasattr(self, 'client') and self.client is not None:
+            reviewer_1 = self._llm_alignment_agent(
+                agent_name='reviewer-topic-fit',
+                agent_focus='Độ bám sát danh mục/chủ đề chính',
+                topic=topic,
+                keywords=keywords,
+                article=article,
+            )
+            reviewer_2 = self._llm_alignment_agent(
+                agent_name='reviewer-keyword-fit',
+                agent_focus='Độ bao phủ từ khóa người dùng và tính liên quan ngữ cảnh',
+                topic=topic,
+                keywords=keywords,
+                article=article,
+            )
+            if reviewer_1:
+                agents.append(reviewer_1)
+            if reviewer_2:
+                agents.append(reviewer_2)
+        else:
+            agents.append(
+                self._heuristic_alignment_agent(
+                    topic=topic,
+                    keywords=keywords,
+                    article=article,
+                    agent_name='heuristic-strict-keyword',
+                    min_keyword_ratio=0.50,
+                )
+            )
+            agents.append(
+                self._heuristic_alignment_agent(
+                    topic=topic,
+                    keywords=keywords,
+                    article=article,
+                    agent_name='heuristic-topic-guard',
+                    min_keyword_ratio=0.20,
+                )
+            )
+
+        if not agents:
+            return {'pass': False, 'average_score': 0, 'pass_count': 0, 'agents': []}
+
+        pass_count = sum(1 for a in agents if a.get('pass'))
+        avg_score = sum(int(a.get('score', 0)) for a in agents) / max(len(agents), 1)
+        overall_pass = pass_count >= 2 and avg_score >= 65
+        failed_reasons = [a.get('rationale', '') for a in agents if not a.get('pass') and a.get('rationale')]
+
+        return {
+            'pass': bool(overall_pass),
+            'average_score': round(avg_score, 2),
+            'pass_count': pass_count,
+            'agents': agents,
+            'failed_reasons': failed_reasons[:3],
+        }
+
+    def _validate_generated_article_alignment(self, topic, keywords, article):
+        review = self._run_multi_agent_alignment_review(topic, keywords, article)
+        article['alignment_review'] = review
+
+        if review.get('pass'):
+            print(f"[REVIEW] PASS avg={review.get('average_score')} pass_count={review.get('pass_count')}")
+            return True
+
+        reason = ''
+        if review.get('failed_reasons'):
+            reason = f" ({review['failed_reasons'][0]})"
+        message = (
+            "Nội dung AI viết lại chưa bám sát danh mục/từ khóa. "
+            "Vui lòng nhập lại từ khóa cụ thể hơn để tạo lại bài."
+        )
+        self._set_last_error(message + reason)
+        print(f"[REVIEW] FAIL avg={review.get('average_score')} pass_count={review.get('pass_count')}{reason}")
+        return False
     
     
     def generate_article_from_sources(self, topic, description, keywords, crawled_articles):
@@ -1128,6 +1435,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         print(f"📌 Topic: {topic}")
         print(f"📝 Description: {description}")
         print(f"🔑 Keywords: {keywords}")
+        self._clear_last_error()
         
         # Step 1: Crawl articles — query = "Danh mục + Từ khóa" (ví dụ: "Công nghệ AI")
         _kw = ' '.join(str(keywords or '').split()).strip()
@@ -1136,9 +1444,14 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         crawled_articles = self.crawl_articles(_search_query, '', max_sources)
         
         if not crawled_articles:
+            error_message = (
+                f"Không tìm thấy nội dung theo từ khóa trong {self.max_source_age_hours} giờ gần đây. "
+                "Vui lòng nhập lại từ khóa hoặc đổi danh mục."
+            )
+            self._set_last_error(error_message)
             return {
                 'success': False,
-                'error': 'Không tìm thấy bài viết phù hợp. Vui lòng thử từ khóa khác.'
+                'error': error_message
             }
         
         # Step 2: Generate new article
@@ -1150,6 +1463,12 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             return {
                 'success': False,
                 'error': 'Không thể tạo bài viết từ nguồn đã crawl.'
+            }
+
+        if not self._validate_generated_article_alignment(topic, keywords, generated):
+            return {
+                'success': False,
+                'error': self.last_error or 'Nội dung chưa đạt yêu cầu danh mục/từ khóa.'
             }
         
         generation_time = time.time() - start_time
@@ -1170,6 +1489,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         Mỗi bài có nội dung khác nhau từ nguồn khác nhau.
         """
         articles = []
+        self._clear_last_error()
 
         # Tập URL nguồn đã dùng (từ DB + các bài sinh trong cùng phiên gọi này)
         if used_source_urls is None:
@@ -1342,20 +1662,12 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
                         print(f"  [WARN] Direct crawl failed: {str(e)[:80]}")
             
             if not crawled:
-                print(f"  [WARN] No content crawled, trying direct AI generation...")
-                article = self._generate_single_article_direct(
-                    topic=topic,
-                    keywords=keywords,
-                    magazine_title=magazine_title,
-                    description=description,
-                    angle=angle_data['angle']
+                print("  [WARN] No source content found for this keyword/category; skip article.")
+                self._set_last_error(
+                    "Không tìm thấy nội dung theo từ khóa/danh mục đã chọn. "
+                    "Vui lòng nhập lại từ khóa hoặc đổi danh mục."
                 )
-                if article:
-                    if not article.get('source_urls'):
-                        article['source_urls'] = []
-                else:
-                    print(f"  [WARN] Direct AI generation failed, using fallback...")
-                    article = self._fallback_magazine_article(topic, keywords, angle_data['angle'])
+                article = None
             else:
                 unique_sources = sorted({c.get('source', 'Unknown') for c in crawled if c.get('source')})
                 print(f"  [SRC] Using {len(unique_sources)} source domains: {', '.join(unique_sources[:5])}")
@@ -1409,6 +1721,10 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
                         if isinstance(u, str) and u.strip().startswith('http'):
                             used_source_urls.add(u.strip())
                             self._crawled_urls_cache.add(u.strip())
+
+                    if not self._validate_generated_article_alignment(topic, keywords, article):
+                        print("  [REVIEW] Article skipped due to category/keyword mismatch")
+                        article = None
             
             if article:
                 articles.append(article)
@@ -1432,6 +1748,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         print(f"📌 Category (topic): {topic}")
         print(f"📝 Description: {description}")
         print(f"🔑 Category keywords: {keywords}")
+        self._clear_last_error()
 
         # Giới hạn tối đa ~25 giây cho việc crawl 1 bài, tránh treo request
         start_ts = time.time()
@@ -1485,10 +1802,15 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             except Exception as e:
                 print(f"  ❌ Lỗi VnExpress search: {str(e)[:80]}")
 
-        # Nếu VnExpress không trả được bài phù hợp, sinh bài fallback bằng AI thuần
+        # Không có nguồn thật thì dừng, không cho AI tự viết.
         if not best_article:
-            print("  ⚠️ Không tìm được bài nguồn phù hợp, dùng fallback AI.")
-            return self._fallback_magazine_article(topic, "", f"Bài viết cho danh mục {topic}")
+            error_message = (
+                "Không tìm thấy bài viết phù hợp với từ khóa/danh mục đã nhập. "
+                "Vui lòng thử lại với từ khóa khác hoặc đổi danh mục."
+            )
+            print(f"  ⚠️ {error_message}")
+            self._set_last_error(error_message)
+            return None
 
         # 5) Dùng đúng 1 bài nguồn để AI viết lại
         best_url = (best_article.get("url") or '').strip()
@@ -1500,9 +1822,26 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         generated = self.generate_article_from_sources(
             topic=topic,
             description=description,
-            keywords="",  # Không yêu cầu từ khóa người dùng
+            keywords=keywords or "",
             crawled_articles=[best_article],
         )
+        if not generated:
+            return None
+
+        # Chỉ dùng heuristic check (không gọi LLM reviewer)
+        # để tránh tốn Groq API quota khi tạo nhiều bài cùng lúc.
+        heuristic = self._heuristic_alignment_agent(
+            topic=topic,
+            keywords=keywords,
+            article=generated,
+            agent_name='heuristic-bulk',
+            min_keyword_ratio=0.10,   # Ngưỡng thấp hơn, vì bài đã crawl đúng chủ đề
+        )
+        if not heuristic.get('pass'):
+            # Soft warning: vẫn trả về bài (nguồn đã crawl đúng query),
+            # chỉ log để debug
+            print(f"  [REVIEW-SOFT] Heuristic soft-fail: {heuristic.get('rationale','')} — vẫn giữ bài")
+
         return generated
 
     def _generate_single_article_with_crawl(self, topic, keywords, magazine_title, description, angle, focus, crawled_content, source_brief='', crawled_images=None):
