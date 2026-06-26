@@ -1233,7 +1233,7 @@ td.mh-empty-cell{display:table-cell;}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div>
         <div style="font-size:1rem;font-weight:700;color:#111827;">💳 Cấu hình cổng thanh toán</div>
-        <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Chọn cổng mặc định và cấu hình tích hợp VNPAY cho dự án.</div>
+        <div style="font-size:.8rem;color:#6b7280;margin-top:2px;">Chọn cổng mặc định và cấu hình tích hợp SePay/VNPAY cho dự án.</div>
       </div>
     </div>
     <form method="POST" action="/admin/payment/settings" id="paymentConfigForm">
@@ -1253,6 +1253,45 @@ td.mh-empty-cell{display:table-cell;}
           <input type="checkbox" name="payment_vnpay_enabled" id="payEnableVnpay" value="1" {% if payment_vnpay_enabled %}checked{% endif %}>
           <label for="payEnableVnpay" style="margin-bottom:0;cursor:pointer;">Bật VNPAY</label>
         </div>
+      </div>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
+      <div style="font-size:.9rem;font-weight:700;color:#111827;margin-bottom:8px;">Tích hợp SePay (Chuyển khoản QR tự động)</div>
+      <div class="ap-form-group">
+        <label>SePay API Key (để trống nếu không đổi)</label>
+        <input type="password" name="sepay_api_key" class="ap-form-control" placeholder="Nhập API Key mới">
+      </div>
+      <div class="ap-form-group">
+        <label>SePay Webhook Secret (để trống nếu không đổi)</label>
+        <input type="password" name="sepay_webhook_secret" class="ap-form-control" placeholder="Nhập webhook secret mới">
+      </div>
+      <div class="ap-grid-2" style="gap:12px;">
+        <div class="ap-form-group">
+          <label>Tên ngân hàng</label>
+          <input type="text" name="sepay_bank_name" class="ap-form-control" value="{{ sepay_bank_name or 'MB' }}" placeholder="VD: MB, BIDV, Vietcombank...">
+        </div>
+        <div class="ap-form-group">
+          <label>Mã BIN Ngân hàng</label>
+          <input type="text" name="sepay_bank_bin" class="ap-form-control" value="{{ sepay_bank_bin or '970422' }}" placeholder="VD: 970422">
+        </div>
+      </div>
+      <div class="ap-grid-2" style="gap:12px;">
+        <div class="ap-form-group">
+          <label>Số tài khoản nhận tiền</label>
+          <input type="text" name="sepay_account_no" class="ap-form-control" value="{{ sepay_account_no or '' }}" placeholder="VD: 0818883882">
+        </div>
+        <div class="ap-form-group">
+          <label>Tên chủ tài khoản</label>
+          <input type="text" name="sepay_account_name" class="ap-form-control" value="{{ sepay_account_name or '' }}" placeholder="VD: TRAN TIEN VINH">
+        </div>
+      </div>
+      <div class="ap-form-group">
+        <label>Mẫu QR Code hiển thị</label>
+        <select name="sepay_qr_template" class="ap-form-control">
+          <option value="compact2" {% if sepay_qr_template == 'compact2' %}selected{% endif %}>Compact 2 (Khuyên dùng)</option>
+          <option value="compact" {% if sepay_qr_template == 'compact' %}selected{% endif %}>Compact</option>
+          <option value="qr_only" {% if sepay_qr_template == 'qr_only' %}selected{% endif %}>Chỉ mã QR</option>
+          <option value="text" {% if sepay_qr_template == 'text' %}selected{% endif %}>Chỉ chữ</option>
+        </select>
       </div>
       <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0;">
       <div style="font-size:.9rem;font-weight:700;color:#111827;margin-bottom:8px;">Tích hợp VNPAY</div>

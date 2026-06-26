@@ -181,6 +181,11 @@ def register_routes(app):
             vnpay_tmn_code=config.VNPAY_TMN_CODE,
             vnpay_payment_url=config.VNPAY_PAYMENT_URL,
             vnpay_return_url=config.VNPAY_RETURN_URL,
+            sepay_bank_name=config.SEPAY_BANK_NAME,
+            sepay_bank_bin=config.SEPAY_BANK_BIN,
+            sepay_account_no=config.SEPAY_ACCOUNT_NO,
+            sepay_account_name=config.SEPAY_ACCOUNT_NAME,
+            sepay_qr_template=config.SEPAY_QR_TEMPLATE,
             now_date=str(_date.today()),
         ))
         resp.headers['Cache-Control'] = 'private, max-age=30, stale-while-revalidate=60'
@@ -999,6 +1004,22 @@ def register_routes(app):
             if not (vnpay_hash_secret or config.VNPAY_HASH_SECRET):
                 return jsonify({"success": False, "error": "Thiếu VNPAY_HASH_SECRET"}), 400
 
+        sepay_api_key = (request.form.get("sepay_api_key") or "").strip()
+        sepay_webhook_secret = (request.form.get("sepay_webhook_secret") or "").strip()
+        sepay_bank_name = (request.form.get("sepay_bank_name") or "").strip()
+        sepay_bank_bin = (request.form.get("sepay_bank_bin") or "").strip()
+        sepay_account_no = (request.form.get("sepay_account_no") or "").strip()
+        sepay_account_name = (request.form.get("sepay_account_name") or "").strip()
+        sepay_qr_template = (request.form.get("sepay_qr_template") or "").strip()
+
+        if sepay_enabled and gateway == "sepay":
+            if not (sepay_bank_bin or config.SEPAY_BANK_BIN):
+                return jsonify({"success": False, "error": "Thiếu SEPAY_BANK_BIN"}), 400
+            if not (sepay_account_no or config.SEPAY_ACCOUNT_NO):
+                return jsonify({"success": False, "error": "Thiếu SEPAY_ACCOUNT_NO"}), 400
+            if not (sepay_account_name or config.SEPAY_ACCOUNT_NAME):
+                return jsonify({"success": False, "error": "Thiếu SEPAY_ACCOUNT_NAME"}), 400
+
         settings_ok = save_settings_bulk({
             "payment_gateway": gateway,
             "payment_sepay_enabled": str(sepay_enabled),
@@ -1016,6 +1037,21 @@ def register_routes(app):
             env_updates["VNPAY_PAYMENT_URL"] = vnpay_payment_url
         if vnpay_return_url:
             env_updates["VNPAY_RETURN_URL"] = vnpay_return_url
+
+        if sepay_api_key:
+            env_updates["SEPAY_API_KEY"] = sepay_api_key
+        if sepay_webhook_secret:
+            env_updates["SEPAY_WEBHOOK_SECRET"] = sepay_webhook_secret
+        if sepay_bank_name:
+            env_updates["SEPAY_BANK_NAME"] = sepay_bank_name
+        if sepay_bank_bin:
+            env_updates["SEPAY_BANK_BIN"] = sepay_bank_bin
+        if sepay_account_no:
+            env_updates["SEPAY_ACCOUNT_NO"] = sepay_account_no
+        if sepay_account_name:
+            env_updates["SEPAY_ACCOUNT_NAME"] = sepay_account_name
+        if sepay_qr_template:
+            env_updates["SEPAY_QR_TEMPLATE"] = sepay_qr_template
 
         if env_updates:
             env_path = os.path.join(config.BASE_DIR, ".env")
@@ -1042,6 +1078,21 @@ def register_routes(app):
                     config.VNPAY_PAYMENT_URL = env_updates["VNPAY_PAYMENT_URL"]
                 if "VNPAY_RETURN_URL" in env_updates:
                     config.VNPAY_RETURN_URL = env_updates["VNPAY_RETURN_URL"]
+
+                if "SEPAY_API_KEY" in env_updates:
+                    config.SEPAY_API_KEY = env_updates["SEPAY_API_KEY"]
+                if "SEPAY_WEBHOOK_SECRET" in env_updates:
+                    config.SEPAY_WEBHOOK_SECRET = env_updates["SEPAY_WEBHOOK_SECRET"]
+                if "SEPAY_BANK_NAME" in env_updates:
+                    config.SEPAY_BANK_NAME = env_updates["SEPAY_BANK_NAME"]
+                if "SEPAY_BANK_BIN" in env_updates:
+                    config.SEPAY_BANK_BIN = env_updates["SEPAY_BANK_BIN"]
+                if "SEPAY_ACCOUNT_NO" in env_updates:
+                    config.SEPAY_ACCOUNT_NO = env_updates["SEPAY_ACCOUNT_NO"]
+                if "SEPAY_ACCOUNT_NAME" in env_updates:
+                    config.SEPAY_ACCOUNT_NAME = env_updates["SEPAY_ACCOUNT_NAME"]
+                if "SEPAY_QR_TEMPLATE" in env_updates:
+                    config.SEPAY_QR_TEMPLATE = env_updates["SEPAY_QR_TEMPLATE"]
             except Exception as exc:
                 return jsonify({"success": False, "error": f"Lưu .env thất bại: {exc}"}), 500
 
