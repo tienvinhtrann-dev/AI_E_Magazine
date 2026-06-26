@@ -23,13 +23,6 @@ from database.feedback_model import create_feedback
 
 def register_routes(app):
 
-    @app.route("/autologin")
-    def autologin():
-        session['user_id'] = 3
-        session['user_role'] = 'admin'
-        session['user_email'] = 'trantienvinh249@gmail.com'
-        return "Logged in as admin!"
-
     @app.route("/")
     def home():
         magazines  = get_all_magazines(limit=50)
