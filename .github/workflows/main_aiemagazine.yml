@@ -63,4 +63,4 @@ jobs:
         with:
           app-name: 'aiemagazine'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F7AA285B8B8041DEA389803244921E98 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_46736679D98B41EABF7EF0F8C1A2ED53 }}
