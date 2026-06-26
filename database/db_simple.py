@@ -15,7 +15,7 @@ DB_CONFIG = {
     "user": os.getenv("AZURE_MYSQL_USER", "root"),
     "password": os.getenv("AZURE_MYSQL_PASSWORD", ""),
     "database": os.getenv("AZURE_MYSQL_NAME", "ai_e_magazine_v2"),
-    "port": int(os.getenv("MYSQL_PORT", "3306")),
+    "port": int(os.getenv("AZURE_MYSQL_PORT", "3306")),
     "connect_timeout": 10
 }
 
