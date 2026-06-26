@@ -1,6 +1,7 @@
 """
 Database Connection & Configuration - Simplified Version with Connection Pool
 """
+import os
 import mysql.connector
 from mysql.connector import Error
 from mysql.connector.pooling import MySQLConnectionPool
@@ -10,12 +11,12 @@ import threading
 # Cấu hình MySQL
 # ----------------------------------
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "ai_e_magazine_v2",
-    "port": 3307,           # Port XAMPP của bạn
-    "connect_timeout": 10,  # Tránh treo khi MySQL không phản hồi
+    "host": os.getenv("AZURE_MYSQL_HOST", "localhost"),
+    "user": os.getenv("AZURE_MYSQL_USER", "root"),
+    "password": os.getenv("AZURE_MYSQL_PASSWORD", ""),
+    "database": os.getenv("AZURE_MYSQL_NAME", "ai_e_magazine_v2"),
+    "port": int(os.getenv("MYSQL_PORT", "3306")),
+    "connect_timeout": 10
 }
 
 # ----------------------------------
