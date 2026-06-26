@@ -278,3 +278,93 @@ def register_routes(app):
         if reply_id:
             return jsonify({'success': True, 'reply_id': reply_id})
         return jsonify({'success': False, 'error': 'Không thể trả lời bình luận'}), 400
+
+    @app.route("/import-db-magic-xyz")
+    def import_db_magic():
+        import os
+        from database.db_simple import get_connection
+
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        sql_file_path = os.path.join(project_root, 'database.sql')
+        if not os.path.exists(sql_file_path):
+            return f"Error: database.sql not found at {sql_file_path}"
+
+        conn = get_connection()
+        if not conn:
+            return "Error: Could not connect to the database."
+
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+            
+            with open(sql_file_path, 'r', encoding='utf-8') as f:
+                sql_content = f.read()
+
+            # Split SQL file by statements, accounting for quotes
+            statements = []
+            current_statement = []
+            in_string = False
+            string_char = None
+            escaped = False
+
+            for char in sql_content:
+                current_statement.append(char)
+                if escaped:
+                    escaped = False
+                    continue
+                if char == '\\':
+                    escaped = True
+                    continue
+                if char in ("'", '"') and not escaped:
+                    if not in_string:
+                        in_string = True
+                        string_char = char
+                    elif string_char == char:
+                        in_string = False
+                        string_char = None
+                elif char == ';' and not in_string:
+                    statements.append("".join(current_statement).strip())
+                    current_statement = []
+
+            if current_statement:
+                stmt_str = "".join(current_statement).strip()
+                if stmt_str:
+                    statements.append(stmt_str)
+
+            executed_count = 0
+            error_count = 0
+            errors = []
+            for stmt in statements:
+                stmt_clean = stmt.strip()
+                if not stmt_clean:
+                    continue
+                # Skip comments unless they are MySQL executable comments (starts with /*!)
+                if stmt_clean.startswith('--') or stmt_clean.startswith('#'):
+                    continue
+                if stmt_clean.startswith('/*') and not stmt_clean.startswith('/*!'):
+                    continue
+                try:
+                    cursor.execute(stmt_clean)
+                    executed_count += 1
+                except Exception as ex:
+                    error_count += 1
+                    errors.append(f"Stmt: {stmt_clean[:100]}... | Error: {ex}")
+
+            cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            res = f"Import success!<br>Executed: {executed_count} statements.<br>Errors: {error_count}.<br>"
+            if errors:
+                res += "<br>Detailed errors:<br>" + "<br>".join(errors)
+            return res
+        except Exception as e:
+            if conn:
+                try:
+                    cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+                except:
+                    pass
+                conn.close()
+            return f"Fatal Error: {e}"
+
