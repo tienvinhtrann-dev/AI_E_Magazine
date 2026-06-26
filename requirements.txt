@@ -24,5 +24,6 @@ google-generativeai==0.3.2
 # Google OAuth token verification (for Flutter Google Sign-In)
 google-auth>=2.47.0
 
-APScheduler
-groq
+gunicorn==24.1.1
+APScheduler==3.10.4
+groq==0.11.0
