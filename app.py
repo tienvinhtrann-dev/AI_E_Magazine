@@ -1,8 +1,16 @@
-﻿"""
+"""
 AI E-Magazine - Entry Point
 Delegates app creation to app/ package, handles startup initialization.
 """
 import sys
+import os
+import time
+
+# Thiết lập múi giờ Việt Nam mặc định cho hệ thống
+os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
+if hasattr(time, 'tzset'):
+    time.tzset()
+
 # Fix UnicodeEncodeError with emoji/Vietnamese on Windows console
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 sys.stderr.reconfigure(encoding='utf-8', errors='replace')
@@ -29,6 +37,19 @@ import atexit
 
 # Create the Flask application
 app = create_app()
+
+# Khởi chạy scheduler ở chế độ production (khi Gunicorn import app)
+if __name__ != "__main__":
+    import os
+    import atexit
+    from app.extensions import scheduler
+    from app.services.scheduler_service import _load_all_schedules, start_sepay_poll_job
+    if not scheduler.running:
+        scheduler.start()
+        _load_all_schedules()
+        start_sepay_poll_job()
+        atexit.register(lambda: scheduler.shutdown(wait=False))
+        print("  Scheduler started in production mode!")
 
 
 # ----------------------------------
@@ -67,7 +88,7 @@ if __name__ == "__main__":
             _load_all_schedules()
             start_sepay_poll_job()
             atexit.register(lambda: scheduler.shutdown(wait=False))
-            print("  Scheduler started!")
+            print("  Scheduler started in local development mode!")
 
     print("\n  URL: http://127.0.0.1:5000")
     print("=" * 70)

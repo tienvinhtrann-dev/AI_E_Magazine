@@ -10,9 +10,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv(override=True)
 
+from zoneinfo import ZoneInfo
+
 # AI Article Generator singleton
 groq_api_key = os.getenv('GROQ_API_KEY')
 article_generator = SimpleArticleGenerator(api_key=groq_api_key)
 
 # APScheduler singleton (started by app.py at launch)
-scheduler = BackgroundScheduler(daemon=True)
+scheduler = BackgroundScheduler(daemon=True, timezone=ZoneInfo("Asia/Ho_Chi_Minh"))

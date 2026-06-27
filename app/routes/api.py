@@ -523,13 +523,20 @@ def register_routes(app):
         num_articles  = max(1, int(data.get("num_articles", 1)))
         if not magazine_id or not category_name:
             return jsonify({"ok": False, "error": "Thiếu thông tin bắt buộc"}), 400
-        from database.schedule_model_simple import create_schedule as _create_sched
+        from database.schedule_model_simple import (
+            create_schedule as _create_sched, get_schedule_by_id as _get_sched
+        )
         sched_id = _create_sched(
             magazine_id=magazine_id, user_id=user_id,
             frequency=frequency, hour=hour, minute=minute,
             num_articles=num_articles, category_name=category_name,
         )
         if sched_id:
+            # Đồng bộ với scheduler nếu active
+            new_sched = _get_sched(sched_id)
+            if new_sched and new_sched.get("is_active"):
+                from app.services.scheduler_service import _register_schedule_job
+                _register_schedule_job(new_sched)
             return jsonify({"ok": True, "schedule_id": sched_id}), 201
         return jsonify({"ok": False, "error": "Không thể tạo lịch"}), 500
 
@@ -546,6 +553,17 @@ def register_routes(app):
             return jsonify({"ok": False, "error": "Không có quyền"}), 403
         _toggle(schedule_id, user_id)
         updated = _get_sched(schedule_id)
+
+        # Đồng bộ với scheduler
+        from app.extensions import scheduler
+        from app.services.scheduler_service import _register_schedule_job
+        if updated and updated.get("is_active"):
+            _register_schedule_job(updated)
+        else:
+            job_id = f"sched_{schedule_id}"
+            if scheduler.get_job(job_id):
+                scheduler.remove_job(job_id)
+
         return jsonify({"ok": True, "is_active": bool((updated or {}).get("is_active"))})
 
     @app.route("/api/schedule/<int:schedule_id>/delete", methods=["POST"])
@@ -559,5 +577,12 @@ def register_routes(app):
         s = _get_sched(schedule_id)
         if not s or s.get("user_id") != user_id:
             return jsonify({"ok": False, "error": "Không có quyền"}), 403
+
+        # Đồng bộ với scheduler
+        from app.extensions import scheduler
+        job_id = f"sched_{schedule_id}"
+        if scheduler.get_job(job_id):
+            scheduler.remove_job(job_id)
+
         _del_sched(schedule_id, user_id)
         return jsonify({"ok": True})

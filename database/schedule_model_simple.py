@@ -185,6 +185,7 @@ def get_all_active_schedules():
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
             SELECT s.*, m.title as magazine_title,
+                   m.timezone as magazine_timezone,
                    COALESCE(s.category_name, m.topic) as topic,
                    COALESCE(s.keywords, m.keywords) as keywords,
                    m.description,
@@ -278,7 +279,16 @@ def get_schedule_by_id(schedule_id):
         return None
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM magazine_schedules WHERE id = %s", (schedule_id,))
+        cursor.execute("""
+            SELECT s.*, m.title as magazine_title,
+                   m.timezone as magazine_timezone,
+                   COALESCE(s.category_name, m.topic) as topic,
+                   COALESCE(s.keywords, m.keywords) as keywords,
+                   m.description
+            FROM magazine_schedules s
+            JOIN magazines m ON s.magazine_id = m.id
+            WHERE s.id = %s
+        """, (schedule_id,))
         schedule = cursor.fetchone()
         cursor.close()
         conn.close()

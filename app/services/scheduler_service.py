@@ -77,6 +77,7 @@ def _run_scheduled_generation(schedule_id, magazine_id, user_id, topic, keywords
 
 def _register_schedule_job(schedule):
     """Register a schedule into APScheduler."""
+    from zoneinfo import ZoneInfo
     sid = schedule['id']
     job_id = f"sched_{sid}"
     freq = schedule['frequency']
@@ -85,18 +86,24 @@ def _register_schedule_job(schedule):
     interval_minutes = int(schedule.get('interval_minutes') or 0)
     days = schedule.get('days_of_week', '') or ''
 
+    tz_str = schedule.get('magazine_timezone') or schedule.get('timezone') or 'Asia/Ho_Chi_Minh'
+    try:
+        tz = ZoneInfo(tz_str)
+    except Exception:
+        tz = ZoneInfo('Asia/Ho_Chi_Minh')
+
     if freq == 'interval_min':
-        trigger = IntervalTrigger(minutes=interval_minutes if interval_minutes > 0 else 5)
+        trigger = IntervalTrigger(minutes=interval_minutes if interval_minutes > 0 else 5, timezone=tz)
     elif freq == 'interval_hour':
         hours = (interval_minutes // 60) if interval_minutes >= 60 else 1
-        trigger = IntervalTrigger(hours=hours)
+        trigger = IntervalTrigger(hours=hours, timezone=tz)
     elif freq == 'daily':
-        trigger = CronTrigger(hour=hour, minute=minute)
+        trigger = CronTrigger(hour=hour, minute=minute, timezone=tz)
     elif freq == 'weekly':
         day_of_week = days if days else 'mon'
-        trigger = CronTrigger(day_of_week=day_of_week, hour=hour, minute=minute)
+        trigger = CronTrigger(day_of_week=day_of_week, hour=hour, minute=minute, timezone=tz)
     else:  # custom
-        trigger = CronTrigger(day_of_week=days if days else 'mon-fri', hour=hour, minute=minute)
+        trigger = CronTrigger(day_of_week=days if days else 'mon-fri', hour=hour, minute=minute, timezone=tz)
 
     if scheduler.get_job(job_id):
         scheduler.remove_job(job_id)

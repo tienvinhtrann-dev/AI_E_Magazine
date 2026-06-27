@@ -4,6 +4,14 @@ WSGI entry point for Azure App Service / Gunicorn
 
 import sys
 
+import os
+import time
+
+# Thiết lập múi giờ Việt Nam mặc định cho hệ thống
+os.environ['TZ'] = 'Asia/Ho_Chi_Minh'
+if hasattr(time, 'tzset'):
+    time.tzset()
+
 # Fix Unicode
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -46,6 +54,18 @@ try:
     init_sepay_table()
     ensure_performance_indexes()
     print("Azure Startup: Database schemas initialized successfully!")
+
+    # Khởi chạy scheduler trên Azure
+    import os
+    import atexit
+    from app.extensions import scheduler
+    from app.services.scheduler_service import _load_all_schedules, start_sepay_poll_job
+    if not scheduler.running:
+        scheduler.start()
+        _load_all_schedules()
+        start_sepay_poll_job()
+        atexit.register(lambda: scheduler.shutdown(wait=False))
+        print("Azure Startup: Scheduler started successfully!")
 except Exception as e:
     print(f"Azure Startup Error: Failed to initialize database: {e}")
 

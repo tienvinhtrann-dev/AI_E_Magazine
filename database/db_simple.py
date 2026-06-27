@@ -61,18 +61,28 @@ def reset_pool():
 def get_connection():
     """Lấy kết nối từ pool. Gọi conn.close() để trả lại pool (không đóng TCP)."""
     pool = _get_pool()
+    conn = None
     if pool:
         try:
-            return pool.get_connection()
+            conn = pool.get_connection()
         except Error as e:
             print(f"⚠️  Pool get_connection failed ({e}), falling back to direct")
-    # Fallback: kết nối trực tiếp (dùng khi pool chưa sẵn sàng)
-    try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        if conn.is_connected():
-            return conn
-    except Error as e:
-        print(f"❌ Lỗi kết nối MySQL: {e}")
+    if not conn:
+        # Fallback: kết nối trực tiếp (dùng khi pool chưa sẵn sàng)
+        try:
+            conn = mysql.connector.connect(**DB_CONFIG)
+        except Error as e:
+            print(f"❌ Lỗi kết nối MySQL: {e}")
+            return None
+
+    if conn and conn.is_connected():
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SET time_zone = '+07:00'")
+            cursor.close()
+        except Exception as e:
+            print(f"⚠️  Lỗi set MySQL connection time_zone: {e}")
+        return conn
     return None
 
 
