@@ -10,7 +10,7 @@ jobs:
       FLUTTER_VERSION: "3.44.0"
       FLUTTER_CHANNEL: "stable"
       # Đổi IP cho đúng với máy bạn (điện thoại thật + cùng WiFi)
-      BASE_URL: "https://clean-cathedral-rocking.ngrok-free.dev"
+      BASE_URL: "https://aiemagazine.azurewebsites.net"
 
     steps:
       - uses: actions/checkout@v4

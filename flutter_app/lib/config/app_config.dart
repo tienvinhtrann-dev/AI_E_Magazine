@@ -12,7 +12,7 @@ class AppConfig {
   //
   // Mặc định: 10.0.2.2 = localhost của máy host khi chạy Android emulator.
   static const String baseUrl =
-      String.fromEnvironment('BASE_URL', defaultValue: 'http://10.0.2.2:5000');
+      String.fromEnvironment('BASE_URL', defaultValue: 'https://aiemagazine.azurewebsites.net');
 
   static const String appName = 'AI E-Magazine';
 
