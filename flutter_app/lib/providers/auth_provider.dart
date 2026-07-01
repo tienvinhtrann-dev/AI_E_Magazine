@@ -75,6 +75,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final googleSignIn = GoogleSignIn(
+        clientId: defaultTargetPlatform == TargetPlatform.iOS ? AppConfig.googleIosClientId : null,
         serverClientId: AppConfig.googleWebClientId,
         scopes: ['email', 'profile'],
       );

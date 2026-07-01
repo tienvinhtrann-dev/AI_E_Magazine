@@ -20,6 +20,8 @@ class AppConfig {
   // Tạo "OAuth 2.0 Client ID" loại "Web application"
   static const String googleWebClientId =
       '331470394438-uamnlj96dahaadb4eteagvl5278q3kvu.apps.googleusercontent.com';
+  static const String googleIosClientId =
+      '331470394438-qgepsb83m7lo9triccum4bm0u2ifu847.apps.googleusercontent.com';
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 20);
 }
