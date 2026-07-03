@@ -50,7 +50,7 @@ def register_routes(app):
 
     def _bg_generate(app_ctx, job_id, user_id, mag_id, magazine,
                      names, counts_raw, keywords_list,
-                     desc_base, kw_base):
+                     desc_base, kw_base, forbidden_keywords=None):
         """Background thread: tạo bài theo từng danh mục rồi cập nhật job store."""
         with app_ctx:
             # Reset cache crawl của generator trước khi bắt đầu phiên mới
@@ -112,6 +112,7 @@ def register_routes(app):
                             magazine_title=magazine["title"],
                             description=cat_description,
                             keywords=cat_keywords,
+                            forbidden_keywords=forbidden_keywords,
                         )
                     except Exception as e_art:
                         print(f"[BG-WARN] generate error (category='{name}'): {e_art}")
@@ -232,13 +233,31 @@ def register_routes(app):
                 "started": _time.time(),
             }
 
+        # Collect checked forbidden keywords and manual input
+        forbidden_checked = request.form.getlist("forbidden_keywords_checked")
+        forbidden_manual = request.form.get("forbidden_keywords_manual", "")
+
+        forbidden_set = set()
+        for kw in forbidden_checked:
+            kw_clean = kw.strip()
+            if kw_clean:
+                forbidden_set.add(kw_clean)
+
+        if forbidden_manual:
+            for kw in forbidden_manual.split(','):
+                kw_clean = kw.strip()
+                if kw_clean:
+                    forbidden_set.add(kw_clean)
+
+        forbidden_keywords = list(forbidden_set)
+
         # Push application context vào thread
         app_ctx = app.app_context()
         t = threading.Thread(
             target=_bg_generate,
             args=(app_ctx, job_id, user_id, mag_id, magazine,
                   list(names), list(counts_raw), list(keywords_list),
-                  desc_base, kw_base),
+                  desc_base, kw_base, forbidden_keywords),
             daemon=True,
         )
         t.start()

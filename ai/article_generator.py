@@ -1069,8 +1069,120 @@ Trả về DUY NHẤT 1 JSON hợp lệ theo schema:
         print(f"[REVIEW] FAIL avg={review.get('average_score')} pass_count={review.get('pass_count')}{reason}")
         return False
     
+    def _validate_and_sanitize_forbidden_keywords(self, article, forbidden_keywords):
+        """
+        Kiểm tra và loại bỏ từ khóa cấm bằng cách yêu cầu LLM viết lại (tối đa 3 lần).
+        """
+        if not forbidden_keywords or not article:
+            return article
+
+        violation_count = 0
+        max_attempts = 3
+        current_article = article
+
+        while violation_count < max_attempts:
+            # 1. Tìm các từ cấm bị vi phạm (case-insensitive)
+            title = current_article.get("title", "")
+            summary = current_article.get("summary", "")
+            content = current_article.get("content", "")
+
+            # Combine all text to search
+            combined_text = f"{title}\n{summary}\n{content}".lower()
+
+            violated_words = []
+            for kw in forbidden_keywords:
+                kw_lower = kw.lower()
+                if kw_lower in combined_text:
+                    violated_words.append(kw)
+
+            if not violated_words:
+                # Không vi phạm, trả về bài viết
+                if violation_count > 0:
+                    print(f"✨ Article successfully sanitized on attempt {violation_count}!")
+                return current_article
+
+            violation_count += 1
+            print(f"⚠️ Phát hiện vi phạm từ khóa cấm (lần {violation_count}/{max_attempts}): {violated_words}")
+            
+            if violation_count >= max_attempts:
+                # Vượt quá số lần thử, dừng và đặt lỗi
+                err_msg = f"Nội dung vi phạm các từ khóa cấm: {', '.join(violated_words)} (Đã thử viết lại {max_attempts} lần không thành công)."
+                self._set_last_error(err_msg)
+                print(f"❌ Safety check failed: {err_msg}")
+                return None
+
+            # 2. Gọi LLM viết lại bài viết để sửa đổi các từ cấm
+            rewritten_article = self._rewrite_to_fix_violations(current_article, violated_words)
+            if not rewritten_article:
+                err_msg = "Không thể viết lại bài viết để sửa đổi từ khóa cấm."
+                self._set_last_error(err_msg)
+                return None
+            
+            current_article = current_article.copy()
+            current_article["title"] = rewritten_article.get("title", current_article["title"])
+            current_article["summary"] = rewritten_article.get("summary", current_article["summary"])
+            current_article["content"] = rewritten_article.get("content", current_article["content"])
+
+        return None
+
+    def _rewrite_to_fix_violations(self, article, violated_keywords):
+        """
+        Gọi LLM để viết lại title, summary, và content loại bỏ/thay thế các từ cấm.
+        """
+        if not self.use_ai_rewrite or not self.client:
+            return None
+
+        kw_str = ", ".join(violated_keywords)
+        prompt = f"""Bạn là một chuyên gia hiệu đính và biên tập nội dung.
+Bài viết sau đây đã vi phạm chính sách an toàn do chứa các từ khóa cấm: [{kw_str}].
+
+Nhiệm vụ của bạn:
+1. Hãy viết lại tiêu đề (title), tóm tắt (summary) và nội dung (content) của bài viết để TUYỆT ĐỐI KHÔNG xuất hiện bất kỳ từ khóa cấm nào nêu trên (kể cả viết hoa hay viết thường).
+2. Hãy thay thế các từ cấm bằng các từ đồng nghĩa hoặc diễn đạt lại câu cho tự nhiên, chuyên nghiệp và đúng ngữ cảnh mà không làm mất đi thông tin cốt lõi.
+3. Không thay đổi cấu trúc định dạng của nội dung gốc (giữ nguyên 3 đoạn văn xuôi cho content).
+
+Bài viết gốc:
+- Tiêu đề: {article.get('title')}
+- Tóm tắt: {article.get('summary')}
+- Nội dung: {article.get('content')}
+
+Yêu cầu đầu ra:
+Bạn bắt buộc phải trả về kết quả ở định dạng JSON thuần túy, không có thẻ markdown ```json, không có text giải thích trước hoặc sau. JSON phải có cấu trúc chính xác như sau:
+{{
+  "title": "tiêu đề đã sửa đổi",
+  "summary": "tóm tắt đã sửa đổi",
+  "content": "nội dung đã sửa đổi"
+}}
+"""
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Bạn là chuyên gia sửa đổi văn bản và luôn trả về kết quả định dạng JSON chính xác."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=3000
+            )
+            raw = response.choices[0].message.content.strip()
+            
+            # Clean potential markdown wrapping if any
+            cleaned_raw = raw
+            if cleaned_raw.startswith("```"):
+                cleaned_raw = re.sub(r"^```[a-zA-Z]*\n", "", cleaned_raw)
+                cleaned_raw = re.sub(r"\n```$", "", cleaned_raw)
+            cleaned_raw = cleaned_raw.strip()
+            
+            parsed = json.loads(cleaned_raw)
+            return parsed
+        except Exception as e:
+            print(f"[WARN] Error in rewrite_to_fix_violations: {e}")
+            return None
     
-    def generate_article_from_sources(self, topic, description, keywords, crawled_articles):
+    def generate_article_from_sources(self, topic, description, keywords, crawled_articles, forbidden_keywords=None):
         """
         Tạo bài báo mới từ các bài đã crawl
         
@@ -1079,6 +1191,7 @@ Trả về DUY NHẤT 1 JSON hợp lệ theo schema:
             description: Mô tả ngắn
             keywords: Từ khóa
             crawled_articles: List các bài đã crawl
+            forbidden_keywords: Từ khóa cấm
         
         Returns:
             dict: Bài báo mới
@@ -1097,7 +1210,7 @@ Trả về DUY NHẤT 1 JSON hợp lệ theo schema:
         new_summary = self._generate_summary(description, crawled_articles)
         
         # Tạo content
-        new_content = self._generate_content(topic, description, crawled_articles)
+        new_content = self._generate_content(topic, description, crawled_articles, forbidden_keywords)
         
         # Lấy source URLs
         source_urls = [article['url'] for article in crawled_articles]
@@ -1175,7 +1288,7 @@ Trả về DUY NHẤT 1 JSON hợp lệ theo schema:
         return "Bài viết tổng hợp thông tin từ nhiều nguồn tin tức."
     
     
-    def _rewrite_with_ai(self, original_content, topic):
+    def _rewrite_with_ai(self, original_content, topic, forbidden_keywords=None):
         """
         Viết lại nội dung bằng Gemini AI
         """
@@ -1208,10 +1321,15 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             print(f"   - Model: {self.model_name}")
             print(f"   - Prompt length: {len(prompt)} chars")
             
+            system_content = "Bạn là một biên tập viên chuyên nghiệp của tờ báo hàng đầu Việt Nam. Nhiệm vụ của bạn là viết lại bài báo hoàn toàn mới với ngôn từ tự nhiên, chuyên nghiệp."
+            if forbidden_keywords:
+                kw_str = ", ".join(forbidden_keywords)
+                system_content += f" Đặc biệt, Tuyệt đối KHÔNG được sử dụng bất kỳ từ hoặc cụm từ cấm nào sau đây trong bài viết: {kw_str}."
+
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "Bạn là một biên tập viên chuyên nghiệp của tờ báo hàng đầu Việt Nam. Nhiệm vụ của bạn là viết lại bài báo hoàn toàn mới với ngôn từ tự nhiên, chuyên nghiệp."},
+                    {"role": "system", "content": system_content},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -1274,7 +1392,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             return original_content
     
     
-    def _generate_content(self, topic, description, articles):
+    def _generate_content(self, topic, description, articles, forbidden_keywords=None):
         """
         Tạo nội dung bài viết mới
         Phương pháp: Trích xuất và tổng hợp thông tin quan trọng
@@ -1361,7 +1479,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             print(f"🔑 API Key present: {bool(self.api_key)}")
             print(f"🤖 Client initialized: {hasattr(self, 'client')}")
             
-            final_content = self._rewrite_with_ai(original_content, topic)
+            final_content = self._rewrite_with_ai(original_content, topic, forbidden_keywords)
             
             print(f"📊 Rewritten content length: {len(final_content)} characters")
             
@@ -1412,7 +1530,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         return final_content
     
     
-    def generate_article(self, user_id, topic, description, keywords, max_sources=5):
+    def generate_article(self, user_id, topic, description, keywords, max_sources=5, forbidden_keywords=None):
         """
         Quy trình hoàn chỉnh: Crawl → Generate → Return
         
@@ -1422,6 +1540,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             description: Mô tả
             keywords: Từ khóa
             max_sources: Số bài tối đa để crawl
+            forbidden_keywords: Từ khóa cấm
         
         Returns:
             dict: Bài báo mới hoặc None
@@ -1456,7 +1575,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         
         # Step 2: Generate new article
         generated = self.generate_article_from_sources(
-            topic, description, keywords, crawled_articles
+            topic, description, keywords, crawled_articles, forbidden_keywords
         )
         
         if not generated:
@@ -1464,6 +1583,15 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
                 'success': False,
                 'error': 'Không thể tạo bài viết từ nguồn đã crawl.'
             }
+
+        # Run validation & rewrite loop
+        validated = self._validate_and_sanitize_forbidden_keywords(generated, forbidden_keywords)
+        if not validated:
+            return {
+                'success': False,
+                'error': self.last_error or 'Không thể tạo bài viết an toàn (phát hiện từ khóa cấm sau nhiều lần viết lại).'
+            }
+        generated = validated
 
         if not self._validate_generated_article_alignment(topic, keywords, generated):
             return {
@@ -1733,7 +1861,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         print(f"\n[OK] Generated {len(articles)}/{count} articles for magazine '{magazine_title}'")
         return articles
 
-    def generate_single_article_for_category(self, topic, magazine_title, description='', keywords=''):
+    def generate_single_article_for_category(self, topic, magazine_title, description='', keywords='', forbidden_keywords=None):
         """Tạo đúng 1 bài cho một danh mục.
 
         Logic mới:
@@ -1824,9 +1952,16 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             description=description,
             keywords=keywords or "",
             crawled_articles=[best_article],
+            forbidden_keywords=forbidden_keywords,
         )
         if not generated:
             return None
+
+        # Run safety validation and sanitization loop
+        validated = self._validate_and_sanitize_forbidden_keywords(generated, forbidden_keywords)
+        if not validated:
+            return None
+        generated = validated
 
         # Chỉ dùng heuristic check (không gọi LLM reviewer)
         # để tránh tốn Groq API quota khi tạo nhiều bài cùng lúc.

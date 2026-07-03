@@ -72,6 +72,17 @@ def register_routes(app):
         active_mag_id = request.args.get('mag_id', type=int)
         search_query  = request.args.get('q', '').strip() or None
 
+        # Load forbidden keywords configuration
+        forbidden_keywords_config = {}
+        try:
+            import os
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "forbidden_keywords.json")
+            if os.path.exists(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    forbidden_keywords_config = json.load(f)
+        except Exception as e:
+            print(f"[ERR] Failed to load forbidden keywords config: {e}")
+
         conn = get_connection()
         if not conn:
             flash("Không kết nối được database", "danger")
@@ -83,6 +94,7 @@ def register_routes(app):
                 active_tab=tab,
                 primary_mag_title=None, active_mag_id=None,
                 active_magazine=None, admin_users=[], admin_stats={},
+                forbidden_keywords_config=forbidden_keywords_config,
             )
 
         t0 = time.perf_counter()
@@ -220,6 +232,7 @@ def register_routes(app):
                 active_mag_id=active_mag_id, active_magazine=active_mag,
                 admin_users=admin_users_list, admin_stats=admin_stats,
                 user_schedules=user_schedules,
+                forbidden_keywords_config=forbidden_keywords_config,
             )
         except Exception as e:
             print(f"[ERR] dashboard: {e}")
@@ -235,6 +248,7 @@ def register_routes(app):
                 user_email=session['user_email'], user_role=session['user_role'],
                 active_tab=tab, primary_mag_title=None, active_mag_id=None,
                 active_magazine=None, admin_users=[], admin_stats={},
+                forbidden_keywords_config=forbidden_keywords_config,
             )
 
     @app.route("/dashboard/save-theme", methods=["POST"])
