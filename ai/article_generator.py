@@ -1296,22 +1296,28 @@ Bạn bắt buộc phải trả về kết quả ở định dạng JSON thuần
             return original_content
         
         try:
-            prompt = f"""Bạn là một biên tập viên chuyên nghiệp của tờ báo hàng đầu Việt Nam. 
+            prompt = f"""Bạn là AI E-Magazine Writer, một biên tập viên báo điện tử chuyên nghiệp của tờ báo hàng đầu Việt Nam.
 
-NHIỆM VỤ: Dựa trên thông tin từ nhiều nguồn tin tức về chủ đề "{topic}", hãy viết MỘT BÀI BÁO HOÀN TOÀN MỚI với phong cách nghị luận, mạch lạc.
+NHIỆM VỤ: Dựa trên thông tin từ các nguồn tin tức dưới đây về chủ đề "{topic}", hãy viết LẠI phần nội dung bài báo hoàn chỉnh, khách quan, giàu thông tin và mạch lạc.
 
-YÊU CẦU BẮT BUỘC:
-1. VIẾT LẠI HOÀN TOÀN - KHÔNG copy bất kỳ câu nào từ nguồn gốc.
-2. Bài viết CHỈ gồm 3 đoạn văn xuôi liên tiếp, không có bất kỳ tiêu đề (heading) hay gạch đầu dòng nào.
-3. Mỗi đoạn dài khoảng 400–500 từ với luận điểm – luận cứ – kết luận rõ ràng; ba đoạn nối tiếp nhau tự nhiên như một bài luận.
-4. Tuyệt đối KHÔNG được dùng các cụm: "Ứng dụng thực tiễn", "Tầm quan trọng của", "Góc nhìn chiến lược", "Khuyến nghị cho người đọc" làm tiêu đề hoặc câu mở đầu.
-5. Ngôn ngữ báo chí, rõ ràng, dễ hiểu, không khoa trương; đảm bảo thông tin chính xác, không bịa đặt.
+YÊU CẦU BẮT BUỘC VỀ NỘI DUNG (MỤC TIÊU):
+- Bài viết phải khách quan, chính xác, dễ đọc, giàu thông tin, không lặp ý, không suy diễn, không bịa đặt, không thiên vị, và tự nhiên như được viết bởi biên tập viên chuyên nghiệp.
+- Tuyệt đối KHÔNG viết giống văn nghị luận học đường. Không dùng các mẫu câu máy móc, không viết kiểu giáo điều/dạy đời/cổ vũ/kết luận thay độc giả.
+- CHỈ sử dụng thông tin có thực xuất hiện trong dữ liệu nguồn. Không bổ sung thông tin từ trí nhớ, không tạo số liệu mới, không tạo trích dẫn/phát biểu/địa điểm/thời gian giả mạo.
+- Giọng văn: trung lập, khách quan, hiện đại, rõ ràng, súc tích. Không dùng văn phong cảm tính.
+- Độ dài: Khoảng 900-1500 từ. Không viết để đủ chữ.
+- Cấu trúc nội dung: Bài viết gồm các đoạn văn xuôi mạch lạc liên kết chặt chẽ với nhau (không dùng gạch đầu dòng, không dùng danh sách liệt kê). Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng. Tuyệt đối KHÔNG sử dụng các tiêu đề rập khuôn như "Mở đầu", "Diễn biến", "Bối cảnh", "Kết luận".
+- Chống lặp ý: Mỗi đoạn chỉ trình bày MỘT ý mới, không nhắc lại ý cũ. Không lặp cấu trúc, câu, từ khóa.
+- KHÔNG sử dụng các từ/cụm từ sau: "Có thể thấy", "Điều này cho thấy", "Một trong những", "Không chỉ", "Bên cạnh đó", "Hơn nữa", "Qua đó", "Theo nghiên cứu", "Theo báo cáo", "Tóm lại", "Nhìn chung", "Cuối cùng".
+- Ngôn ngữ: Ưu tiên câu ngắn (20-30 từ). Sử dụng động từ mạnh, hạn chế tính từ và trạng từ sáo rỗng.
+- SEO & H2: Tạo các heading H2 (dạng ## [Tên heading]) hợp lý trong nội dung nếu bài dài trên 800 từ (tối đa 6 heading). Tuyệt đối không đặt tên heading là "Mở đầu", "Nội dung", "Kết luận", "Giới thiệu" hay các từ rập khuôn tương tự.
+- Đa dạng câu: Không viết các câu liên tiếp bắt đầu bằng cùng một từ hoặc cấu trúc chủ ngữ giống hệt nhau.
 
 THÔNG TIN TỪ CÁC NGUỒN THAM KHẢO:
 {original_content}
 
 ---
-HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, KHÔNG DÙNG HEADING HOẶC GẠCH ĐẦU DÒNG:"""
+HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
 
             if not hasattr(self, 'client') or self.client is None:
                 print("❌ Groq client not initialized!")
@@ -1321,7 +1327,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
             print(f"   - Model: {self.model_name}")
             print(f"   - Prompt length: {len(prompt)} chars")
             
-            system_content = "Bạn là một biên tập viên chuyên nghiệp của tờ báo hàng đầu Việt Nam. Nhiệm vụ của bạn là viết lại bài báo hoàn toàn mới với ngôn từ tự nhiên, chuyên nghiệp."
+            system_content = "Bạn là một biên tập viên báo điện tử chuyên nghiệp. Nhiệm vụ của bạn là viết lại bài báo với ngôn từ khách quan, trung lập, súc tích và hoàn toàn không lặp ý."
             if forbidden_keywords:
                 kw_str = ", ".join(forbidden_keywords)
                 system_content += f" Đặc biệt, Tuyệt đối KHÔNG được sử dụng bất kỳ từ hoặc cụm từ cấm nào sau đây trong bài viết: {kw_str}."
@@ -2024,31 +2030,36 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
 
             return parsed
 
-        prompt = f"""Bạn là biên tập viên chuyên nghiệp của tạp chí "{magazine_title}" với chuyên môn về {focus}.
+        json_example = "{\n  \"title\": \"Tiêu đề bài viết\",\n  \"sapo\": \"Đoạn sapo\",\n  \"content\": \"Nội dung bài viết\"\n}"
+        prompt = f"""Bạn là AI E-Magazine Writer, một biên tập viên báo điện tử chuyên nghiệp của tạp chí "{magazine_title}" với chuyên môn về {focus}.
 
-    ⚠️ DANH MỤC BẮT BUỘC (CATEGORY): {topic}
-    ⚠️ MÔ TẢ TẠP CHÍ/DANH MỤC (do người dùng nhập): {description}
-    ⚠️ Mọi luận điểm, ví dụ, nhân vật, bối cảnh PHẢI phù hợp với danh mục "{topic}" và tinh thần mô tả ở trên.
+NHIỆM VỤ: Dựa trên thông tin từ nhiều nguồn tin tức dưới đây, hãy viết MỘT BÀI BÁO HOÀN TOÀN MỚI theo góc nhìn "{angle}" và danh mục "{topic}" (Mô tả danh mục: {description}).
 
-    🎯 NHIỆM VỤ ĐẶC BIỆT: Viết một bài báo HOÀN TOÀN ĐỘC ĐÁO về góc nhìn "{angle}" nhưng vẫn bám sát mô tả và danh mục.
+===== NGUỒN THAM KHẢO =====
+{crawled_content[:7000]}
+===== HẾT NGUỒN =====
 
-    📝 YÊU CẦU VỀ NỘI DUNG VÀ ĐỊNH DẠNG:
-    1.  **VIẾT LẠI HOÀN TOÀN**: Dựa vào thông tin từ các nguồn tham khảo bên dưới, hãy viết lại thành MỘT BÀI BÁO GỒM 3 ĐOẠN VĂN NGHỊ LUẬN, mạch lạc, có luận điểm – luận cứ rõ ràng. TUYỆT ĐỐI KHÔNG sao chép bất kỳ câu nào từ nguồn.
-    2.  **ĐỘ DÀI**: Mỗi đoạn văn phải dài khoảng 400–500 từ. Tổng bài viết khoảng 1200–1500 từ.
-    3.  **KHÔNG DÙNG TIÊU ĐỀ HOẶC MỤC LỤC**: Bài viết CHỈ gồm 3 đoạn văn xuôi, không có tiêu đề phụ, không chia mục kiểu "Dự báo tương lai", "Tầm quan trọng", "Góc nhìn chiến lược"…
-    4.  **PHONG CÁCH NGHỊ LUẬN CHUẨN**: Ba đoạn cần nối tiếp nhau tự nhiên như một bài luận: mở vấn đề – phân tích, lập luận – mở rộng, liên hệ và kết luận; tránh liệt kê rời rạc.
-    5.  **NGÔN NGỮ CHUYÊN NGHIỆP**: Sử dụng văn phong báo chí, ngôn từ phong phú, mạch lạc và hấp dẫn.
+===== TÓM TẮT NGUỒN ƯU TIÊN =====
+{source_brief[:3000]}
+===== HẾT TÓM TẮT =====
 
-    ===== NGUỒN THAM KHẢO =====
-    {crawled_content[:6000]}
-    ===== HẾT NGUỒN =====
+YÊU CẦU BẮT BUỘC VỀ NỘI DUNG (MỤC TIÊU):
+- Bài viết phải khách quan, chính xác, dễ đọc, giàu thông tin, không lặp ý, không suy diễn, không bịa đặt, không thiên vị, và tự nhiên như được viết bởi biên tập viên chuyên nghiệp.
+- Tuyệt đối KHÔNG viết giống văn nghị luận học đường. Không dùng các mẫu câu máy móc, không viết kiểu giáo điều/dạy đời/cổ vũ/kết luận thay độc giả.
+- CHỈ sử dụng thông tin có thực xuất hiện trong dữ liệu nguồn. Không bổ sung thông tin từ trí nhớ, không tạo số liệu mới, không tạo trích dẫn/phát biểu/địa điểm/thời gian giả mạo.
+- Giọng văn: trung lập, khách quan, hiện đại, rõ ràng, súc tích. Không dùng văn phong cảm tính.
+- Độ dài: Từ 900-1500 từ (nếu dữ liệu phong phú) hoặc 500-700 từ (nếu dữ liệu ít). Không viết để đủ chữ.
+- Cấu trúc nội dung: Bài viết gồm các đoạn văn xuôi mạch lạc liên kết chặt chẽ với nhau (không dùng gạch đầu dòng, không dùng danh sách liệt kê). Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng. Tuyệt đối KHÔNG sử dụng các tiêu đề rập khuôn như "Mở đầu", "Diễn biến", "Bối cảnh", "Kết luận".
+- Chống lặp ý: Mỗi đoạn chỉ trình bày MỘT ý mới, không nhắc lại ý cũ. Không lặp cấu trúc, câu, từ khóa.
+- KHÔNG sử dụng các từ/cụm từ sau: "Có thể thấy", "Điều này cho thấy", "Một trong những", "Không chỉ", "Bên cạnh đó", "Hơn nữa", "Qua đó", "Theo nghiên cứu", "Theo báo cáo", "Tóm lại", "Nhìn chung", "Cuối cùng".
+- Ngôn ngữ: Ưu tiên câu ngắn (20-30 từ). Sử dụng động từ mạnh, hạn chế tính từ và trạng từ sáo rỗng.
+- SEO & H2: Tạo các heading H2 (dạng ## [Tên heading]) hợp lý trong nội dung nếu bài dài trên 800 từ (tối đa 6 heading). Tuyệt đối không đặt tên heading dạng "Mở đầu", "Giới thiệu", "Nội dung", "Kết luận" hay từ rập khuôn tương tự.
+- Đa dạng câu: Không viết các câu liên tiếp bắt đầu bằng cùng một từ hoặc cấu trúc chủ ngữ giống hệt nhau.
 
-    ===== TÓM TẮT NGUỒN ƯU TIÊN (dùng để đối chiếu dữ kiện) =====
-    {source_brief[:3000]}
-    ===== HẾT TÓM TẮT =====
-
-    BÂY GIỜ, HÃY VIẾT MỘT BÀI BÁO GỒM 3 ĐOẠN VĂN LIÊN TIẾP, MỖI ĐOẠN 400–500 TỪ, KHÔNG CÓ TIÊU ĐỀ HAY GẠCH ĐẦU DÒNG:
-    """
+ĐẦU RA:
+Bạn bắt buộc phải trả về kết quả dưới dạng đối tượng JSON thuần túy (không chứa ký hiệu markdown ```json hay text giải thích). Cấu trúc JSON như sau:
+{json_example}
+"""
 
         try:
             response = self.client.chat.completions.create(
@@ -2056,11 +2067,7 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
                 messages=[
                     {
                         "role": "system",
-                        "content": (
-                            "Bạn là một biên tập viên báo chí chuyên nghiệp, bậc thầy về viết lại và tổng hợp thông tin. "
-                            "Nhiệm vụ của bạn là tạo ra các bài viết dài, sâu sắc, và hoàn toàn độc đáo từ các nguồn được cung cấp. "
-                            "Luôn tuân thủ nghiêm ngặt các yêu cầu về định dạng và độ dài."
-                        )
+                        "content": "Bạn là AI E-Magazine Writer, một biên tập viên báo điện tử chuyên nghiệp và luôn trả về kết quả định dạng JSON chính xác."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -2069,7 +2076,34 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
                 top_p=0.95
             )
             raw = response.choices[0].message.content
-            parsed = self._parse_magazine_article(raw, topic, keywords, description)
+            
+            # Thử parse JSON trước
+            parsed = None
+            cleaned_raw = raw.strip()
+            if cleaned_raw.startswith("```"):
+                cleaned_raw = re.sub(r"^```[a-zA-Z]*\n", "", cleaned_raw)
+                cleaned_raw = re.sub(r"\n```$", "", cleaned_raw)
+            cleaned_raw = cleaned_raw.strip()
+            try:
+                import json
+                parsed_json = json.loads(cleaned_raw, strict=False)
+                if parsed_json and isinstance(parsed_json, dict) and "title" in parsed_json:
+                    parsed = {
+                        'title': parsed_json.get('title', '').strip(),
+                        'summary': parsed_json.get('sapo', parsed_json.get('summary', '')).strip(),
+                        'content': parsed_json.get('content', '').strip(),
+                        'keywords': keywords,
+                        'topic': topic,
+                        'image_url': '',
+                        'all_images': []
+                    }
+                    print("✅ AI JSON parsed successfully in _generate_single_article_with_crawl!")
+            except Exception as json_err:
+                print(f"[WARN] Failed to parse AI JSON, falling back to heuristics parser: {json_err}")
+                parsed = None
+
+            if not parsed:
+                parsed = self._parse_magazine_article(raw, topic, keywords, description)
 
             parsed['content'] = self._ensure_minimum_content(
                 parsed.get('content', ''), topic, keywords, min_words=1800
@@ -2141,24 +2175,31 @@ HÃY VIẾT BÀI BÁO MỚI GỒM 3 ĐOẠN VĂN, MỖI ĐOẠN 400–500 TỪ, 
         if not self.use_ai_rewrite or not self.client:
             return self._fallback_magazine_article(topic, keywords, angle)
 
-        prompt = f"""Bạn là biên tập viên chuyên nghiệp của tạp chí điện tử "{magazine_title}".
+        json_example = "{\n  \"title\": \"Tiêu đề bài viết\",\n  \"sapo\": \"Đoạn sapo\",\n  \"content\": \"Nội dung bài viết\"\n}"
+        prompt = f"""Bạn là AI E-Magazine Writer, một biên tập viên báo điện tử chuyên nghiệp của tạp chí điện tử "{magazine_title}".
 
 Thông tin tạp chí:
 - Chủ đề chính: {topic}
 - Mô tả: {description if description else 'Không có'}
 - Từ khóa tham khảo: {keywords}
 
-Nhiệm vụ: Viết một bài báo HOÀN CHỈNH bằng tiếng Việt theo góc nhìn:
-"{angle}"
+NHIỆM VỤ: Viết một bài báo HOÀN CHỈNH bằng tiếng Việt theo góc nhìn "{angle}" và danh mục "{topic}".
 
-YÊU CẦU ĐỊNH DẠNG BẮT BUỘC:
-1. Bài viết chỉ gồm 3 đoạn văn xuôi liên tiếp, không có bất kỳ tiêu đề phụ hoặc gạch đầu dòng nào.
-2. Mỗi đoạn dài khoảng 400–500 từ, văn phong nghị luận mạch lạc, có luận điểm – luận cứ – kết luận rõ ràng.
-3. Ba đoạn phải nối tiếp nhau tự nhiên như một bài luận, tránh liệt kê các mục kiểu "Dự báo tương lai", "Tầm quan trọng", "Góc nhìn chiến lược"...
-4. Nội dung phải bám sát chủ đề "{topic}" và mô tả ở trên, có sử dụng một số ý liên quan tới các từ khóa (nếu phù hợp), nhưng không được nhồi nhét từ khóa.
-5. Ngôn ngữ báo chí, rõ ràng, dễ hiểu, không khoa trương.
+YÊU CẦU BẮT BUỘC VỀ NỘI DUNG (MỤC TIÊU):
+- Bài viết phải khách quan, chính xác, dễ đọc, giàu thông tin, không lặp ý, không suy diễn, không bịa đặt, không thiên vị, và tự nhiên như được viết bởi biên tập viên chuyên nghiệp.
+- Tuyệt đối KHÔNG viết giống văn nghị luận học đường. Không dùng các mẫu câu máy móc, không viết kiểu giáo điều/dạy đời/cổ vũ/kết luận thay độc giả.
+- Giọng văn: trung lập, khách quan, hiện đại, rõ ràng, súc tích. Không dùng văn phong cảm tính.
+- Độ dài: Từ 900-1200 từ hoặc 500-700 từ tùy thuộc vào dữ liệu. Không viết để đủ chữ.
+- Cấu trúc nội dung: Bài viết gồm các đoạn văn xuôi mạch lạc liên kết chặt chẽ với nhau (không dùng gạch đầu dòng, không dùng danh sách liệt kê). Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng. Tuyệt đối KHÔNG sử dụng các tiêu đề rập khuôn như "Mở đầu", "Diễn biến", "Bối cảnh", "Kết luận".
+- Chống lặp ý: Mỗi đoạn chỉ trình bày MỘT ý mới, không nhắc lại ý cũ. Không lặp cấu trúc, câu, từ khóa.
+- KHÔNG sử dụng các từ/cụm từ sau: "Có thể thấy", "Điều này cho thấy", "Một trong những", "Không chỉ", "Bên cạnh đó", "Hơn nữa", "Qua đó", "Theo nghiên cứu", "Theo báo cáo", "Tóm lại", "Nhìn chung", "Cuối cùng".
+- Ngôn ngữ: Ưu tiên câu ngắn (20-30 từ). Sử dụng động từ mạnh, hạn chế tính từ và trạng từ sáo rỗng.
+- SEO & H2: Tạo các heading H2 (dạng ## [Tên heading]) hợp lý trong nội dung nếu bài dài trên 800 từ (tối đa 6 heading). Tuyệt đối không đặt tên heading dạng "Mở đầu", "Giới thiệu", "Nội dung", "Kết luận" hay từ rập khuôn tương tự.
+- Đa dạng câu: Không viết các câu liên tiếp bắt đầu bằng cùng một từ hoặc cấu trúc chủ ngữ giống hệt nhau.
 
-Chỉ trả về TOÀN BỘ NỘI DUNG BÀI BÁO (3 đoạn), KHÔNG cần thêm tiêu đề trường dữ liệu như TITLE, SUMMARY, CONTENT.
+ĐẦU RA:
+Bạn bắt buộc phải trả về kết quả dưới dạng đối tượng JSON thuần túy (không chứa ký hiệu markdown ```json hay text giải thích). Cấu trúc JSON như sau:
+{json_example}
 """
 
         try:
@@ -2167,11 +2208,7 @@ Chỉ trả về TOÀN BỘ NỘI DUNG BÀI BÁO (3 đoạn), KHÔNG cần thêm
                 messages=[
                     {
                         "role": "system",
-                        "content": (
-                            "Bạn là biên tập viên báo điện tử chuyên nghiệp. "
-                            "Luôn viết bằng tiếng Việt chuẩn mực, sinh động và đáng tin cậy. "
-                            "Tuân thủ chính xác format được yêu cầu."
-                        )
+                        "content": "Bạn là AI E-Magazine Writer, một biên tập viên báo điện tử chuyên nghiệp và luôn trả về kết quả định dạng JSON chính xác."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -2179,7 +2216,36 @@ Chỉ trả về TOÀN BỘ NỘI DUNG BÀI BÁO (3 đoạn), KHÔNG cần thêm
                 max_tokens=2000
             )
             raw = response.choices[0].message.content
-            return self._parse_magazine_article(raw, topic, keywords, description)
+            
+            # Thử parse JSON trước
+            parsed = None
+            cleaned_raw = raw.strip()
+            if cleaned_raw.startswith("```"):
+                cleaned_raw = re.sub(r"^```[a-zA-Z]*\n", "", cleaned_raw)
+                cleaned_raw = re.sub(r"\n```$", "", cleaned_raw)
+            cleaned_raw = cleaned_raw.strip()
+            try:
+                import json
+                parsed_json = json.loads(cleaned_raw, strict=False)
+                if parsed_json and isinstance(parsed_json, dict) and "title" in parsed_json:
+                    parsed = {
+                        'title': parsed_json.get('title', '').strip(),
+                        'summary': parsed_json.get('sapo', parsed_json.get('summary', '')).strip(),
+                        'content': parsed_json.get('content', '').strip(),
+                        'keywords': keywords,
+                        'topic': topic,
+                        'image_url': image_url,
+                        'all_images': [image_url] if image_url else []
+                    }
+                    print("✅ AI JSON parsed successfully in _generate_single_article_direct!")
+            except Exception as json_err:
+                print(f"[WARN] Failed to parse AI JSON, falling back to heuristics parser: {json_err}")
+                parsed = None
+
+            if not parsed:
+                parsed = self._parse_magazine_article(raw, topic, keywords, description, image_url)
+                
+            return parsed
         except Exception as e:
             print(f"[WARN] Groq error for '{angle[:40]}': {e}")
             return self._fallback_magazine_article(topic, keywords, angle)
