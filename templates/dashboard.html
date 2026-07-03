@@ -2616,26 +2616,42 @@
                             <div class="settings-section-title" style="margin-bottom:.4rem;">Danh mục chính &amp; Từ khóa</div>
                             <div class="settings-muted" style="font-size:.83rem;margin-bottom:.8rem;">Nhập danh mục và từ khóa để AI tạo bài.</div>
 
-                            <div id="postCategoryRows">
-                                {% if categories and not only_default %}
-                                    {% for item in categories %}
-                                    {% set cat_name = item.name or item['name'] %}
-                                    {% if cat_name %}
-                                    <div class="post-cat-row" style="display:flex; gap:.6rem; align-items:center; margin-bottom:.5rem;">
-                                        <div style="flex:1.2;">
-                                            <input type="text" class="form-control" value="{{ cat_name }}" readonly style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem; background:#f9fafb;">
-                                            <input type="hidden" name="category_name" value="{{ cat_name }}">
+                            <div style="max-height: 55vh; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem; scrollbar-width: thin; scrollbar-color: #cbd5e1 #f8fafc; text-align: left;">
+                                <div id="postCategoryRows">
+                                    {% if categories and not only_default %}
+                                        {% for item in categories %}
+                                        {% set cat_name = item.name or item['name'] %}
+                                        {% if cat_name %}
+                                        <div class="post-cat-row" style="display:flex; gap:.6rem; align-items:center; margin-bottom:.5rem;">
+                                            <div style="flex:1.2;">
+                                                <input type="text" class="form-control" value="{{ cat_name }}" readonly style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem; background:#f9fafb;">
+                                                <input type="hidden" name="category_name" value="{{ cat_name }}">
+                                            </div>
+                                            <div style="flex:1.5;">
+                                                <input type="text" name="category_keywords" placeholder="Từ khóa cho danh mục này" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;" value="{{ item.keywords or '' }}">
+                                            </div>
+                                            <div style="width:72px;">
+                                                <input type="number" name="category_count" value="1" min="0" max="5" style="width:100%; padding:.4rem .4rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.86rem; text-align:center;">
+                                            </div>
                                         </div>
-                                        <div style="flex:1.5;">
-                                            <input type="text" name="category_keywords" placeholder="Từ khóa cho danh mục này" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;" value="{{ item.keywords or '' }}">
+                                        {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="post-cat-row" style="display:flex; gap:.6rem; align-items:center; margin-bottom:.5rem;">
+                                            <div style="flex:1.2;">
+                                                <input type="text" class="form-control" name="category_name" placeholder="Danh mục mới" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;">
+                                            </div>
+                                            <div style="flex:1.5;">
+                                                <input type="text" name="category_keywords" placeholder="Từ khóa cho danh mục này" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;">
+                                            </div>
+                                            <div style="width:72px;">
+                                                <input type="number" name="category_count" value="1" min="0" max="5" style="width:100%; padding:.4rem .4rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.86rem; text-align:center;">
+                                            </div>
                                         </div>
-                                        <div style="width:72px;">
-                                            <input type="number" name="category_count" value="1" min="0" max="5" style="width:100%; padding:.4rem .4rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.86rem; text-align:center;">
-                                        </div>
-                                    </div>
                                     {% endif %}
-                                    {% endfor %}
-                                {% else %}
+                                </div>
+
+                                <div id="postCategoryTemplate" style="display:none;">
                                     <div class="post-cat-row" style="display:flex; gap:.6rem; align-items:center; margin-bottom:.5rem;">
                                         <div style="flex:1.2;">
                                             <input type="text" class="form-control" name="category_name" placeholder="Danh mục mới" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;">
@@ -2647,63 +2663,49 @@
                                             <input type="number" name="category_count" value="1" min="0" max="5" style="width:100%; padding:.4rem .4rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.86rem; text-align:center;">
                                         </div>
                                     </div>
-                                {% endif %}
-                            </div>
-
-                            <div id="postCategoryTemplate" style="display:none;">
-                                <div class="post-cat-row" style="display:flex; gap:.6rem; align-items:center; margin-bottom:.5rem;">
-                                    <div style="flex:1.2;">
-                                        <input type="text" class="form-control" name="category_name" placeholder="Danh mục mới" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;">
-                                    </div>
-                                    <div style="flex:1.5;">
-                                        <input type="text" name="category_keywords" placeholder="Từ khóa cho danh mục này" style="width:100%; padding:.45rem .7rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.88rem;">
-                                    </div>
-                                    <div style="width:72px;">
-                                        <input type="number" name="category_count" value="1" min="0" max="5" style="width:100%; padding:.4rem .4rem; border-radius:8px; border:1px solid #e5e7eb; font-size:.86rem; text-align:center;">
-                                    </div>
                                 </div>
-                            </div>
 
-                            <div style="margin-top:.6rem; margin-bottom:.4rem;">
-                                <button type="button" id="postAddCategoryBtn" style="border-radius:999px; padding:.4rem .9rem; font-size:.8rem; border:1px solid #e5e7eb; background:#f9fafb; cursor:pointer;">+ Thêm danh mục</button>
-                            </div>
+                                <div style="margin-top:.6rem; margin-bottom:.4rem;">
+                                    <button type="button" id="postAddCategoryBtn" style="border-radius:999px; padding:.4rem .9rem; font-size:.8rem; border:1px solid #e5e7eb; background:#f9fafb; cursor:pointer;">+ Thêm danh mục</button>
+                                </div>
 
-                            <!-- Section: Từ khóa cấm -->
-                            <div style="margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; text-align: left;">
-                                <label style="display: block; font-size: .88rem; font-weight: 700; color: #1e293b; margin-bottom: .4rem;">
-                                    🚫 Từ khóa cấm (Không xuất hiện trong bài viết)
-                                </label>
-                                <p style="font-size: .78rem; color: #64748b; margin-bottom: .8rem; line-height: 1.4;">Chọn các nhóm từ khóa cấm có sẵn hoặc nhập thủ công các từ khóa tùy chỉnh.</p>
-                                
-                                <!-- Nhóm có sẵn -->
-                                <div style="display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1rem;">
-                                    {% if forbidden_keywords_config %}
-                                        {% for group_name, keywords in forbidden_keywords_config.items() %}
-                                        <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc;">
-                                            <!-- Group Header (Collapsible) -->
-                                            <div onclick="toggleForbiddenGroup(this)" style="display: flex; justify-content: space-between; align-items: center; padding: .6rem .9rem; cursor: pointer; background: #f1f5f9; user-select: none;">
-                                                <span style="font-size: .83rem; font-weight: 600; color: #334155;">📁 {{ group_name }}</span>
-                                                <span class="group-arrow" style="font-size: .75rem; color: #64748b; transition: transform .2s; transform: none;">▼</span>
-                                            </div>
-                                            <!-- Group Content (Checkboxes) -->
-                                            <div class="group-content" style="display: none; padding: .65rem .9rem; background: #fff; border-top: 1px solid #e2e8f0; max-height: 150px; overflow-y: auto;">
-                                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; text-align: left;">
-                                                    {% for kw in keywords %}
-                                                    <label style="display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: #475569; cursor: pointer; margin: 0;">
-                                                        <input type="checkbox" name="forbidden_keywords_checked" value="{{ kw }}" style="cursor: pointer; accent-color: #6366f1; width: auto; height: auto; margin: 0;"> {{ kw }}
-                                                    </label>
-                                                    {% endfor %}
+                                <!-- Section: Từ khóa cấm -->
+                                <div style="margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; text-align: left;">
+                                    <label style="display: block; font-size: .88rem; font-weight: 700; color: #1e293b; margin-bottom: .4rem;">
+                                        🚫 Từ khóa cấm (Không xuất hiện trong bài viết)
+                                    </label>
+                                    <p style="font-size: .78rem; color: #64748b; margin-bottom: .8rem; line-height: 1.4;">Chọn các nhóm từ khóa cấm có sẵn hoặc nhập thủ công các từ khóa tùy chỉnh.</p>
+                                    
+                                    <!-- Nhóm có sẵn -->
+                                    <div style="display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1rem;">
+                                        {% if forbidden_keywords_config %}
+                                            {% for group_name, keywords in forbidden_keywords_config.items() %}
+                                            <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc;">
+                                                <!-- Group Header (Collapsible) -->
+                                                <div onclick="toggleForbiddenGroup(this)" style="display: flex; justify-content: space-between; align-items: center; padding: .6rem .9rem; cursor: pointer; background: #f1f5f9; user-select: none;">
+                                                    <span style="font-size: .83rem; font-weight: 600; color: #334155;">📁 {{ group_name }}</span>
+                                                    <span class="group-arrow" style="font-size: .75rem; color: #64748b; transition: transform .2s; transform: none;">▼</span>
+                                                </div>
+                                                <!-- Group Content (Checkboxes) -->
+                                                <div class="group-content" style="display: none; padding: .65rem .9rem; background: #fff; border-top: 1px solid #e2e8f0; max-height: 150px; overflow-y: auto;">
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; text-align: left;">
+                                                        {% for kw in keywords %}
+                                                        <label style="display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: #475569; cursor: pointer; margin: 0;">
+                                                            <input type="checkbox" name="forbidden_keywords_checked" value="{{ kw }}" style="cursor: pointer; accent-color: #6366f1; width: auto; height: auto; margin: 0;"> {{ kw }}
+                                                        </label>
+                                                        {% endfor %}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        {% endfor %}
-                                    {% endif %}
-                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
 
-                                <!-- Nhập thủ công -->
-                                <div>
-                                    <label style="display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: .35rem;">✍️ Nhập thủ công từ khóa cấm</label>
-                                    <input type="text" name="forbidden_keywords_manual" placeholder="Ví dụ: bạo lực, ma túy, casino (phân cách bằng dấu phẩy)" style="width: 100%; box-sizing: border-box; padding: .55rem .8rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: .85rem; outline: none; transition: border-color .15s; background: #fff;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#cbd5e1'">
+                                    <!-- Nhập thủ công -->
+                                    <div>
+                                        <label style="display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: .35rem;">✍️ Nhập thủ công từ khóa cấm</label>
+                                        <input type="text" name="forbidden_keywords_manual" placeholder="Ví dụ: bạo lực, ma túy, casino (phân cách bằng dấu phẩy)" style="width: 100%; box-sizing: border-box; padding: .55rem .8rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: .85rem; outline: none; transition: border-color .15s; background: #fff;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#cbd5e1'">
+                                    </div>
                                 </div>
                             </div>
 
