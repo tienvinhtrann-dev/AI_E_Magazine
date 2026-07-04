@@ -5147,6 +5147,27 @@ window.addEventListener('message', function(e) {
 
         setProgress(0, '\u0110ang kh\u1edfi \u0111\u1ed9ng AI...');
 
+        // Khởi tạo các biến theo dõi để chạy thanh tiến trình % mượt mà
+        var currentPct = 0;
+        var genCreated = 0;
+        var genTotal = totalArts;
+
+        var progressInterval = setInterval(function() {
+            if (currentPct < 99) {
+                var targetMax = genTotal > 0 ? ((genCreated + 0.92) / genTotal) * 100 : 92;
+                if (currentPct < targetMax) {
+                    var diff = targetMax - currentPct;
+                    var increment = Math.max(0.05, diff * 0.035); // Ease-out smoothly
+                    currentPct += increment;
+                    if (currentPct > targetMax) currentPct = targetMax;
+                    
+                    // Chỉ cập nhật thanh phần trăm và số % hiển thị, không ghi đè statusText
+                    bar.style.width = currentPct + '%';
+                    pctEl.textContent = Math.round(currentPct) + '%';
+                }
+            }
+        }, 150);
+
         var fd = new FormData(form);
         fetch(form.action, {
             method: 'POST',
@@ -5158,7 +5179,7 @@ window.addEventListener('message', function(e) {
         .then(function(data) {
             if (data.ok) {
                 var jobId = data.job_id;
-                var jobTotal = data.total || totalArts;
+                genTotal = data.total || totalArts;
 
                 var poll = setInterval(function() {
                     fetch('/dashboard/posts/generate-status/' + jobId, {
@@ -5166,14 +5187,16 @@ window.addEventListener('message', function(e) {
                     })
                     .then(function(r) { return r.json(); })
                     .then(function(st) {
-                        var created = st.created || 0;
-                        var total = st.total || jobTotal;
-                        var pct = total > 0 ? (created / total) * 88 : 0;
-                        setProgress(pct, '\u0110ang t\u1ea1o b\u00e0i ' + (created + 1) + '/' + total + '...');
+                        genCreated = st.created || 0;
+                        genTotal = st.total || genTotal;
+                        
+                        // Cập nhật text trạng thái chữ
+                        statusEl.textContent = '\u0110ang t\u1ea1o b\u00e0i ' + (genCreated + 1) + '/' + genTotal + '...';
 
                         if (st.status === 'done') {
                             clearInterval(poll);
-                            showSuccess(created);
+                            clearInterval(progressInterval);
+                            showSuccess(genCreated);
                             if (data.new_balance != null) {
                                 var pill = document.getElementById('topbarTokenCount');
                                 if (pill) pill.textContent = data.new_balance + ' Tokens';
@@ -5190,6 +5213,7 @@ window.addEventListener('message', function(e) {
                             }, 1800);
                         } else if (st.status === 'failed') {
                             clearInterval(poll);
+                            clearInterval(progressInterval);
                             showError(st.error || 'Kh\u00f4ng t\u00ecm th\u1ea5y b\u00e0i vi\u1ebft ph\u00f9 h\u1ee3p v\u1edbi t\u1eeb kh\u00f3a/danh m\u1ee5c \u0111\u00e3 nh\u1eadp.');
                         }
                     })
@@ -5197,6 +5221,7 @@ window.addEventListener('message', function(e) {
                 }, 4000);
 
             } else {
+                clearInterval(progressInterval);
                 if (data.redirect_tab === 'plans') {
                     showError(data.error || 'Token kh\u00f4ng \u0111\u1ee7.');
                     setTimeout(function() {
@@ -5208,6 +5233,7 @@ window.addEventListener('message', function(e) {
             }
         })
         .catch(function() {
+            clearInterval(progressInterval);
             showError('L\u1ed7i k\u1ebft n\u1ed1i. Vui l\u00f2ng th\u1eed l\u1ea1i.');
         });
     });

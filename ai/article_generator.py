@@ -1508,52 +1508,23 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             print("\n⚠️ Groq API not configured - Using original content")
             final_content = original_content
         
-        # Chèn ảnh vào content SAU KHI AI viết xong
-        # Chỉ lấy và chèn 1 ảnh duy nhất sau đoạn văn đầu tiên để bài viết gọn gàng
-        print(f"\n🖼️ Có {len(article_images)} ảnh sẵn sàng để chèn...")
+        # Không chèn ảnh trực tiếp vào content nữa vì template đã tự động hiển thị ảnh đại diện (featured image) ở đầu bài viết.
+        # Điều này tránh việc hiển thị hai ảnh trùng lặp trong bài viết.
+        print(f"\n🖼️ Không chèn ảnh trực tiếp vào bài viết (chỉ sử dụng ảnh đại diện ngoài trang hiển thị).")
         
-        if article_images:
-            # Tách nội dung thành các đoạn văn (paragraphs) bằng cách split qua dòng trống
-            raw_paragraphs = [p.strip() for p in final_content.split('\n') if p.strip()]
+        raw_paragraphs = [p.strip() for p in final_content.split('\n') if p.strip()]
+        paragraphs = []
+        for p in raw_paragraphs:
+            if p.startswith('#'):
+                continue
+            if p.startswith('**') and p.endswith('**'):
+                continue
+            p = re.sub(r'^\*\*.*?\*\*[\s.:-]*', '', p).strip()
+            if not p:
+                continue
+            paragraphs.append(p)
             
-            # Lọc bỏ bất kỳ đoạn nào trông giống heading markdown hoặc tiêu đề in đậm (phòng trường hợp AI/nguồn vẫn có)
-            paragraphs = []
-            for p in raw_paragraphs:
-                if p.startswith('#'):
-                    # Bỏ hoàn toàn dòng tiêu đề
-                    continue
-                if p.startswith('**') and p.endswith('**'):
-                    # Bỏ hoàn toàn tiêu đề in đậm
-                    continue
-                
-                # Loại bỏ nhãn in đậm ở đầu dòng nếu có (ví dụ: "**Sự nỗ lực:** Nguyễn Trần..." -> "Nguyễn Trần...")
-                p = re.sub(r'^\*\*.*?\*\*[\s.:-]*', '', p).strip()
-                if not p:
-                    continue
-                paragraphs.append(p)
-                
-            new_blocks = []
-            
-            # Chèn đúng 1 ảnh duy nhất (nếu có) sau đoạn văn đầu tiên
-            for idx, para in enumerate(paragraphs):
-                new_blocks.append(para)
-                if idx == 0 and len(article_images) > 0:
-                    img = article_images[0]
-                    img_html = f'''<figure style="margin: 2rem 0;">
-    <img src="{img['url']}" alt="{img['caption']}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <figcaption style="font-size: 0.9rem; color: #666; font-style: italic; text-align: center; margin-top: 0.8rem; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
-        {img['caption'][:150]}{'...' if len(img['caption']) > 150 else ''}<br>
-        <span style="font-size: 0.85rem; color: #999;">Nguồn: {img['source']}</span>
-    </figcaption>
-</figure>'''
-                    new_blocks.append(img_html)
-                    print(f"   ✅ Đã chèn 1 ảnh duy nhất sau đoạn văn 1: {img['url'][:50]}... (Nguồn: {img['source']})")
-            
-            final_content = '\n\n'.join(new_blocks)
-            print(f"✅ Đã chèn 1 ảnh duy nhất vào nội dung")
-        else:
-            print("⚠️ Không có ảnh để chèn")
-        
+        final_content = '\n\n'.join(paragraphs)
         return final_content
     
     

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Đang tạo bài báo... - AI E-Magazine{% endblock %}
 
@@ -70,6 +70,13 @@
     <div class="progress-card">
         <h2>🤖 AI đang tạo bài báo cho bạn...</h2>
         <div class="spinner"></div>
+        
+        <!-- Progress Bar -->
+        <div style="background: #e2e8f0; border-radius: 9999px; height: 12px; overflow: hidden; margin: 1.5rem 0;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa); transition: width 0.15s ease;"></div>
+        </div>
+        <div id="progressPct" style="font-size: 1.5rem; font-weight: bold; color: #6366f1; margin-bottom: 1rem;">0%</div>
+        
         <div class="progress-status" id="status">Đang khởi động...</div>
         
         <div class="progress-log" id="log">
@@ -88,6 +95,19 @@ async function generateArticle() {
         updateLog('🔍 Đang tìm kiếm bài viết liên quan...');
         updateStatus('Đang tìm kiếm trên các trang tin tức...');
         
+        // Start smooth progress animation
+        let pct = 0;
+        const progressBar = document.getElementById('progressBar');
+        const progressPct = document.getElementById('progressPct');
+        const interval = setInterval(() => {
+            if (pct < 95) {
+                const diff = 95 - pct;
+                pct += Math.max(0.1, diff * 0.02);
+                progressBar.style.width = pct + '%';
+                progressPct.textContent = Math.round(pct) + '%';
+            }
+        }, 150);
+        
         const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
@@ -102,7 +122,14 @@ async function generateArticle() {
         
         const result = await response.json();
         
+        clearInterval(interval);
+        
         if (result.success) {
+            progressBar.style.width = '100%';
+            progressBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            progressPct.style.color = '#10b981';
+            progressPct.textContent = '100%';
+            
             updateLog('<span class="success">✅ Tạo bài báo thành công!</span>');
             updateStatus('Hoàn thành! Đang chuyển hướng...');
             
@@ -110,9 +137,12 @@ async function generateArticle() {
                 window.location.href = result.redirect_url;
             }, 1000);
         } else {
+            progressBar.style.background = '#ef4444';
+            progressPct.style.color = '#ef4444';
+            progressPct.textContent = 'Lỗi!';
+            
             updateLog('<span class="error">❌ ' + result.error + '</span>');
             updateStatus('Có lỗi xảy ra');
-            // Nếu hết token, chuyển về trang Gói dịch vụ
             const redirectTo = result.redirect_url || '/create';
             setTimeout(() => {
                 window.location.href = redirectTo;
