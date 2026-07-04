@@ -1509,7 +1509,7 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             final_content = original_content
         
         # Chèn ảnh vào content SAU KHI AI viết xong
-        # Vì bài viết không còn các heading (##), chúng ta sẽ chèn ảnh xen kẽ giữa các đoạn văn
+        # Chỉ lấy và chèn 1 ảnh duy nhất sau đoạn văn đầu tiên để bài viết gọn gàng
         print(f"\n🖼️ Có {len(article_images)} ảnh sẵn sàng để chèn...")
         
         if article_images:
@@ -1533,16 +1533,12 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
                 paragraphs.append(p)
                 
             new_blocks = []
-            img_idx = 0
-            total_paras = len(paragraphs)
             
-            # Chèn ảnh xen kẽ sau các đoạn văn (ví dụ: sau đoạn 1, đoạn 3, đoạn 5...)
+            # Chèn đúng 1 ảnh duy nhất (nếu có) sau đoạn văn đầu tiên
             for idx, para in enumerate(paragraphs):
                 new_blocks.append(para)
-                
-                # Chỉ chèn nếu còn ảnh, chèn sau mỗi 2 đoạn văn (sau đoạn 1, 3, 5...) và không phải đoạn cuối cùng
-                if img_idx < len(article_images) and idx % 2 == 0 and idx < total_paras - 1:
-                    img = article_images[img_idx]
+                if idx == 0 and len(article_images) > 0:
+                    img = article_images[0]
                     img_html = f'''<figure style="margin: 2rem 0;">
     <img src="{img['url']}" alt="{img['caption']}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     <figcaption style="font-size: 0.9rem; color: #666; font-style: italic; text-align: center; margin-top: 0.8rem; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
@@ -1551,11 +1547,10 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
     </figcaption>
 </figure>'''
                     new_blocks.append(img_html)
-                    print(f"   ✅ Đã xen kẽ ảnh {img_idx + 1} sau đoạn văn {idx + 1}: {img['url'][:50]}... (Nguồn: {img['source']})")
-                    img_idx += 1
+                    print(f"   ✅ Đã chèn 1 ảnh duy nhất sau đoạn văn 1: {img['url'][:50]}... (Nguồn: {img['source']})")
             
             final_content = '\n\n'.join(new_blocks)
-            print(f"✅ Đã chèn {img_idx} ảnh xen kẽ vào nội dung")
+            print(f"✅ Đã chèn 1 ảnh duy nhất vào nội dung")
         else:
             print("⚠️ Không có ảnh để chèn")
         
