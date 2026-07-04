@@ -1307,6 +1307,7 @@ YÊU CẦU BẮT BUỘC VỀ NỘI DUNG (MỤC TIÊU):
 - Giọng văn: trung lập, khách quan, hiện đại, rõ ràng, súc tích. Không dùng văn phong cảm tính.
 - Độ dài: Khoảng 900-1500 từ. Không viết để đủ chữ.
 - Cấu trúc nội dung: Bài viết KHÔNG được chia thành các phần/mục/tiêu đề con. TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ký tự tiêu đề phụ nào như #, ##, ###, hoặc các ký tự đánh số như 1., 2., Phần I, Phần II. Bài viết phải được trình bày hoàn toàn dưới dạng các đoạn văn xuôi (khoảng 4-6 đoạn văn dài, mạch lạc) liên kết chặt chẽ với nhau, chuyển ý mượt mà tự nhiên như một bài báo điện tử chuẩn và hay trên VnExpress, Tuổi Trẻ, Thanh Niên. Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng.
+- TUYỆT ĐỐI KHÔNG viết các tiêu đề hoặc cụm từ in đậm đứng riêng biệt (như **Bí quyết thành công**, **Tóm lại**, **Kết luận**, **Sự nỗ lực của thủ khoa**...) để làm tiêu đề phụ. KHÔNG ghi các từ in đậm/tóm tắt ý chính ở đầu mỗi đoạn văn. Mỗi đoạn văn phải bắt đầu trực tiếp bằng nội dung diễn đạt chi tiết mà không có nhãn in đậm nào ở đầu dòng.
 - Chống lặp ý: Mỗi đoạn chỉ trình bày MỘT ý mới, không nhắc lại ý cũ. Không lặp cấu trúc, câu, từ khóa.
 - KHÔNG sử dụng các từ/cụm từ sau: "Có thể thấy", "Điều này cho thấy", "Một trong những", "Không chỉ", "Bên cạnh đó", "Hơn nữa", "Qua đó", "Theo nghiên cứu", "Theo báo cáo", "Tóm lại", "Nhìn chung", "Cuối cùng".
 - Ngôn ngữ: Ưu tiên câu ngắn (20-30 từ). Sử dụng động từ mạnh, hạn chế tính từ và trạng từ sáo rỗng.
@@ -1326,7 +1327,7 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             print(f"   - Model: {self.model_name}")
             print(f"   - Prompt length: {len(prompt)} chars")
             
-            system_content = "Bạn là một biên tập viên báo điện tử chuyên nghiệp. Nhiệm vụ của bạn là viết lại bài báo với ngôn từ khách quan, trung lập, súc tích, hoàn toàn không lặp ý. TUYỆT ĐỐI KHÔNG sử dụng bất kỳ tiêu đề phụ, heading (như #, ##, ###) hay số thứ tự phần nào trong bài viết. Bài viết chỉ được phép có các đoạn văn xuôi liên kết mượt mà."
+            system_content = "Bạn là một biên tập viên báo điện tử chuyên nghiệp. Nhiệm vụ của bạn là viết lại bài báo với ngôn từ khách quan, trung lập, súc tích, hoàn toàn không lặp ý. TUYỆT ĐỐI KHÔNG sử dụng tiêu đề phụ, heading (như #, ##, ###), chữ in đậm làm tiêu đề phân đoạn, hay số thứ tự phần nào trong bài viết. Bài viết chỉ được phép có các đoạn văn xuôi liên kết mượt mà."
             if forbidden_keywords:
                 kw_str = ", ".join(forbidden_keywords)
                 system_content += f" Đặc biệt, Tuyệt đối KHÔNG được sử dụng bất kỳ từ hoặc cụm từ cấm nào sau đây trong bài viết: {kw_str}."
@@ -1366,6 +1367,15 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
 
                 # Bỏ hoàn toàn dòng là heading markdown
                 if raw.startswith('#'):
+                    continue
+
+                # Bỏ hoàn toàn các dòng chỉ là tiêu đề in đậm (ví dụ: **Tiêu đề**, **Tóm lại**)
+                if _re.match(r'^\*\*.*?\*\*[\s.:-]*$', raw):
+                    continue
+
+                # Loại bỏ nhãn in đậm ở đầu dòng nếu có (ví dụ: "**Sự nỗ lực:** Nguyễn Trần..." -> "Nguyễn Trần...")
+                raw = _re.sub(r'^\*\*.*?\*\*[\s.:-]*', '', raw).strip()
+                if not raw:
                     continue
 
                 norm = _re.sub(r"\s+", " ", _re.sub(r"[^\w\s]", "", raw.lower())).strip()
@@ -1506,11 +1516,19 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             # Tách nội dung thành các đoạn văn (paragraphs) bằng cách split qua dòng trống
             raw_paragraphs = [p.strip() for p in final_content.split('\n') if p.strip()]
             
-            # Lọc bỏ bất kỳ đoạn nào trông giống heading markdown (phòng trường hợp AI vẫn sinh ra)
+            # Lọc bỏ bất kỳ đoạn nào trông giống heading markdown hoặc tiêu đề in đậm (phòng trường hợp AI/nguồn vẫn có)
             paragraphs = []
             for p in raw_paragraphs:
                 if p.startswith('#'):
                     # Bỏ hoàn toàn dòng tiêu đề
+                    continue
+                if p.startswith('**') and p.endswith('**'):
+                    # Bỏ hoàn toàn tiêu đề in đậm
+                    continue
+                
+                # Loại bỏ nhãn in đậm ở đầu dòng nếu có (ví dụ: "**Sự nỗ lực:** Nguyễn Trần..." -> "Nguyễn Trần...")
+                p = re.sub(r'^\*\*.*?\*\*[\s.:-]*', '', p).strip()
+                if not p:
                     continue
                 paragraphs.append(p)
                 
