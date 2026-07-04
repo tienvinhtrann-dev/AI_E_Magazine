@@ -1306,11 +1306,10 @@ YÊU CẦU BẮT BUỘC VỀ NỘI DUNG (MỤC TIÊU):
 - CHỈ sử dụng thông tin có thực xuất hiện trong dữ liệu nguồn. Không bổ sung thông tin từ trí nhớ, không tạo số liệu mới, không tạo trích dẫn/phát biểu/địa điểm/thời gian giả mạo.
 - Giọng văn: trung lập, khách quan, hiện đại, rõ ràng, súc tích. Không dùng văn phong cảm tính.
 - Độ dài: Khoảng 900-1500 từ. Không viết để đủ chữ.
-- Cấu trúc nội dung: Bài viết gồm các đoạn văn xuôi mạch lạc liên kết chặt chẽ với nhau (không dùng gạch đầu dòng, không dùng danh sách liệt kê). Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng. Tuyệt đối KHÔNG sử dụng các tiêu đề rập khuôn như "Mở đầu", "Diễn biến", "Bối cảnh", "Kết luận".
+- Cấu trúc nội dung: Bài viết KHÔNG được chia thành các phần/mục/tiêu đề con. TUYỆT ĐỐI KHÔNG sử dụng bất kỳ ký tự tiêu đề phụ nào như #, ##, ###, hoặc các ký tự đánh số như 1., 2., Phần I, Phần II. Bài viết phải được trình bày hoàn toàn dưới dạng các đoạn văn xuôi (khoảng 4-6 đoạn văn dài, mạch lạc) liên kết chặt chẽ với nhau, chuyển ý mượt mà tự nhiên như một bài báo điện tử chuẩn và hay trên VnExpress, Tuổi Trẻ, Thanh Niên. Nội dung đi thẳng vào vấn đề chính, tiếp nối bằng phân tích diễn biến thực tế, bối cảnh liên quan và mở rộng góc nhìn, kết thúc khách quan mà không triết lý sáo rỗng.
 - Chống lặp ý: Mỗi đoạn chỉ trình bày MỘT ý mới, không nhắc lại ý cũ. Không lặp cấu trúc, câu, từ khóa.
 - KHÔNG sử dụng các từ/cụm từ sau: "Có thể thấy", "Điều này cho thấy", "Một trong những", "Không chỉ", "Bên cạnh đó", "Hơn nữa", "Qua đó", "Theo nghiên cứu", "Theo báo cáo", "Tóm lại", "Nhìn chung", "Cuối cùng".
 - Ngôn ngữ: Ưu tiên câu ngắn (20-30 từ). Sử dụng động từ mạnh, hạn chế tính từ và trạng từ sáo rỗng.
-- SEO & H2: Tạo các heading H2 (dạng ## [Tên heading]) hợp lý trong nội dung nếu bài dài trên 800 từ (tối đa 6 heading). Tuyệt đối không đặt tên heading là "Mở đầu", "Nội dung", "Kết luận", "Giới thiệu" hay các từ rập khuôn tương tự.
 - Đa dạng câu: Không viết các câu liên tiếp bắt đầu bằng cùng một từ hoặc cấu trúc chủ ngữ giống hệt nhau.
 
 THÔNG TIN TỪ CÁC NGUỒN THAM KHẢO:
@@ -1327,7 +1326,7 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             print(f"   - Model: {self.model_name}")
             print(f"   - Prompt length: {len(prompt)} chars")
             
-            system_content = "Bạn là một biên tập viên báo điện tử chuyên nghiệp. Nhiệm vụ của bạn là viết lại bài báo với ngôn từ khách quan, trung lập, súc tích và hoàn toàn không lặp ý."
+            system_content = "Bạn là một biên tập viên báo điện tử chuyên nghiệp. Nhiệm vụ của bạn là viết lại bài báo với ngôn từ khách quan, trung lập, súc tích, hoàn toàn không lặp ý. TUYỆT ĐỐI KHÔNG sử dụng bất kỳ tiêu đề phụ, heading (như #, ##, ###) hay số thứ tự phần nào trong bài viết. Bài viết chỉ được phép có các đoạn văn xuôi liên kết mượt mà."
             if forbidden_keywords:
                 kw_str = ", ".join(forbidden_keywords)
                 system_content += f" Đặc biệt, Tuyệt đối KHÔNG được sử dụng bất kỳ từ hoặc cụm từ cấm nào sau đây trong bài viết: {kw_str}."
@@ -1365,9 +1364,9 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
                         buffer = []
                     continue
 
-                # Bỏ ký hiệu heading markdown nếu có
+                # Bỏ hoàn toàn dòng là heading markdown
                 if raw.startswith('#'):
-                    raw = raw.lstrip('#').strip()
+                    continue
 
                 norm = _re.sub(r"\s+", " ", _re.sub(r"[^\w\s]", "", raw.lower())).strip()
                 if any(norm.startswith(b) for b in banned_starts):
@@ -1500,20 +1499,32 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
             final_content = original_content
         
         # Chèn ảnh vào content SAU KHI AI viết xong
-        # Chèn ảnh với caption có nguồn trước MỖI heading ##
+        # Vì bài viết không còn các heading (##), chúng ta sẽ chèn ảnh xen kẽ giữa các đoạn văn
         print(f"\n🖼️ Có {len(article_images)} ảnh sẵn sàng để chèn...")
         
         if article_images:
-            lines = final_content.split('\n')
-            new_lines = []
-            heading_count = 0
+            # Tách nội dung thành các đoạn văn (paragraphs) bằng cách split qua dòng trống
+            raw_paragraphs = [p.strip() for p in final_content.split('\n') if p.strip()]
             
-            for line in lines:
-                # Kiểm tra nếu dòng là heading (## bất kỳ)
-                if line.strip().startswith('##') and heading_count < len(article_images):
-                    img = article_images[heading_count]
-                    
-                    # Chèn ảnh với figure và figcaption (có nguồn)
+            # Lọc bỏ bất kỳ đoạn nào trông giống heading markdown (phòng trường hợp AI vẫn sinh ra)
+            paragraphs = []
+            for p in raw_paragraphs:
+                if p.startswith('#'):
+                    # Bỏ hoàn toàn dòng tiêu đề
+                    continue
+                paragraphs.append(p)
+                
+            new_blocks = []
+            img_idx = 0
+            total_paras = len(paragraphs)
+            
+            # Chèn ảnh xen kẽ sau các đoạn văn (ví dụ: sau đoạn 1, đoạn 3, đoạn 5...)
+            for idx, para in enumerate(paragraphs):
+                new_blocks.append(para)
+                
+                # Chỉ chèn nếu còn ảnh, chèn sau mỗi 2 đoạn văn (sau đoạn 1, 3, 5...) và không phải đoạn cuối cùng
+                if img_idx < len(article_images) and idx % 2 == 0 and idx < total_paras - 1:
+                    img = article_images[img_idx]
                     img_html = f'''<figure style="margin: 2rem 0;">
     <img src="{img['url']}" alt="{img['caption']}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     <figcaption style="font-size: 0.9rem; color: #666; font-style: italic; text-align: center; margin-top: 0.8rem; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
@@ -1521,15 +1532,12 @@ HÃY VIẾT NỘI DUNG BÀI BÁO HOÀN CHỈNH:"""
         <span style="font-size: 0.85rem; color: #999;">Nguồn: {img['source']}</span>
     </figcaption>
 </figure>'''
-                    new_lines.append(img_html)
-                    new_lines.append('')  # Empty line
-                    print(f"   ✅ Ảnh {heading_count + 1}: {img['url'][:50]}... (Nguồn: {img['source']})")
-                    heading_count += 1
-                
-                new_lines.append(line)
+                    new_blocks.append(img_html)
+                    print(f"   ✅ Đã xen kẽ ảnh {img_idx + 1} sau đoạn văn {idx + 1}: {img['url'][:50]}... (Nguồn: {img['source']})")
+                    img_idx += 1
             
-            final_content = '\n'.join(new_lines)
-            print(f"✅ Đã chèn {heading_count} ảnh với caption nguồn vào nội dung")
+            final_content = '\n\n'.join(new_blocks)
+            print(f"✅ Đã chèn {img_idx} ảnh xen kẽ vào nội dung")
         else:
             print("⚠️ Không có ảnh để chèn")
         
